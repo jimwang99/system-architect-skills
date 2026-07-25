@@ -322,6 +322,51 @@ class TestAbandonStagedMidSession(unittest.TestCase):
         self.assertEqual(status.stdout, "", "repo not clean after abandon:\n%s" % status.stdout)
 
 
+class TestApproveStagedDeletion(unittest.TestCase):
+    """Case 11: approve tolerates a manifest path whose deletion was staged mid-session
+    via `git rm` (path gone from worktree AND index; parent dir vanished with it)."""
+
+    def setUp(self):
+        self.repo = make_repo()
+        sub = os.path.join(self.repo, "docs", "decision-backlog")
+        os.makedirs(sub)
+        with open(os.path.join(sub, "stale-entry.md"), "w") as f:
+            f.write("stale question\n")
+        git(self.repo, "add", "docs/decision-backlog/stale-entry.md")
+        git_commit(self.repo, "-m", "add backlog entry")
+
+    def _commit_count(self):
+        r = git(self.repo, "rev-list", "--count", "HEAD")
+        return int(r.stdout.strip())
+
+    def test_approve_commits_staged_deletion(self):
+        tx(self.repo, "begin")
+        r = tx(self.repo, "track", "docs/decision-backlog/stale-entry.md")
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+        # stage the deletion with git rm; the now-empty parent dir vanishes too
+        rm = git(self.repo, "rm", "docs/decision-backlog/stale-entry.md")
+        self.assertEqual(rm.returncode, 0, rm.stderr)
+        self.assertFalse(os.path.exists(os.path.join(self.repo, "docs", "decision-backlog")))
+
+        before = self._commit_count()
+        r = tx(self.repo, "approve", "-m", "remove stale backlog entry")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self._commit_count() - before, 1)
+
+        # commit contains exactly that deletion
+        show = git(self.repo, "show", "--name-status", "--format=", "HEAD")
+        changes = [l.split("\t") for l in show.stdout.strip().splitlines() if l]
+        self.assertEqual(changes, [["D", "docs/decision-backlog/stale-entry.md"]])
+
+        # manifest file removed
+        git_dir_r = git(self.repo, "rev-parse", "--git-dir")
+        gd = git_dir_r.stdout.strip()
+        if not os.path.isabs(gd):
+            gd = os.path.join(self.repo, gd)
+        self.assertFalse(os.path.exists(os.path.join(gd, "session-tx.json")))
+
+
 class TestDeletionFlow(unittest.TestCase):
     """Case 9: track base.txt, delete it, preview shows deletion diff, approve commits deletion."""
 

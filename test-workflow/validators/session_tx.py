@@ -95,14 +95,27 @@ def cmd_approve(root, msg):
     if m is None:
         sys.stderr.write("no active session\n")
         return 1
-    _, staged, _ = git(root, "diff", "--cached", "--name-only")
+    _, staged, _ = git(root, "diff", "--cached", "--name-status")
     manifest_paths = {e["path"] for e in m["entries"]}
-    outside = [s for s in staged.strip().splitlines() if s and s not in manifest_paths]
+    staged_paths, staged_deleted = [], set()
+    for line in staged.strip().splitlines():
+        if not line:
+            continue
+        parts = line.split("\t")
+        staged_paths.append(parts[-1])
+        if parts[0] == "D":
+            staged_deleted.add(parts[-1])
+    outside = [s for s in staged_paths if s not in manifest_paths]
     if outside:
         sys.stderr.write("staged changes outside the session manifest: %s; resolve before approving\n" % ", ".join(outside))
         return 1
-    if manifest_paths:
-        code, _, err = git(root, "add", "-A", "--", *sorted(manifest_paths))
+    # A manifest path whose deletion is already fully staged (git rm: gone from
+    # worktree AND index) matches no pathspec, so `git add -A` would fatal on it.
+    # Its staged deletion is exactly what approve commits — skip re-adding it.
+    to_add = sorted(p for p in manifest_paths
+                    if not (p in staged_deleted and not os.path.lexists(os.path.join(root, p))))
+    if to_add:
+        code, _, err = git(root, "add", "-A", "--", *to_add)
         if code != 0:
             sys.stderr.write(err)
             return 1
