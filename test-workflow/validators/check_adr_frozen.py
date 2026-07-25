@@ -57,6 +57,9 @@ def main():
     # symlinks in --show-toplevel (e.g. macOS /var -> /private/var), and a raw abspath
     # would produce a garbage relative path that git can't match, failing closed wrongly.
     path = os.path.realpath(sys.argv[1])
+    if not os.path.isfile(path):
+        print("%s: no such file" % path, file=sys.stderr)
+        return 2
     directory = os.path.dirname(path)
     top = git(directory, "rev-parse", "--show-toplevel")
     if top.returncode != 0:

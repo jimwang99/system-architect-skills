@@ -239,6 +239,13 @@ class TestFrozenCheck(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertRegex(err, r"body line \d+")
 
+    def test_missing_file_exits_2(self):
+        repo = self.scratch()
+        code, err = check(os.path.join(repo, "docs/adr/absent.md"))
+        self.assertEqual(code, 2)
+        self.assertNotIn("Traceback", err)
+        self.assertTrue(err.strip())
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -180,11 +180,11 @@ def check_pointers(path, keys, errs):
 
 
 def validate(path):
-    try:
-        with open(path, encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:  # OSError propagates: environment, not a violation
+        try:
             lines = fh.read().splitlines()
-    except (OSError, UnicodeDecodeError) as exc:
-        return ["%s:1: unreadable: %s" % (path, exc)]
+        except UnicodeDecodeError as exc:
+            return ["%s:1: unreadable: %s" % (path, exc)]
     keys, body_start, errs = parse_frontmatter(lines)
     if not any(msg.startswith("file must start") for _, msg in errs):
         check_meta(path, keys, errs)
@@ -197,7 +197,11 @@ def main():
     if len(sys.argv) != 2:
         print("usage: validate_adr.py <adr-file>", file=sys.stderr)
         return 2
-    errors = validate(sys.argv[1])
+    try:
+        errors = validate(sys.argv[1])
+    except OSError as exc:
+        print("%s: %s" % (sys.argv[1], exc.strerror or exc), file=sys.stderr)
+        return 2
     for e in errors:
         print(e, file=sys.stderr)
     return 1 if errors else 0

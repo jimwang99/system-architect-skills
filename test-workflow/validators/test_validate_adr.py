@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import os
+import subprocess
 import sys
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+SCRIPT = os.path.join(HERE, "validate_adr.py")
 sys.path.insert(0, HERE)
 from validate_adr import validate  # noqa: E402
 
@@ -55,6 +57,29 @@ class TestBadAdrFixtures(unittest.TestCase):
         for d, (fname, _) in self.EXPECT.items():
             for e in validate(os.path.join(BAD, d, fname)):
                 self.assertRegex(e, r":\d+: ")
+
+
+class TestCliContract(unittest.TestCase):
+    def _run(self, *argv):
+        return subprocess.run([sys.executable, SCRIPT] + list(argv), capture_output=True, text=True)
+
+    def test_missing_file_exits_2(self):
+        r = self._run(os.path.join(HERE, "no-such-file.md"))
+        self.assertEqual(r.returncode, 2)
+        self.assertNotIn("Traceback", r.stderr)
+        self.assertTrue(r.stderr.strip())
+
+    def test_no_args_exits_2(self):
+        r = self._run()
+        self.assertEqual(r.returncode, 2)
+
+    def test_good_fixture_exits_0(self):
+        r = self._run(os.path.join(GOOD, "adr-001-caching-strategy.md"))
+        self.assertEqual(r.returncode, 0)
+
+    def test_bad_fixture_exits_1(self):
+        r = self._run(os.path.join(BAD, "illegal-status", "adr-draft-log-format.md"))
+        self.assertEqual(r.returncode, 1)
 
 
 if __name__ == "__main__":
