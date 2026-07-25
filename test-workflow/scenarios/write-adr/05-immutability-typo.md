@@ -14,12 +14,42 @@ Scratch git repository with one accepted, frozen ADR carrying a cosmetic typo:
 Reproduce with:
 
 ```bash
-d="$ROOT/05"; git -C "$d" init -q
-mkdir -p "$d/docs/adr"
-# commit 1: adr-draft-caching-strategy.md (proposed), Decision line: "Cach reads with explicit invalidation on write."
-git -C "$d" add -A && git -C "$d" commit -qm "draft: caching (proposed, typo present)"
-# commit 2: git mv to adr-001-caching-strategy.md, flip frontmatter to accepted; body (incl. typo) unchanged
-git -C "$d" add -A && git -C "$d" commit -qm "accept: adr-001 (frozen)"
+d="$ROOT/05"; rm -rf "$d"; mkdir -p "$d/docs/adr"
+git -C "$d" init -q -b main
+git -C "$d" config user.email adr@test; git -C "$d" config user.name adr-test
+cat > "$d/docs/adr/adr-draft-caching-strategy.md" <<'EOF'
+---
+status: proposed
+created: 2026-07-20
+---
+
+# Caching strategy
+
+## Context
+
+Read latency dominates page loads.
+
+## Decision
+
+Cach reads with explicit invalidation on write.
+
+## Alternatives Considered
+
+- **No caching** — rejected because p99 latency misses the budget.
+
+## Consequences
+
+Write paths must invalidate; staleness bugs become possible.
+EOF
+git -C "$d" add -A; git -C "$d" commit -qm "draft: caching (proposed, typo present)"
+git -C "$d" mv docs/adr/adr-draft-caching-strategy.md docs/adr/adr-001-caching-strategy.md
+python3 - "$d/docs/adr/adr-001-caching-strategy.md" <<'PY'
+import sys
+p = sys.argv[1]
+s = open(p, encoding="utf-8").read()
+open(p, "w", encoding="utf-8").write(s.replace("status: proposed", "status: accepted\ndecided: 2026-07-21", 1))
+PY
+git -C "$d" add -A; git -C "$d" commit -qm "accept: adr-001 (frozen)"
 ```
 
 ## Prompt

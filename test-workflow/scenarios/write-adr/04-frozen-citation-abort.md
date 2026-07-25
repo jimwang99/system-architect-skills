@@ -17,14 +17,107 @@ Like `02-acceptance-flow`, but the frozen ADR's body cites the draft filename:
 Reproduce with:
 
 ```bash
-d="$ROOT/04"; git -C "$d" init -q
-mkdir -p "$d/docs/adr" "$d/docs/decision-backlog"
-# commit 1: adr-draft-caching-strategy.md (proposed) whose Consequences cite adr-draft-retry-policy.md
-git -C "$d" add -A && git -C "$d" commit -qm "draft: caching (cites retry draft)"
-# commit 2: git mv to adr-001-caching-strategy.md, flip frontmatter to accepted (body incl. citation unchanged)
-git -C "$d" add -A && git -C "$d" commit -qm "accept: adr-001 (frozen, cites retry draft)"
-# commit 3: add adr-draft-retry-policy.md, retry-semantics.md backlog, ROADMAP with F03 blocked
-git -C "$d" add -A && git -C "$d" commit -qm "seed: retry draft + backlog + F03 blocked"
+d="$ROOT/04"; rm -rf "$d"; mkdir -p "$d/docs/adr" "$d/docs/decision-backlog"
+git -C "$d" init -q -b main
+git -C "$d" config user.email adr@test; git -C "$d" config user.name adr-test
+cat > "$d/docs/adr/adr-draft-caching-strategy.md" <<'EOF'
+---
+status: proposed
+created: 2026-07-20
+---
+
+# Caching strategy
+
+## Context
+
+Read latency dominates page loads.
+
+## Decision
+
+Cache reads with explicit invalidation on write.
+
+## Alternatives Considered
+
+- **No caching** — rejected because p99 latency misses the budget.
+
+## Consequences
+
+Write paths must invalidate; retry interplay is tracked in adr-draft-retry-policy.md.
+EOF
+git -C "$d" add -A; git -C "$d" commit -qm "draft: caching (cites retry draft)"
+git -C "$d" mv docs/adr/adr-draft-caching-strategy.md docs/adr/adr-001-caching-strategy.md
+python3 - "$d/docs/adr/adr-001-caching-strategy.md" <<'PY'
+import sys
+p = sys.argv[1]
+s = open(p, encoding="utf-8").read()
+open(p, "w", encoding="utf-8").write(s.replace("status: proposed", "status: accepted\ndecided: 2026-07-21", 1))
+PY
+git -C "$d" add -A; git -C "$d" commit -qm "accept: adr-001 (frozen, cites retry draft)"
+cat > "$d/docs/adr/adr-draft-retry-policy.md" <<'EOF'
+---
+status: proposed
+created: 2026-07-24
+resolves: retry-semantics
+---
+
+# API retry policy
+
+## Context
+
+Callers keep reimplementing retry logic badly.
+
+## Decision
+
+Retry idempotent requests with idempotency keys and exponential backoff.
+
+## Alternatives Considered
+
+- **At-most-once delivery** — rejected because callers already tolerate duplicate delivery.
+
+## Consequences
+
+Requests need idempotency keys.
+EOF
+cat > "$d/docs/decision-backlog/retry-semantics.md" <<'EOF'
+# Open question: retry semantics
+
+How should the API layer handle transient failures — retries with idempotency keys, or at-most-once with caller-side handling?
+EOF
+cat > "$d/ROADMAP.md" <<'EOF'
+## Current Workflow Status
+
+- Current milestone: M01 — API platform
+- Milestone state: paused
+- Active feature: none
+- Blocker: retry semantics need a human decision
+- Next action: human: resolve docs/decision-backlog/retry-semantics.md
+
+## M01 — API platform
+
+- State: paused
+
+### F01 — Auth layer
+
+- Status: done
+- Description: token auth for the API.
+- Acceptance: authenticated calls succeed.
+- Test intent: integration tests.
+- Evidence:
+  - Base: aaa1111
+  - Commits: aaa1111..bbb2222
+  - Tests: pass — 8/8
+  - Reviewer: codex-cli 0.145.0
+  - Verdict: approve
+  - Findings: none
+
+### F03 — API retry layer
+
+- Status: blocked(retry-semantics)
+- Description: retry layer for transient API failures.
+- Acceptance: retries are idempotent under duplicate delivery.
+- Test intent: fault-injection tests.
+EOF
+git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft + backlog + F03 blocked"
 ```
 
 ## Prompt
