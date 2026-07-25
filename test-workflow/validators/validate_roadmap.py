@@ -20,7 +20,7 @@ FEATURE_STATUS = re.compile(
     r"^(todo|WIP|done|blocked\([a-z0-9][a-z0-9-]*\)|failed\(.+\))$")
 M_HEAD = re.compile(r"^## (M\d{2}) — (.+)$")
 F_HEAD = re.compile(r"^### (F\d{2}) — (.+)$")
-KEY = re.compile(r"^- ([A-Z][A-Za-z ]*): (.*?)\s*$")
+KEY = re.compile(r"^- ([A-Z][A-Za-z ]*): ?(.*?)\s*$")
 EV_KEY = re.compile(r"^  - ([A-Z][A-Za-z ]*): (.*?)\s*$")
 
 SUMMARY_REQ = ("Current milestone", "Milestone state", "Active feature", "Next action")
@@ -202,6 +202,52 @@ def check_agreement(summary, milestones, errs):
             errs.append((m.line, "milestone %s after the current milestone must be planning-pending or planned" % m.id))
 
 
+def check_features(milestones, errs):
+    wip_lines = []
+    for m in milestones:
+        state = m.keys.get("State", ("", m.line))[0]
+        phase = 0  # 0=done prefix, 1=one mid-flight slot used, 2=todo tail
+        for f in m.features:
+            status = f.keys.get("Status", ("", f.line))[0]
+            n = f.keys.get("Status", ("", f.line))[1]
+            base = status.split("(")[0]
+            if base == "WIP":
+                wip_lines.append(n)
+            if state in ("review-ready", "accepted") and status != "done":
+                errs.append((n, "feature %s in %s milestone must be done" % (f.id, state)))
+            if status == "done":
+                if phase != 0:
+                    errs.append((n, "feature %s done out of order" % f.id))
+                for req in EVIDENCE_REQ:
+                    if req not in f.evidence:
+                        errs.append((f.line, "feature %s missing evidence field '%s'" % (f.id, req)))
+                if "Tests" in f.evidence:
+                    val, tn = f.evidence["Tests"]
+                    if not val.startswith("pass"):
+                        errs.append((tn, "Tests must begin 'pass', got '%s'" % val))
+                if "Verdict" in f.evidence:
+                    val, vn = f.evidence["Verdict"]
+                    if val not in ACCEPT_VERDICTS:
+                        errs.append((vn, "Verdict must be approve or approve-with-findings"))
+                if "Findings" in f.evidence:
+                    val, fn = f.evidence["Findings"]
+                    if not FINDINGS.match(val):
+                        errs.append((fn, "Findings must be 'none' or list each blocking finding as fixed/refuted(...)"))
+            elif base in ("WIP", "blocked", "failed"):
+                if phase >= 1:
+                    errs.append((n, "feature %s out of order: second mid-flight feature" % f.id))
+                phase = 1
+                if base == "failed":
+                    val = f.keys.get("Learning", ("", 0))[0]
+                    if not LEARNING.match(val):
+                        errs.append((f.line, "failed feature %s must carry Learning: docs/learnings/ALI-NNN.md" % f.id))
+            elif status == "todo":
+                phase = 2
+    if len(wip_lines) > 1:
+        for n in wip_lines[1:]:
+            errs.append((n, "more than one WIP feature in the file"))
+
+
 def validate(path):
     with open(path, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
@@ -209,6 +255,7 @@ def validate(path):
     check_summary(lines, summary, errs)
     check_vocab(summary, milestones, errs)
     check_agreement(summary, milestones, errs)
+    check_features(milestones, errs)
     return ["%s:%d: %s" % (path, n, msg) for n, msg in sorted(errs)]
 
 

@@ -43,17 +43,10 @@
 
 ### F03 — Parser core
 
-- Status: done
+- Status: todo
 - Description: build the AST from tokens.
 - Acceptance: golden files match.
 - Test intent: golden-file comparison tests.
-- Evidence: 
-  - Base: ccc3333
-  - Commits: ccc3333..ddd4444
-  - Tests: pass — 20/20
-  - Reviewer: codex-cli 0.145.0
-  - Verdict: approve-with-findings
-  - Findings: naming nit: fixed
 
 ## M03 — CLI
 

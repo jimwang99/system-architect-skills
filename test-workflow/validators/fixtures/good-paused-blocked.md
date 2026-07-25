@@ -1,9 +1,10 @@
 ## Current Workflow Status
 
 - Current milestone: M02 — Parser
-- Milestone state: review-ready
+- Milestone state: paused
 - Active feature: none
-- Next action: human: run review-milestone M02
+- Blocker: session-store choice needs human judgment
+- Next action: human: resolve docs/decision-backlog/session-store.md
 
 ## M01 — Setup
 
@@ -25,7 +26,7 @@
 
 ## M02 — Parser
 
-- State: review-ready
+- State: paused
 
 ### F02 — Tokenizer
 
@@ -43,17 +44,10 @@
 
 ### F03 — Parser core
 
-- Status: done
+- Status: blocked(session-store)
 - Description: build the AST from tokens.
 - Acceptance: golden files match.
 - Test intent: golden-file comparison tests.
-- Evidence: 
-  - Base: ccc3333
-  - Commits: ccc3333..ddd4444
-  - Tests: pass — 20/20
-  - Reviewer: codex-cli 0.145.0
-  - Verdict: approve-with-findings
-  - Findings: naming nit: fixed
 
 ## M03 — CLI
 

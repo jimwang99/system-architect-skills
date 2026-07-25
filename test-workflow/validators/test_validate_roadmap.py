@@ -38,6 +38,14 @@ class TestBadFixtures(unittest.TestCase):
         "bad-agreement-state.md": "does not match summary",
         "bad-agreement-active-feature.md": "active feature",
         "bad-ordering-past-not-accepted.md": "before the current milestone",
+        "bad-evidence-missing-field.md": "missing evidence field",
+        "bad-evidence-tests-failed.md": "Tests must begin 'pass'",
+        "bad-evidence-verdict-reject.md": "Verdict must be",
+        "bad-evidence-findings-unresolved.md": "Findings must be",
+        "bad-sequence-done-after-todo.md": "out of order",
+        "bad-two-wip.md": "more than one WIP",
+        "bad-failed-no-learning.md": "Learning",
+        "bad-review-ready-unfinished.md": "must be done",
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):

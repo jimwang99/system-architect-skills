@@ -1,9 +1,9 @@
 ## Current Workflow Status
 
 - Current milestone: M02 — Parser
-- Milestone state: review-ready
-- Active feature: none
-- Next action: human: run review-milestone M02
+- Milestone state: in-progress
+- Active feature: F03 — WIP
+- Next action: execute-milestone M02
 
 ## M01 — Setup
 
@@ -25,7 +25,7 @@
 
 ## M02 — Parser
 
-- State: review-ready
+- State: in-progress
 
 ### F02 — Tokenizer
 
@@ -37,23 +37,15 @@
   - Base: bbb2222
   - Commits: bbb2222..ccc3333
   - Tests: pass — 20/20
-  - Reviewer: codex-cli 0.145.0
   - Verdict: approve-with-findings
   - Findings: naming nit: fixed
 
 ### F03 — Parser core
 
-- Status: done
+- Status: WIP
 - Description: build the AST from tokens.
 - Acceptance: golden files match.
 - Test intent: golden-file comparison tests.
-- Evidence: 
-  - Base: ccc3333
-  - Commits: ccc3333..ddd4444
-  - Tests: pass — 20/20
-  - Reviewer: codex-cli 0.145.0
-  - Verdict: approve-with-findings
-  - Findings: naming nit: fixed
 
 ## M03 — CLI
 
