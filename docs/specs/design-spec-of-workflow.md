@@ -121,9 +121,10 @@ The personal installation remains:
 | `docs/reviews/milestone-<NN>.md` | Append-only review progress and final verdict. |
 | `docs/learnings/ALI-NNN.md` | Evidence-backed plan-versus-reality divergence. |
 
-PRDs are living documents edited in place. ADR decision bodies become immutable
-when accepted or rejected. Backlog entries exist only while unresolved.
-Plans describe how to implement one feature and must be revalidated against the
+PRDs are living documents edited in place; every PRD diff is shown to the human
+and committed only after approval. ADR decision bodies become immutable when
+accepted or rejected. Backlog entries exist only while unresolved. Plans
+describe how to implement one feature and must be revalidated against the
 current code before execution.
 
 ## `ROADMAP.md` Contract
@@ -139,8 +140,7 @@ section is always a concise status view:
 - Active feature: F04 — WIP
 - Checkpoint: recovery
 - Blocker: reviewer unavailable
-- Next action: rerun `$execute-milestone M03`
-- Last reconciled commit: abc1234
+- Next action: invoke `execute-milestone M03`
 ```
 
 The remainder defines milestones and their ordered features. Every feature
@@ -149,8 +149,9 @@ status, and evidence when done.
 
 Every state-changing skill updates the current-status section and the relevant
 detailed entry in the same recorded transition. Conformance tests must assert
-that the two views agree. `Next action` is always a literal skill invocation,
-command, or human task.
+that the two views agree. `Next action` uses the host-neutral form
+`skill-name arguments`, or names a command or human task when no skill applies.
+It never attempts to record the hash of the commit that contains itself.
 
 ## Lifecycle Contracts
 
@@ -245,10 +246,10 @@ documents or routed through the classification contract below.
 - Platform adapters may use different tools but must produce the same
   artifacts, state transitions, and stop behavior.
 
-`execute-milestone` is mechanically user-only in Claude through the user's
-local skill visibility configuration. Codex has no equivalent requirement in
-this design: its shared skill begins with an explicit-invocation guard, and
-pressure scenarios verify that agents do not self-start it.
+`execute-milestone` and `review-milestone` are mechanically user-only in Claude
+through the user's local skill visibility configuration. In Codex, their shared
+skills begin with explicit-invocation guards, and pressure scenarios verify
+that agents do not self-start either workflow.
 
 ## Question and Failure Classification
 
@@ -272,6 +273,11 @@ human judgment regardless of estimated reversibility.
 Per-feature review happens after tests and before `done`. Correctness findings
 are fixed; false positives may be refuted only with recorded evidence;
 architectural findings use the classification table.
+
+Milestone review includes a reciprocal external pass over the complete
+milestone branch diff, scoped to cross-feature integration that per-feature
+reviews cannot observe. An accept verdict requires every blocking integration
+finding to be fixed or refuted with recorded evidence.
 
 Reviewer transport failure receives one retry. A second timeout,
 authentication failure, or malformed result pauses the milestone with the
