@@ -174,5 +174,6 @@ This spec's implementation is done when:
 - Deciding when agents decide versus block (umbrella classification, `execute-milestone`).
 - Backlog entry creation and format.
 - An erratum mechanism for frozen bodies (strict immutability chosen instead; typos stand).
+- Git-less authoring environments (e.g. Obsidian vaults) — vaults are read-only consumption copies synced from the git repo; every lifecycle transition requires git (decided 2026-07-25 after an impact analysis: the execution machinery is essentially git-bound, and hash-based freeze fallbacks were declined).
 - Tier-3 cross-platform runs beyond what TESTING.md's rerun policy requires at ship time.
 - Migrating or renumbering any existing ADRs.
