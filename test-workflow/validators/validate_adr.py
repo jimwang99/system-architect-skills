@@ -40,7 +40,7 @@ def parse_frontmatter(lines):
     """Return (keys, body_start_index, errors). keys: name -> (value, line_no)."""
     errors = []
     keys = {}
-    if not lines or lines[0].strip() != "---":
+    if not lines or lines[0] != "---":
         errors.append((1, "file must start with '---' frontmatter delimiter"))
         return keys, 0, errors
     i = 1
@@ -135,6 +135,10 @@ def check_body(lines, body_start, errs):
     present = [positions[n] for n in SECTION_ORDER if n in positions]
     if present != sorted(present):
         errs.append((offset, "sections out of order (mandated: Context, Decision, Alternatives Considered, Consequences)"))
+    if len(h1s) == 1 and positions:
+        first_section = min(positions.values())
+        if h1s[0] > first_section:
+            errs.append((offset + h1s[0], "H1 title must precede all sections"))
     if len(positions) == len(SECTION_ORDER) and present == sorted(present):
         bounds = present + [len(body)]
         for idx, name in enumerate(SECTION_ORDER):
