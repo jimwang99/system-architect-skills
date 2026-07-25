@@ -7,9 +7,11 @@ description: Use when a significant work phase has finished and reality meaningf
 
 ## Overview
 
-**Fixing the artifact is not learning.** Updating a wrong spec is a fix. Understanding *why* the spec was wrong and *what class of error* it represents is learning. This skill enforces the discipline of structured reflection before moving on.
+**Fixing the artifact is not learning.** Updating a wrong spec is a fix. Understanding *why* the spec was wrong and *what class of error* it represents is learning. This skill forces structured reflection before moving on.
 
-The cycle is: **Act** (do the work) -> **Learn** (document what reality taught you) -> **Improve** (identify every affected target and assign each proposed change a P0, P1, or P2 priority for human approval). Applying those changes is a separate work phase.
+The cycle: **Act** (do the work) -> **Learn** (write what reality taught you) -> **Improve** (list every affected target, each with a P0, P1, or P2 priority, for human approval). Applying the changes is a separate work phase.
+
+**Each learning entry is one numbered file in `docs/learnings/` at the repository root: `ALI-001.md`, `ALI-002.md`, ...** Never write learnings anywhere else. Update every iteration: each work phase with a divergence adds the next-numbered file; each revision during review edits that same file.
 
 ## When to Use
 
@@ -22,13 +24,13 @@ The cycle is: **Act** (do the work) -> **Learn** (document what reality taught y
          yes
           |
           v
-[Create learning document]
+[Create docs/learnings/ALI-NNN.md (next number)]
           |
           v
-[Present to human partner] <------------------------------+
-          |                                               |
-          v                                               |
-<Learning document approved?> -- no --> [Revise document]-+
+[Present to human partner] <----------------------------+
+          |                                             |
+          v                                             |
+<Entry approved?> -- no --> [Revise the same ALI-NNN.md]+
           |
          yes
           |
@@ -38,19 +40,19 @@ The cycle is: **Act** (do the work) -> **Learn** (document what reality taught y
 
 **Triggers (meaningful divergences only):**
 - Implementation revealed wrong assumptions in the design
-- Debugging uncovered root causes not anticipated by the spec
+- Debugging uncovered root causes the spec did not anticipate
 - Tests found gaps not in the original test plan
 - A skill or guideline was incomplete or misleading
 - Workarounds were needed that diverge from the documented approach
-- You discovered something that "the next person would have to rediscover"
+- You discovered something the next person would otherwise have to rediscover
 
 **Do NOT use when:**
-- Implementation went exactly as planned (no divergence)
+- The work went exactly as planned (no divergence)
 - The only learnings are trivial typos or formatting
 
 ## Core Discipline: Separate Fix from Learn
 
-**This is the #1 failure mode.** Agents naturally jump to "fix the spec, update the code, move on." That's necessary but not sufficient.
+**This is the #1 failure mode.** Agents naturally jump to "fix the spec, update the code, move on." That is necessary but not sufficient.
 
 | Fix (necessary) | Learn (the actual goal) |
 |-----------------|------------------------|
@@ -60,40 +62,41 @@ The cycle is: **Act** (do the work) -> **Learn** (document what reality taught y
 
 The fix addresses THIS instance. The learning prevents THE CLASS of error.
 
-## The Learning Document
+## Writing the Learning File
 
-After each significant work phase with a meaningful divergence, create a learning document (or append to an existing one in the working directory). Present it to your human partner for review.
+After each work phase with a meaningful divergence:
 
-**The structured format below is not optional.** Writing a summary or action list instead of the full format is the #2 failure mode (after conflating fix with learn). The structure forces depth — without it, you'll produce shallow bullet points that miss the root cause and class of error.
+1. List `docs/learnings/` at the repository root (create the directory if it does not exist). Find the highest existing `ALI-NNN.md` number; your file is the next one. The first file is `ALI-001.md`. Numbers are zero-padded to three digits. Never overwrite or reuse an existing number.
+2. Write the file using the format below. One work phase = one file.
+3. Present the file to your human partner. If they ask for changes, revise the same `ALI-NNN.md` in place — never a new file or a side document.
 
-### Format
+**The format below is not optional.** Writing a summary or an action list instead of the full format is the #2 failure mode (after conflating fix with learn). The structure forces depth; without it you get shallow bullets that miss the root cause and the class of error.
+
+### File Format
 
 ```markdown
-# Learnings: [work phase description]
+# ALI-NNN: [work phase description]
 Date: [date]
 Phase: [design | implementation | debugging | testing]
 
-## What Happened
-[1-3 sentences: what work was done, what was the plan vs reality]
+**What happened:** [1-3 sentences: what was planned, what actually happened]
 
-## Learnings
-
-### L1: [short title]
+## L1: [short title]
 - **What we assumed:** [the original assumption]
 - **What is actually true:** [what reality showed]
-- **Evidence:** [one or more traceable references: specific test name and relevant output, command result, log identifier/span, file:line, specification section, published source, or URL; if none exists, write `Evidence unavailable`, name the gap, and state the needed verification]
-- **Why the assumption was wrong:** [root cause — missing info, wrong source, untested claim, etc.]
-- **Class of error:** [category — e.g., "unverified external dependency", "single-case generalization", "missing interaction test"]
-- **Improvement items:** [evaluate every target class below; include every affected target and omit unaffected targets]
-  - **[P0 | P1 | P2] — [target class]:** `[specific artifact or path]` — [proposed change]
+- **Evidence:** [traceable reference — see below]
+- **Why the assumption was wrong:** [root cause — missing info, wrong source, untested claim, ...]
+- **Class of error:** [category — e.g. "unverified external dependency", "single-case generalization", "missing interaction test"]
+- **Improvement items:** [check every target class; list every affected target, omit the rest]
+  - **[P0 | P1 | P2] — [target class]:** `[artifact or path]` — [proposed change]
 
-### L2: [short title]
+## L2: [short title]
 ...
 ```
 
-Evidence must be traceable. Cite at least one specific test and relevant output, command result, log identifier or span, `file:line`, specification section, published source, or URL. If none is available, write the literal status **Evidence unavailable**, state what is missing, and name the verification needed before document approval. Never invent a test, output, log, location, section, source, or URL.
+**Evidence must be traceable:** a specific test name with its output, a command result, a log identifier, a `file:line`, a specification section, a published source, or a URL. If none exists, write the literal status **Evidence unavailable**, name what is missing, and state the verification needed before approval. Never invent a test, output, log, location, section, source, or URL.
 
-Every improvement item must begin with exactly one priority and one target class: `**[P0 | P1 | P2] — [target class]:**`. Name the concrete artifact or path when known and state the proposed change. Split changes that affect multiple targets into separate items so each target can be prioritized independently. An unlabeled or multiply labeled item is structurally incomplete.
+**Every improvement item starts with exactly one priority and one target class:** `**[P0 | P1 | P2] — [target class]:**`. Name the concrete artifact or path when known and state the proposed change. If one change touches several targets, split it into one item per target so each can be prioritized on its own.
 
 ### What Makes a Good Learning Entry
 
@@ -117,7 +120,7 @@ The auth URL was wrong. Fixed it.
 
 ## Improvement Targets and Priorities
 
-Before finalizing each learning entry, evaluate every target class below. Include every affected target and omit unaffected targets; do not add `N/A` placeholders. If one proposed change spans multiple targets, split it into separate improvement items.
+Before finalizing an entry, check every target class below. List every affected target; leave unaffected targets out — no `N/A` placeholders. If one proposed change spans several targets, split it into separate items.
 
 | Priority | Meaning |
 |----------|---------|
@@ -137,20 +140,19 @@ Before finalizing each learning entry, evaluate every target class below. Includ
 
 ## Scope: Document Only
 
-In this cycle, **Improve** means identifying and prioritizing candidate artifact or process changes for human approval. This skill produces the learning document; it does **not** apply those changes. Applying them is a separate, human-approved work phase. Learning-document approval approves the document only; it does not authorize applying candidate changes.
+**Improve** means identifying and prioritizing changes for human approval. This skill writes the `ALI-NNN.md` file; it does not apply the changes. Applying them is a separate, human-approved work phase. Approval of the file approves the document only — it does not authorize the changes, and neither does a P0 label.
 
-A P0 label records highest importance; it is not authorization to apply the change.
-
-The document should be concrete enough that someone can act on it later without needing additional context — but the agent's job here is to write, not to fix.
+Each file should be concrete enough that someone can act on it later without extra context — but your job here is to write, not to fix.
 
 ## Red Flags — You're Skipping the Learning
 
-- "Tests pass, let's move on" — passing tests don't mean you learned nothing
+- "Tests pass, let's move on" — passing tests do not mean you learned nothing
 - "I already fixed the spec" — fixing is not learning (see table above)
-- "The change was small, so the divergence was trivial" — size is not impact; document it only when the underlying assumption or error class is meaningful
-- "We don't have time" — skipping documentation makes the same class of error easier to repeat and rediscover
+- "I'll jot this down in a notes file for now" — learnings go in `docs/learnings/ALI-NNN.md`, nowhere else
+- "The change was small, so the divergence was trivial" — size is not impact; what matters is whether the assumption or error class is meaningful
+- "We don't have time" — skipping the write-up makes the same class of error easy to repeat and rediscover
 - "I'll remember for next time" — you won't. The next agent definitely won't
-- Listing action items without explaining WHY each matters
+- Listing action items without explaining why each matters
 
 ## Common Mistakes
 
@@ -158,21 +160,25 @@ The document should be concrete enough that someone can act on it later without 
 
 **Missing the class** — Every specific error belongs to a class. If you can't name the class, you haven't reflected enough. "Wrong auth URL" is an instance; "unverified external dependency" is the class.
 
-**Skipping skill/guideline improvement** — The easiest artifacts to overlook. If a skill led you astray or failed to warn you, that's a high-priority improvement.
+**Scattered learnings** — Writing learnings into per-directory notes, commit messages, or ad-hoc files. There is exactly one place: the next `ALI-NNN.md` in `docs/learnings/`, updated every iteration.
 
-**Over-scoping improvements** — The learning document identifies what to improve, not a full redesign. Keep improvements proportional to the learning.
+**Wrong file number** — Overwriting an existing `ALI-NNN.md` or skipping numbers. New work phase = highest existing number + 1; revisions edit the file that already exists.
 
-**Incomplete target sweep** — Evaluate every target class before finalizing the document. List all affected targets, not only the artifact that exposed the divergence; omit unaffected targets instead of adding `N/A`.
+**Skipping skill/guideline improvement** — The easiest targets to overlook. If a skill led you astray or failed to warn you, that is a high-priority improvement.
 
-**Detached or missing priority** — Put exactly one P0, P1, or P2 label on each improvement item. A separate summary cannot substitute for per-item priority, and P0 does not authorize implementation.
+**Over-scoping improvements** — The file identifies what to improve, not a full redesign. Keep improvements proportional to the learning.
+
+**Incomplete target sweep** — Check every target class before finalizing. List all affected targets, not only the artifact that exposed the divergence.
+
+**Detached or missing priority** — Give each improvement item exactly one P0, P1, or P2 label. A summary section cannot substitute for per-item priorities.
 
 ## Quick Reference
 
-1. Work phase done, reality meaningfully diverged from plan
-2. STOP — don't just fix and move on
-3. Create learning document with structured entries
+1. Work phase done; reality meaningfully diverged from the plan
+2. STOP — do not just fix and move on
+3. Create `docs/learnings/ALI-NNN.md` at the repo root, where NNN = highest existing number + 1 (first file: `ALI-001.md`)
 4. For each divergence: assumption -> reality -> traceable evidence (or `Evidence unavailable` + gap + needed verification) -> why wrong -> class of error
-5. Evaluate every target class; list every affected target and omit unaffected targets
-6. Assign each improvement item exactly one priority: P0 must-have / P1 should-have / P2 nice-to-have
-7. Present to the human partner; if rejected, revise the learning document and present it again
-8. Learning-document approval and P0 priority do not authorize applying candidate changes
+5. Check every target class; list only the affected ones
+6. Give each improvement item exactly one priority: P0 must-have / P1 should-have / P2 nice-to-have
+7. Present to your human partner; revise the same `ALI-NNN.md` until approved
+8. Neither file approval nor a P0 label authorizes applying the changes
