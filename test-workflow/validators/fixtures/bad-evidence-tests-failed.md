@@ -15,7 +15,7 @@
 - Description: scaffold the project.
 - Acceptance: repo builds.
 - Test intent: smoke test.
-- Evidence: 
+- Evidence:
   - Base: aaa1111
   - Commits: aaa1111..bbb2222
   - Tests: pass — 12/12
@@ -33,7 +33,7 @@
 - Description: split input into tokens.
 - Acceptance: tokens match spec table.
 - Test intent: table-driven unit tests.
-- Evidence: 
+- Evidence:
   - Base: bbb2222
   - Commits: bbb2222..ccc3333
   - Tests: failed — 18/20

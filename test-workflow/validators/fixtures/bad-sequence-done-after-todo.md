@@ -15,7 +15,7 @@
 - Description: scaffold the project.
 - Acceptance: repo builds.
 - Test intent: smoke test.
-- Evidence: 
+- Evidence:
   - Base: aaa1111
   - Commits: aaa1111..bbb2222
   - Tests: pass — 12/12
@@ -40,7 +40,7 @@
 - Description: build the AST from tokens.
 - Acceptance: golden files match.
 - Test intent: golden-file comparison tests.
-- Evidence: 
+- Evidence:
   - Base: bbb2222
   - Commits: bbb2222..ccc3333
   - Tests: pass — 20/20
