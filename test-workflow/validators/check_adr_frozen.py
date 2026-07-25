@@ -95,7 +95,7 @@ def main():
     if freeze is None:
         return fail("%s: status is frozen but no freeze point found in history — failing closed" % path)
     if not saw_proposed:
-        return fail("%s: no proposed ancestor before the freeze point — failing closed (delete-and-recreate or imported history)" % path)
+        return fail("%s: no proposed ancestor before the freeze point — failing closed (imported or rewritten history)" % path)
     _, _, frozen_body = freeze
     if frozen_body.rstrip("\n") != wt_body.rstrip("\n"):
         f_lines = frozen_body.rstrip("\n").splitlines()

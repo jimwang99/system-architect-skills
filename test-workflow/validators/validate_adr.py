@@ -111,7 +111,7 @@ def check_body(lines, body_start, errs):
     for i, l in enumerate(body):
         if l.strip() in SECTION_ORDER:
             if l.strip() in positions:
-                errs.append((offset + i, "missing section or duplicate: '%s' appears twice" % l.strip()))
+                errs.append((offset + i, "duplicate section: '%s' appears twice" % l.strip()))
             positions[l.strip()] = i
     for name in SECTION_ORDER:
         if name not in positions:
@@ -183,7 +183,7 @@ def validate(path):
     try:
         with open(path, encoding="utf-8") as fh:
             lines = fh.read().splitlines()
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
         return ["%s:1: unreadable: %s" % (path, exc)]
     keys, body_start, errs = parse_frontmatter(lines)
     if not any(msg.startswith("file must start") for _, msg in errs):
