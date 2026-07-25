@@ -666,6 +666,8 @@ git commit -m "test-workflow: evidence values, sequencing, links (#5, #6, #8, #9
 
 ### Task 5: Toy scenario — prove the conventions end-to-end
 
+> **Erratum (2026-07-25):** this task ran the scenario before committing it (commit came in Step 6), so the recorded `Commit: 14bfaac` does not contain the scenario file. The results-log contract now requires committing a scenario before its first recorded run — see spec 01's Results Log section and `docs/plans/2026-07-25-testing-harness-review-fixes.md`.
+
 Proves the harness mechanics (scenario format → dispatched runs → results log), not skill bulletproofing. Uses the existing `act-learn-improve` skill.
 
 **Files:**
