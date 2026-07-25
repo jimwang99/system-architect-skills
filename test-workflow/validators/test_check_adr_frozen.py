@@ -274,7 +274,7 @@ class TestFrozenCheck(unittest.TestCase):
         git(repo, "add", "-A"); git(repo, "commit", "-qm", "unrelated mainline work")
         git(repo, "merge", "-q", "--no-ff", "-m", "merge side", "side")
         code, err = check(os.path.join(repo, "docs/adr/adr-001-x.md"))
-        self.assertEqual(code, 0)  # replace with the observed outcome in Step 2
+        self.assertEqual(code, 0)  # observed: exit 0 on git 2.50.1
 
 
 if __name__ == "__main__":
