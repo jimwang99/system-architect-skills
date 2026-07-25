@@ -86,7 +86,11 @@ def cmd_preview(root):
                 print("(not yet written)")
         else:
             print("=== %s ===" % e["path"])
-            _, out, _ = git(root, "diff", "--", e["path"])
+            # diff against HEAD, not the index: a plain `git diff` denies changes
+            # that were staged mid-session (e.g. a git rm'd deletion). The track
+            # preflight guarantees the path was clean (== HEAD) at entry, so HEAD
+            # is the pre-session base covering staged and unstaged changes alike.
+            _, out, _ = git(root, "diff", "HEAD", "--", e["path"])
             sys.stdout.write(out if out else "(unchanged)\n")
     return 0
 

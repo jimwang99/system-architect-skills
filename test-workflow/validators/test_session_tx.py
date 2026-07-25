@@ -349,6 +349,12 @@ class TestApproveStagedDeletion(unittest.TestCase):
         self.assertEqual(rm.returncode, 0, rm.stderr)
         self.assertFalse(os.path.exists(os.path.join(self.repo, "docs", "decision-backlog")))
 
+        # preview must show the staged deletion as a diff, not deny the change
+        p = tx(self.repo, "preview")
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertNotIn("(unchanged)", p.stdout)
+        self.assertIn("deleted file", p.stdout)
+
         before = self._commit_count()
         r = tx(self.repo, "approve", "-m", "remove stale backlog entry")
         self.assertEqual(r.returncode, 0, r.stderr)
@@ -365,6 +371,53 @@ class TestApproveStagedDeletion(unittest.TestCase):
         if not os.path.isabs(gd):
             gd = os.path.join(self.repo, gd)
         self.assertFalse(os.path.exists(os.path.join(gd, "session-tx.json")))
+
+
+class TestApprovalWithheld(unittest.TestCase):
+    """Case 12: approval withheld (no approve, no abandon) leaves the exact session
+    patch on disk, uncommitted, unstaged, with the manifest still active — and pins
+    preview as non-mutating (spec 03 Session Transaction, approval-withheld branch)."""
+
+    def setUp(self):
+        self.repo = make_repo()
+
+    def test_withheld_leaves_patch_uncommitted(self):
+        count_r = git(self.repo, "rev-list", "--count", "HEAD")
+        commits_before = int(count_r.stdout.strip())
+
+        tx(self.repo, "begin")
+        r = tx(self.repo, "track", "base.txt", "created.md")
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+        with open(os.path.join(self.repo, "base.txt"), "a") as f:
+            f.write("session change\n")
+        with open(os.path.join(self.repo, "base.txt")) as f:
+            modified_base = f.read()
+        with open(os.path.join(self.repo, "created.md"), "w") as f:
+            f.write("new content\n")
+
+        p = tx(self.repo, "preview")
+        self.assertEqual(p.returncode, 0, p.stderr)
+
+        # ... and then the human neither approves nor abandons.
+
+        # modifications still on disk exactly as written
+        with open(os.path.join(self.repo, "base.txt")) as f:
+            self.assertEqual(f.read(), modified_base)
+        with open(os.path.join(self.repo, "created.md")) as f:
+            self.assertEqual(f.read(), "new content\n")
+        # no commit created
+        count_r = git(self.repo, "rev-list", "--count", "HEAD")
+        self.assertEqual(int(count_r.stdout.strip()), commits_before)
+        # preview staged nothing
+        staged = git(self.repo, "diff", "--cached", "--name-only")
+        self.assertEqual(staged.stdout.strip(), "", "preview must not stage anything")
+        # manifest still active with both entries
+        s = tx(self.repo, "status")
+        self.assertEqual(s.returncode, 0)
+        self.assertIn("base.txt", s.stdout)
+        self.assertIn("created.md", s.stdout)
+        self.assertNotIn("no active session", s.stdout)
 
 
 class TestDeletionFlow(unittest.TestCase):
