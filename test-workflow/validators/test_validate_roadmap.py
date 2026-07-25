@@ -45,6 +45,9 @@ class TestBadFixtures(unittest.TestCase):
         "bad-two-wip.md": "more than one WIP",
         "bad-failed-no-learning.md": "Learning",
         "bad-review-ready-unfinished.md": "must be done",
+        "bad-malformed-milestone-heading.md": "malformed milestone heading",
+        "bad-malformed-feature-heading.md": "malformed feature heading",
+        "bad-duplicate-status-section.md": "duplicate '## Current Workflow Status' section",
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):

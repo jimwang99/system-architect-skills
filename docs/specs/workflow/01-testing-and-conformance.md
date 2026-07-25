@@ -48,7 +48,7 @@ test-workflow/
 
 `validate_roadmap.py` enforces the grammar below and these cross-checks:
 
-1. The `## Current Workflow Status` section exists, is first, and carries every required key; required keys appear exactly once per entry throughout the file.
+1. The `## Current Workflow Status` section exists exactly once, is first, and carries every required key; required keys appear exactly once per entry throughout the file.
 2. Every feature status is drawn from `todo | WIP | done | blocked(<backlog-slug>) | failed(<reason>)`; feature IDs are unique across the file.
 3. Every milestone state is drawn from `planning-pending | planned | in-progress | paused | review-ready | remediating | accepted`, or `none` in the summary only; milestone IDs are unique across the file.
 4. Two-view agreement: the summary's `(Current milestone, Milestone state, Active feature)` tuple is one of the legal tuples in the grammar section; the named milestone section exists with matching state; and, when not `none`, the active feature exists under the current milestone with status `WIP`.
@@ -56,8 +56,9 @@ test-workflow/
 6. Strict sequencing: within a milestone, feature statuses in document order match `done*`, then at most one of `WIP | blocked(...) | failed(...)`, then `todo*`. At most one feature is `WIP` across the entire file.
 7. Milestone ordering: every milestone before the current one is `accepted`; every milestone after it is `planning-pending` or `planned`; when the current milestone is `none`, no milestone is in a mid-flight state.
 8. `review-ready` and `accepted` milestones contain only `done` features.
-9. `blocked(<slug>)` statuses name a slug matching `docs/decision-backlog/<slug>.md`; `failed(<reason>)` features carry a `Learning:` key pointing at a `docs/learnings/ALI-NNN.md` file.
+9. `blocked(<slug>)` slugs are format-checked only (lowercase alphanumerics and hyphens); whether `docs/decision-backlog/<slug>.md` exists is a workflow-skill concern, because validators must run identically on fixtures outside any project. `failed(<reason>)` features carry a `Learning:` key of the form `docs/learnings/ALI-NNN.md`; the path format is checked, not the file's existence.
 10. `Next action` is non-empty and is not a placeholder (`TBD`, `TODO`).
+11. Structural strictness: any heading whose text is grammar-shaped but malformed — `M` or `F` followed by digits, not exactly matching `## M<NN> — <title>` or `### F<NN> — <title>` (hyphen for em dash, wrong digit count, wrong heading level) — is an error. Non-grammar-shaped sections (e.g. `## Notes`) are permitted and ignored, parallel to unknown keys.
 
 ## ROADMAP.md Grammar (Normative)
 
@@ -91,7 +92,7 @@ test-workflow/
   - Findings: none | <each blocking finding: fixed | refuted(<evidence>)>
 ```
 
-Milestone sections repeat per milestone in planned order; feature subsections repeat per feature in execution order. Keys are literal; unknown keys are permitted and ignored by the validator.
+Milestone sections repeat per milestone in planned order; feature subsections repeat per feature in execution order. Keys are literal; unknown keys are permitted and ignored by the validator. Headings are strict where grammar-shaped: a repeated `## Current Workflow Status` section and any near-miss `M`/`F` heading are validation errors; other sections are ignored.
 
 The summary tuple `(Current milestone, Milestone state, Active feature)` must be one of:
 
@@ -162,7 +163,7 @@ One file per skill under `test-workflow/results/`, append-only, one short entry 
 - Rationalizations: "sequencing is about dependencies, not ritual"
 ```
 
-Phases are `RED`, `GREEN`, or `REFACTOR`. `Commit` is the repository HEAD at run time and pins the exact scenario and skill revision the entry proves something about — editing either file later does not silently re-scope old results. `Platform` records both the harness version and the model identity. No transcript dumps; quotes and verdicts only.
+Phases are `RED`, `GREEN`, `REFACTOR`, or `CORRECTION`. `Commit` is the repository HEAD at run time and pins the exact scenario and skill revision the entry proves something about — editing either file later does not silently re-scope old results. A scenario file is therefore committed before its first recorded run; an entry whose `Commit` does not contain the scenario and skill it names is invalid. Entries are never rewritten; a mistake is corrected by appending a `CORRECTION` entry that names the superseded entries. `Platform` records both the harness version and the model identity. No transcript dumps; quotes and verdicts only.
 
 ## TESTING.md
 
@@ -173,7 +174,7 @@ Phases are `RED`, `GREEN`, or `REFACTOR`. `Commit` is the repository HEAD at run
 This spec's implementation is done when:
 
 1. `validate_roadmap.py` exists, passes a good fixture set, and fails one fixture per violation class above with a line-referenced error.
-2. The scenario convention is proven end-to-end on one toy scenario against an existing skill: RED baseline captured, GREEN rerun recorded, both in the results log.
+2. The scenario convention is proven end-to-end on one toy scenario against an existing skill: RED baseline captured and GREEN evidence recorded per the scenario's tier rule (tier 2: two consecutive compliant runs), all in the results log.
 3. `TESTING.md` is seeded with the currently verified versions.
 
 ## Out of Scope

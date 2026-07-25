@@ -32,6 +32,7 @@ FINDINGS = re.compile(
     r"^(none|[^;]+: (fixed|refuted\(.+?\))(; [^;]+: (fixed|refuted\(.+?\)))*)$")
 LEARNING = re.compile(r"^docs/learnings/ALI-\d{3}\.md$")
 STATUS_HEADING = "## Current Workflow Status"
+NEAR_MISS = re.compile(r"^#{2,6} ([MF])\d+\b")
 
 
 @dataclass
@@ -62,6 +63,10 @@ def parse(lines):
     for n, raw in enumerate(lines, 1):
         line = raw.rstrip()
         if line == STATUS_HEADING:
+            if summary is not None:
+                errors.append((n, "duplicate '## Current Workflow Status' section"))
+                cur, cur_m, in_evidence = None, None, False
+                continue
             summary = Node("summary", "Current Workflow Status", n)
             cur, cur_m, in_evidence = summary, None, False
             continue
@@ -80,6 +85,15 @@ def parse(lines):
             feat = Feature(f.group(1), f.group(2), n)
             cur_m.features.append(feat)
             cur, in_evidence = feat, False
+            continue
+        nm = NEAR_MISS.match(line)
+        if nm:
+            kind = "milestone" if nm.group(1) == "M" else "feature"
+            expected = "## M<NN> — <title>" if kind == "milestone" else "### F<NN> — <title>"
+            errors.append((n, "malformed %s heading, expected '%s' (two digits, em dash)" % (kind, expected)))
+            cur, in_evidence = None, False
+            if kind == "milestone":
+                cur_m = None
             continue
         if line.startswith("## "):
             cur, cur_m, in_evidence = None, None, False
