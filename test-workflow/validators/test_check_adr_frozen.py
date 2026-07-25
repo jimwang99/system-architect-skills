@@ -212,6 +212,33 @@ class TestFrozenCheck(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("shallow", err)
 
+    def _frozen_repo(self):
+        repo = self.scratch()
+        write(repo, "docs/adr/adr-draft-x.md", PROPOSED)
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "draft")
+        git(repo, "mv", "docs/adr/adr-draft-x.md", "docs/adr/adr-001-x.md")
+        write(repo, "docs/adr/adr-001-x.md", accept(PROPOSED))
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "accept")
+        return repo, os.path.join(repo, "docs/adr/adr-001-x.md")
+
+    def test_trailing_blank_line_fails(self):
+        repo, p = self._frozen_repo()
+        with open(p, "a", encoding="utf-8") as fh:
+            fh.write("\n")
+        code, err = check(p)
+        self.assertEqual(code, 1)
+        self.assertRegex(err, r"body line \d+")
+
+    def test_crlf_rewrite_fails(self):
+        repo, p = self._frozen_repo()
+        with open(p, "rb") as fh:
+            data = fh.read()
+        with open(p, "wb") as fh:
+            fh.write(data.replace(b"\n", b"\r\n"))
+        code, err = check(p)
+        self.assertEqual(code, 1)
+        self.assertRegex(err, r"body line \d+")
+
 
 if __name__ == "__main__":
     unittest.main()
