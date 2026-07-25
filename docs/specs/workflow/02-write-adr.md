@@ -87,7 +87,7 @@ Duplicate normative keys are errors. Unknown keys are errors unless prefixed `x-
 ## Consequences
 ```
 
-The H1 and the four sections each appear exactly once, in that order. Context, Decision, and Consequences are non-empty. Alternatives Considered contains at least one alternative bullet with an inline why-rejected, or the explicit entry `- None — <reason>`.
+The H1 and the four sections each appear exactly once, in that order. Context, Decision, and Consequences are non-empty. Alternatives Considered contains at least one alternative bullet with an inline why-rejected, or the explicit entry `- None — <reason>`. Fenced code blocks (three or more backticks) are content, not structure: fence interiors are invisible to heading and alternative-bullet recognition, and a section whose only content is a code block is non-empty.
 
 ## Lifecycle Mechanics
 

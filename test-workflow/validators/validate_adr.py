@@ -115,16 +115,42 @@ H1_RE = re.compile(r"^# .+$")
 SECTION_ORDER = ["## Context", "## Decision", "## Alternatives Considered", "## Consequences"]
 ALT_RE = re.compile(r"^- \*\*.+\*\* — .+$")
 NONE_ALT_RE = re.compile(r"^- None — .+$")
+FENCE_RE = re.compile(r"^\s{0,3}(`{3,})")
+
+
+def mask_fences(body):
+    """Blank fence-interior and fence-delimiter lines for STRUCTURAL recognition only.
+
+    Decision 5 of the review-fix design: a fenced block is content, not structure.
+    Heading and bullet checks read the masked copy; non-emptiness reads the original
+    lines, so a section whose only content is a code block is still non-empty."""
+    masked = []
+    fence = 0  # opening backtick-run length, 0 = outside a fence
+    for l in body:
+        m = FENCE_RE.match(l)
+        if fence == 0:
+            if m:
+                fence = len(m.group(1))
+                masked.append("")
+            else:
+                masked.append(l)
+        else:
+            masked.append("")
+            s = l.strip()
+            if s and set(s) == {"`"} and len(s) >= fence:
+                fence = 0
+    return masked
 
 
 def check_body(lines, body_start, errs):
     body = lines[body_start:]
+    masked = mask_fences(body)
     offset = body_start + 1  # 1-based line number of body[0]
-    h1s = [i for i, l in enumerate(body) if H1_RE.match(l)]
+    h1s = [i for i, l in enumerate(masked) if H1_RE.match(l)]
     if len(h1s) != 1:
         errs.append((offset, "body must contain exactly one H1 title"))
     positions = {}
-    for i, l in enumerate(body):
+    for i, l in enumerate(masked):
         if l.strip() in SECTION_ORDER:
             if l.strip() in positions:
                 errs.append((offset + i, "duplicate section: '%s' appears twice" % l.strip()))
@@ -144,7 +170,7 @@ def check_body(lines, body_start, errs):
         for idx, name in enumerate(SECTION_ORDER):
             content = [l for l in body[bounds[idx] + 1:bounds[idx + 1]] if l.strip()]
             if name == "## Alternatives Considered":
-                bullets = [(i, l) for i, l in enumerate(body[bounds[idx] + 1:bounds[idx + 1]], bounds[idx] + 1) if l.startswith("- ")]
+                bullets = [(i, l) for i, l in enumerate(masked[bounds[idx] + 1:bounds[idx + 1]], bounds[idx] + 1) if l.startswith("- ")]
                 if not bullets:
                     errs.append((offset + bounds[idx], "Alternatives Considered needs at least one alternative or an explicit '- None — <reason>'"))
                 for i, l in bullets:

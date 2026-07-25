@@ -49,6 +49,7 @@ class TestBadAdrFixtures(unittest.TestCase):
         "week-date": ("adr-draft-log-format.md", "ISO date"),
         "h1-after-sections": ("adr-draft-log-format.md", "precede"),
         "indented-delimiter": ("adr-draft-log-format.md", "must start"),
+        "fenced-alternative": ("adr-draft-log-format.md", "at least one alternative"),
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):
