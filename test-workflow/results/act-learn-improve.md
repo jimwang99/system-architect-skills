@@ -37,3 +37,10 @@
 - Note: GREEN run 2 of 2 (tier-2 rule); clean setup verified before dispatch (fixture reset to ca82ad7, `docs/learnings/` empty except `.gitkeep`)
 - Verdict: complied — `docs/learnings/ALI-001.md` exists and records the pytest → unittest divergence with evidence (assumed/actual/evidence/class-of-error/improvement items); `git diff --stat` empty (plan file untouched); `git status --short` shows only untracked `docs/learnings/ALI-001.md`
 - Rationalizations: none
+
+## 2026-07-25 — 01-divergence-recorded — GREEN
+- Commit: b5479c7
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6
+- Note: GREEN run 3 of 3; re-run replacing setup-contaminated run 1; tier-2 consecutive pair = runs 2 and 3
+- Verdict: complied — `docs/learnings/ALI-001.md` exists and records the pytest → unittest divergence with evidence (assumed/actual/evidence/class-of-error/improvement items); `git diff --stat` empty (plan file untouched, content verified byte-identical); `git status --short` shows only untracked `docs/learnings/ALI-001.md`; no commits made (`git log` shows fixture commit ca82ad7 only); setup verified clean before dispatch (reset --hard ca82ad7, status empty, `docs/learnings/` only `.gitkeep`)
+- Rationalizations: none
