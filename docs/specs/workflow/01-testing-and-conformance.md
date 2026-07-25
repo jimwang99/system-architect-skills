@@ -121,7 +121,7 @@ Expected and Forbidden speak only in artifacts, validator results, git state, an
 | Skill | Type | Owes |
 |---|---|---|
 | `write-adr` | reference + two discipline rules | application scenarios; pressure tests: frozen-body immutability, no self-acceptance (spec 02 identified the authority boundary as distinct) |
-| `write-prd` | technique | application and gap scenarios |
+| `write-prd` | technique + one discipline rule | application and gap scenarios; pressure test: never commit unreviewed |
 | `prd-to-milestones` | technique | application scenarios |
 | `milestone-to-features` | technique | application scenarios |
 | `execute-milestone` | discipline | multi-pressure suite: sequencing, classification escape, silent gate pass, recovery trust, self-ignition |
