@@ -29,6 +29,10 @@ class TestBadFixtures(unittest.TestCase):
         "bad-missing-status.md": "Current Workflow Status",
         "bad-duplicate-key.md": "duplicate key",
         "bad-next-action-placeholder.md": "Next action",
+        "bad-feature-status.md": "illegal feature status",
+        "bad-milestone-state.md": "illegal milestone state",
+        "bad-duplicate-feature-id.md": "duplicate feature ID",
+        "bad-duplicate-milestone-id.md": "duplicate milestone ID",
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):

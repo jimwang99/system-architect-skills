@@ -118,11 +118,42 @@ def check_summary(lines, summary, errs):
             errs.append((n, "Next action is empty or a placeholder"))
 
 
+def check_vocab(summary, milestones, errs):
+    if summary is not None and "Milestone state" in summary.keys:
+        val, n = summary.keys["Milestone state"]
+        if val != "none" and val not in MILESTONE_STATES:
+            errs.append((n, "illegal milestone state '%s'" % val))
+    seen_m = {}
+    seen_f = {}
+    for m in milestones:
+        if m.id in seen_m:
+            errs.append((m.line, "duplicate milestone ID %s" % m.id))
+        seen_m[m.id] = m
+        if "State" not in m.keys:
+            errs.append((m.line, "milestone %s missing 'State'" % m.id))
+        else:
+            val, n = m.keys["State"]
+            if val not in MILESTONE_STATES:
+                errs.append((n, "illegal milestone state '%s'" % val))
+        for f in m.features:
+            if f.id in seen_f:
+                errs.append((f.line, "duplicate feature ID %s" % f.id))
+            seen_f[f.id] = f
+            for req in FEATURE_REQ:
+                if req not in f.keys:
+                    errs.append((f.line, "feature %s missing '%s'" % (f.id, req)))
+            if "Status" in f.keys:
+                val, n = f.keys["Status"]
+                if not FEATURE_STATUS.match(val):
+                    errs.append((n, "illegal feature status '%s'" % val))
+
+
 def validate(path):
     with open(path, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
     summary, milestones, errs = parse(lines)
     check_summary(lines, summary, errs)
+    check_vocab(summary, milestones, errs)
     return ["%s:%d: %s" % (path, n, msg) for n, msg in sorted(errs)]
 
 
