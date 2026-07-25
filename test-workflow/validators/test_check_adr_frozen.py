@@ -246,6 +246,36 @@ class TestFrozenCheck(unittest.TestCase):
         self.assertNotIn("Traceback", err)
         self.assertTrue(err.strip())
 
+    def test_rename_across_merge_outcome_documented(self):
+        """Spec 02 requires this case exercised and its outcome documented.
+
+        The accept-rename happens on a side branch merged --no-ff into main, so
+        `git log --follow` must bridge the rename across a merge commit. Git's
+        documentation calls --follow's handling of non-linear history limited;
+        either outcome is safe under fail-closed semantics:
+        exit 0 = lineage found through the merge (rename tracked);
+        exit 1 = lineage lost => no proposed ancestor => fail closed.
+        The assertion below pins the outcome OBSERVED on first run; if a git
+        upgrade flips it, this test documents exactly what changed.
+
+        Observed on branch 'main' with git version 2 (Apple Git-155, 2.50.1):
+        exit 0 — git --follow successfully tracks the rename across the merge
+        commit, so the proposed ancestor is found and the check passes.
+        """
+        repo = self.scratch()
+        write(repo, "docs/adr/adr-draft-x.md", PROPOSED)
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "draft")
+        git(repo, "checkout", "-qb", "side")
+        git(repo, "mv", "docs/adr/adr-draft-x.md", "docs/adr/adr-001-x.md")
+        write(repo, "docs/adr/adr-001-x.md", accept(PROPOSED))
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "accept on side")
+        git(repo, "checkout", "-q", "main")
+        write(repo, "README.md", "unrelated\n")
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "unrelated mainline work")
+        git(repo, "merge", "-q", "--no-ff", "-m", "merge side", "side")
+        code, err = check(os.path.join(repo, "docs/adr/adr-001-x.md"))
+        self.assertEqual(code, 0)  # replace with the observed outcome in Step 2
+
 
 if __name__ == "__main__":
     unittest.main()
