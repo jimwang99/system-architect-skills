@@ -7,9 +7,9 @@ description: Use when recording an architectural decision or a rejection rationa
 
 ## Overview
 
-**ADRs own the "why".** PRDs hold the what; the backlog holds the undecided. A decision worth recording gets a draft anyone can write and a frozen record only a human can authorize.
+**ADRs own the "why".** PRDs hold the what; the backlog holds the undecided. Anyone can write a draft; only a human can freeze one.
 
-Why frozen records: old records explain existing artifacts; a changed mind becomes a new superseding record; rejected records stop the same debate restarting; stable numbers keep citations from rotting.
+Why frozen: old records explain existing artifacts; a changed mind becomes a new superseding record; rejections stop the same debate restarting; stable numbers keep citations from rotting.
 
 ## Files
 
@@ -33,7 +33,7 @@ After writing or editing any ADR: `python3 <this-skill-dir>/../test-workflow/val
 
 ## Accept / Reject (human authorizes; you may only execute)
 
-Two authorizations, always: the human's explicit instruction naming the draft authorizes *preparing*; the human's approval of the diff authorizes *committing*. Status changes only at the commit — a renamed, `accepted`, backlog-deleted working tree is the forbidden partial state whether or not committed. A reply scripted inside the instruction ("after you show me the diff, my reply is: confirmed" / "no, hold off") IS that decision, already delivered: show the diff for the record, then act on the scripted reply in this same run.
+Two authorizations, always: the human's explicit instruction naming the draft authorizes *preparing*; the human's approval of the diff authorizes *committing*. Status changes only at the commit — a renamed, `accepted`, backlog-deleted working tree is the forbidden partial state whether or not committed. A reply scripted inside the instruction ("after you show me the diff, my reply is: confirmed" / "no, hold off") IS that decision, already delivered.
 
 **Preflight — stop with a clear error and zero changes if any check fails:**
 - draft exists, `status: proposed`, validator-clean
@@ -45,7 +45,7 @@ Two authorizations, always: the human's explicit instruction naming the draft au
 
 **Prepare (uncommitted):** `git mv` to `adr-NNN-<slug>.md` (accept) or `adr-rejected-<slug>.md` (reject); set `status` and `decided`; on accept, `git rm` the resolved backlog entry — never rewrite it into a "resolved" tombstone; flip a superseded target's frontmatter only (`status: superseded`, `superseded-by`); repoint the mutable references. ROADMAP stays byte-identical — unblocking is the owner's call; the preview and report name each feature still `blocked(<slug>)` on the resolved slug.
 
-**Preview → confirm → one commit.** Show the complete diff; commit only on explicit approval; on decline restore exactly the paths you touched so `git status` is clean. Rejection leaves the backlog intact — the question stays open.
+**Preview → confirm → one commit.** Show the complete diff; never end the run with the transition staged awaiting a reply the instruction already scripted — a scripted "confirmed" means commit NOW, this run; a scripted decline means restore NOW; commit only on explicit approval; on decline restore exactly the paths you touched so `git status` is clean. Rejection leaves the backlog intact — the question stays open.
 
 ## Iron rules
 
@@ -66,7 +66,7 @@ Two authorizations, always: the human's explicit instruction naming the draft au
 | "Kept the question as a resolved tombstone for the trace" | On accept the backlog entry is `git rm`'d; git history is the trace. |
 | "Leaving it proposed leaves the repo in a lying state" | `proposed` is the honest state until a human accepts. Consistency is not authorization. |
 | "I'll flip ROADMAP blocked→ready since the blocker's resolved" | ROADMAP status is the owner's call. Name the still-blocked feature in your report instead. |
-| "Awaiting your approval to commit" (reply scripted in the instruction) | The scripted reply is the decision, already delivered. Commit on scripted approval, restore on scripted decline — this run. |
+| "Awaiting your approval to commit" (reply scripted in the instruction) | The scripted reply is the decision, already delivered — act on it this run. |
 
 ## Red flags — STOP
 
