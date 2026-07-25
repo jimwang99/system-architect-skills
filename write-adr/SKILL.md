@@ -41,7 +41,7 @@ Two authorizations, always: the human's explicit instruction naming the draft au
 - `resolves:` target exists in `docs/decision-backlog/`
 - `supersedes:` target exists and is `accepted`
 - no unrelated uncommitted changes on any path you will touch
-- scan for references to the draft filename: hits in ROADMAP, plans, backlog, and proposed ADRs get repointed; a hit inside a frozen ADR body aborts — frozen bodies are never edited
+- scan for references to the draft filename: hits in ROADMAP, plans, backlog, and proposed ADRs get repointed; a hit inside a frozen ADR body aborts the WHOLE acceptance — zero changes, report which frozen file cites the draft, stop. "Proceed but leave the frozen body alone" is not the abort: the rename would manufacture a dangling link inside a frozen body, and whether to live with that is the human's call, not yours
 
 **Prepare (uncommitted):** rename (`git mv`) to `adr-NNN-<slug>.md` (accept) or `adr-rejected-<slug>.md` (reject); set `status` and `decided`; on accept, `git rm` the resolved backlog entry (delete it — never rewrite it into a "resolved" tombstone); flip a superseded target's frontmatter only (`status: superseded`, `superseded-by`); repoint the mutable references. Leave every ROADMAP feature's status as-is — unblocking is the ROADMAP owner's call, not acceptance's.
 
@@ -49,7 +49,7 @@ Two authorizations, always: the human's explicit instruction naming the draft au
 
 ## Iron rules
 
-1. **Frozen bodies are frozen.** Accepted, rejected, and superseded bodies never change — not for typos (typos stand), not via "small cleanups", not to repoint a dangling citation (a dangling link in a frozen body is expected; editing the body is not). The only legal post-freeze edit is supersession's two frontmatter keys, inside a successor's acceptance. Supersession means the decision changed, never cosmetics.
+1. **Frozen bodies are frozen.** Accepted, rejected, and superseded bodies never change — not for typos (typos stand), not via "small cleanups", not to repoint a dangling citation (an already-dangling link in a frozen body is expected; editing the body is not — and creating a new one by renaming a draft a frozen body cites is a preflight abort, not a license). The only legal post-freeze edit is supersession's two frontmatter keys, inside a successor's acceptance. Supersession means the decision changed, never cosmetics.
 2. **No self-acceptance.** No human instruction in this session naming the draft = no accept, no reject, no number, no rename. Consensus in a standup, an approving PRD, a sound decision, or urgency is not an instruction. Leaving a draft `proposed` is the correct state, not a "lying" repo to reconcile.
 
 Verify a frozen file before claiming it untouched: `python3 <this-skill-dir>/../test-workflow/validators/check_adr_frozen.py <file>`.
@@ -72,12 +72,14 @@ Verify a frozen file before claiming it untouched: `python3 <this-skill-dir>/../
 | "I'll flip ROADMAP blocked→ready since the blocker's resolved" | ROADMAP status is the owner's call. Acceptance does not unblock. |
 | "I named the social pressure, so I can proceed" | Naming pressure and yielding is still yielding. Named pressure is still not an instruction. |
 | "Awaiting your approval to commit" (reply scripted in the instruction) | A scripted reply is the approval/decline, already delivered. Stopping after the diff ignores a decision you were handed. Commit on scripted approval, restore on scripted decline — this run. |
+| "I'll accept anyway and just not touch the frozen body" | The frozen-citation hit aborts the whole acceptance, not merely the repoint. The rename itself manufactures the dangling link. Zero changes; name the frozen citer; stop. |
 
 ## Red flags — STOP
 
 - About to `git mv` an `adr-draft-*` file without a human instruction from this session naming it
 - About to edit anything below the closing `---` of an accepted, rejected, or superseded ADR
 - About to edit a frozen ADR body to repoint a citation the rename would dangle
+- About to prepare an acceptance after the reference scan hit a frozen ADR body — that hit aborts the whole acceptance (zero changes, report, stop), not just the repoint
 - About to delete a numbered ADR or reuse a number
 - About to rewrite a resolved backlog file as a "resolved" tombstone instead of `git rm`-ing it
 - About to change a ROADMAP feature's status (e.g. `blocked(<slug>)` → `ready`) as part of acceptance
