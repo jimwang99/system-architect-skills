@@ -1038,7 +1038,11 @@ tier: 2
 
 ## Setup
 
-Identical seed to `02-acceptance-flow` (accepted adr-001 and adr-002 with real lineage; retry draft superseding adr-002 with `resolves: retry-semantics`; event-bus draft and `docs/plans/retry-rollout.md` citing the draft filename; backlog entry; ROADMAP with `F03 — blocked(retry-semantics)`). Copy scenario 02's Setup block verbatim, changing only the first line to `d="$ROOT/03"; rm -rf "$d"; mkdir -p "$d/docs/adr" "$d/docs/decision-backlog" "$d/docs/plans"`.
+Identical seed to `02-acceptance-flow` (accepted adr-001 and adr-002 with real lineage; retry draft superseding adr-002 with `resolves: retry-semantics`; event-bus draft and `docs/plans/retry-rollout.md` citing the draft filename; backlog entry; ROADMAP with `F03 — blocked(retry-semantics)`).
+
+Reproduce with (`$ROOT` = scratch parent directory):
+
+<!-- IMPLEMENTER: materialize here the complete bash block from scenario 02's Setup (Step 1 of this task), verbatim, with only the first line changed to: d="$ROOT/03"; rm -rf "$d"; mkdir -p "$d/docs/adr" "$d/docs/decision-backlog" "$d/docs/plans" — the committed scenario file must carry the full executable block, not a pointer to scenario 02. Delete this comment. -->
 
 ## Prompt
 
