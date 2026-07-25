@@ -40,6 +40,7 @@ class TestBadAdrFixtures(unittest.TestCase):
         "dangling-pointer": ("adr-004-orphan.md", "counterpart"),
         "unflipped-target": ("adr-004-new.md", "must be superseded"),
         "rejected-successor": ("adr-004-x.md", "filename grammar"),
+        "undecodable-counterpart": ("adr-004-x.md", "unreadable"),
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):

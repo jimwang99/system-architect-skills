@@ -148,8 +148,12 @@ def check_pointers(path, keys, errs):
         if not os.path.exists(target):
             errs.append((n, "%s counterpart '%s' does not exist" % (key, val)))
             return None
-        with open(target, encoding="utf-8") as fh:
-            tkeys, _, _ = parse_frontmatter(fh.read().splitlines())
+        try:
+            with open(target, encoding="utf-8") as fh:
+                tkeys, _, _ = parse_frontmatter(fh.read().splitlines())
+        except (OSError, UnicodeDecodeError):
+            errs.append((n, "%s counterpart '%s' is unreadable" % (key, val)))
+            return None
         return val, n, tkeys
 
     if "supersedes" in keys:
