@@ -5,6 +5,7 @@ Spec: docs/specs/workflow/02-write-adr.md.
 Stdlib only, Python 3.9+. Exit 0 pass; 1 violations ("path:line: message"
 on stderr); 2 usage/environment errors.
 """
+import datetime
 import os
 import re
 import sys
@@ -14,8 +15,23 @@ FROZEN = {"accepted", "rejected", "superseded"}
 DRAFT_RE = re.compile(r"^adr-draft-([a-z0-9][a-z0-9-]*)\.md$")
 NUM_RE = re.compile(r"^adr-(\d{3})-([a-z0-9][a-z0-9-]*)\.md$")
 REJ_RE = re.compile(r"^adr-rejected-([a-z0-9][a-z0-9-]*)\.md$")
-DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$", re.ASCII)
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
+
+def iso_date(value):
+    """Lexical YYYY-MM-DD (the regex) AND a real calendar date (fromisoformat).
+    The regex stays authoritative for form: on Python 3.11+ fromisoformat alone
+    also accepts compact (20260228) and ISO-week (2026-W09-6) forms."""
+    if not DATE_RE.match(value):
+        return False
+    try:
+        datetime.date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
 KEY_RE = re.compile(r"^([a-z][a-z-]*): (.+?)\s*$")
 NORMATIVE_KEYS = {"status", "created", "decided", "resolves", "supersedes", "superseded-by"}
 
@@ -70,7 +86,7 @@ def check_meta(path, keys, errs):
         errs.append((1, "filename matches no ADR naming pattern"))
     if "created" not in keys:
         errs.append((1, "missing required key 'created'"))
-    elif not DATE_RE.match(keys["created"][0]):
+    elif not iso_date(keys["created"][0]):
         errs.append((keys["created"][1], "created is not an ISO date"))
     if status == "proposed":
         if "decided" in keys:
@@ -78,7 +94,7 @@ def check_meta(path, keys, errs):
     else:
         if "decided" not in keys:
             errs.append((sline, "decided is required once status is '%s'" % status))
-        elif not DATE_RE.match(keys["decided"][0]):
+        elif not iso_date(keys["decided"][0]):
             errs.append((keys["decided"][1], "decided is not an ISO date"))
     if status == "superseded" and "superseded-by" not in keys:
         errs.append((sline, "status superseded requires superseded-by"))

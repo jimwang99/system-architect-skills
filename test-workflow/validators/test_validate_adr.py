@@ -44,6 +44,9 @@ class TestBadAdrFixtures(unittest.TestCase):
         "rejected-successor": ("adr-004-x.md", "filename grammar"),
         "undecodable-counterpart": ("adr-004-x.md", "unreadable"),
         "undecodable-primary": ("adr-001-x.md", "unreadable"),
+        "impossible-date": ("adr-draft-log-format.md", "ISO date"),
+        "compact-date": ("adr-draft-log-format.md", "ISO date"),
+        "week-date": ("adr-draft-log-format.md", "ISO date"),
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):
