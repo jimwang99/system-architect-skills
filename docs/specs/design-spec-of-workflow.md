@@ -87,20 +87,24 @@ system-architect-skills/
 │   └── SKILL.md
 ├── execute-milestone/
 │   ├── SKILL.md
-│   ├── references/
-│   │   ├── claude-code.md
-│   │   └── codex.md
-│   └── tests/
-│       ├── scenarios/
-│       └── results/
-│           ├── claude-code/
-│           └── codex/
+│   └── references/
+│       ├── claude-code.md
+│       └── codex.md
+├── test-workflow/
+│   ├── TESTING.md
+│   ├── validators/
+│   ├── scenarios/
+│   │   └── <skill-name>/
+│   └── results/
 └── ...
 ```
 
 `SKILL.md` owns shared semantics. A skill gets platform reference files only
 when invocation, delegation, permission, or reviewer mechanics differ. There
 are no parallel adapter trees and no duplicated skill implementations.
+Workflow testing artifacts live in the top-level `test-workflow/` directory so
+skill directories stay pure; future non-workflow test families get sibling
+`test-*` directories.
 
 The personal installation remains:
 
@@ -238,9 +242,14 @@ documents or routed through the classification contract below.
 
 ### Cross-platform execution
 
-- Claude Code execution uses native Claude workers and Codex for external
-  review.
-- Codex execution uses native Codex workers and Claude for external review.
+- By default the host platform's native workers plan and implement, and the
+  other platform provides external review.
+- `execute-milestone` may select the harness per stage: planning and
+  implementation can run on different platforms (for example, plan on Claude
+  Code and implement with Codex workers) while the semantic skillset stays the
+  same. Detailed design belongs to the execute-milestone focused spec.
+- The reviewer platform always differs from the implementer platform.
+  Reciprocity follows the implementer, not the orchestrating host.
 - The reviewer is fresh, read-only, and receives the exact feature diff plus
   review instructions and a structured verdict schema.
 - Platform adapters may use different tools but must produce the same
@@ -334,6 +343,9 @@ Shared scenarios run in both Claude Code and Codex. Each run is normalized to:
 ```
 
 Tests assert observable state, never internal reasoning or "followed step N."
+Baseline and failed runs additionally preserve the agent's stated reasoning
+verbatim in the per-skill results log; rationalizations are refactor input,
+never assertion targets.
 
 Every focused skill uses RED -> GREEN -> REFACTOR:
 
@@ -350,7 +362,8 @@ Two lanes are mandatory:
 - Live conformance tests use real Claude and Codex sessions, including
   reciprocal review.
 
-`TESTING.md` records verified Claude Code, Codex, and Superpowers versions.
+`test-workflow/TESTING.md` records verified Claude Code, Codex, and
+Superpowers versions.
 Dependency upgrades must rerun adapter conformance, recovery,
 explicit-ignition, and empty-human-session scenarios before support is claimed.
 
@@ -365,7 +378,8 @@ implementation:
 4. `prd-to-milestones`.
 5. `milestone-to-features`.
 6. `act-learn-improve` checkpoint integration.
-7. `execute-milestone`, including both platform references.
+7. `execute-milestone`, including both platform references and per-stage
+   harness selection.
 8. `review-milestone`.
 9. Final `WORKFLOW.md` contract and end-to-end conformance.
 
