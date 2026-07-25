@@ -108,7 +108,7 @@ proposed --[H accept]--> accepted --[H accept of successor]--> superseded
 - No touched path (draft, destination, superseded target, backlog entry, files to repoint) has unrelated uncommitted changes.
 - Reference scan: every hit on the draft filename is classified. Hits in mutable artifacts (ROADMAP, plans, backlog) and in proposed ADR bodies will be repointed; a hit inside a frozen ADR body aborts the transition — frozen bodies are never edited, and frozen ADRs should never have cited a draft in the first place.
 
-**Prepare (uncommitted)**: assign number; `git mv` draft to `adr-NNN-<slug>.md`; set `status: accepted` and `decided: <today>`; delete the resolved backlog entry and note any ROADMAP feature currently `blocked(<slug>)`; flip the superseded target's frontmatter only (`status: superseded`, `superseded-by: <this file>`); repoint the classified mutable references.
+**Prepare (uncommitted)**: assign number; `git mv` draft to `adr-NNN-<slug>.md`; set `status: accepted` and `decided: <today>`; delete the resolved backlog entry and report — in the preview and the final message, never as a ROADMAP edit — any ROADMAP feature currently `blocked(<slug>)` on the resolved slug (ROADMAP stays byte-identical through the transition); flip the superseded target's frontmatter only (`status: superseded`, `superseded-by: <this file>`); repoint the classified mutable references.
 
 **Preview and confirm**: show the complete diff. The human's explicit confirmation authorizes a single commit containing the whole transition; declining restores exactly the touched paths. The body is frozen from that commit onward.
 
