@@ -95,6 +95,86 @@ def check_meta(path, keys, errs):
             errs.append((1, "number %s is not unique in directory (%s)" % (num, ", ".join(sorted(twins)))))
 
 
+H1_RE = re.compile(r"^# .+$")
+SECTION_ORDER = ["## Context", "## Decision", "## Alternatives Considered", "## Consequences"]
+ALT_RE = re.compile(r"^- \*\*.+\*\* — .+$")
+NONE_ALT_RE = re.compile(r"^- None — .+$")
+
+
+def check_body(lines, body_start, errs):
+    body = lines[body_start:]
+    offset = body_start + 1  # 1-based line number of body[0]
+    h1s = [i for i, l in enumerate(body) if H1_RE.match(l)]
+    if len(h1s) != 1:
+        errs.append((offset, "body must contain exactly one H1 title"))
+    positions = {}
+    for i, l in enumerate(body):
+        if l.strip() in SECTION_ORDER:
+            if l.strip() in positions:
+                errs.append((offset + i, "missing section or duplicate: '%s' appears twice" % l.strip()))
+            positions[l.strip()] = i
+    for name in SECTION_ORDER:
+        if name not in positions:
+            errs.append((offset, "missing section '%s'" % name))
+    present = [positions[n] for n in SECTION_ORDER if n in positions]
+    if present != sorted(present):
+        errs.append((offset, "sections out of order (mandated: Context, Decision, Alternatives Considered, Consequences)"))
+    if len(positions) == len(SECTION_ORDER) and present == sorted(present):
+        bounds = present + [len(body)]
+        for idx, name in enumerate(SECTION_ORDER):
+            content = [l for l in body[bounds[idx] + 1:bounds[idx + 1]] if l.strip()]
+            if name == "## Alternatives Considered":
+                bullets = [(i, l) for i, l in enumerate(body[bounds[idx] + 1:bounds[idx + 1]], bounds[idx] + 1) if l.startswith("- ")]
+                if not bullets:
+                    errs.append((offset + bounds[idx], "Alternatives Considered needs at least one alternative or an explicit '- None — <reason>'"))
+                for i, l in bullets:
+                    if not (ALT_RE.match(l) or NONE_ALT_RE.match(l)):
+                        errs.append((offset + i, "alternative bullet lacks an inline rejection reason ('- **…** — …')"))
+            elif not content:
+                errs.append((offset + bounds[idx], "section '%s' must be non-empty" % name))
+
+
+def check_pointers(path, keys, errs):
+    directory = os.path.dirname(os.path.abspath(path))
+    name = os.path.basename(path)
+    status = keys.get("status", ("", 0))[0]
+
+    def counterpart(key):
+        val, n = keys[key]
+        if not NUM_RE.match(val):
+            errs.append((n, "%s does not match the numbered filename grammar" % key))
+            return None
+        target = os.path.join(directory, val)
+        if not os.path.exists(target):
+            errs.append((n, "%s counterpart '%s' does not exist" % (key, val)))
+            return None
+        with open(target, encoding="utf-8") as fh:
+            tkeys, _, _ = parse_frontmatter(fh.read().splitlines())
+        return val, n, tkeys
+
+    if "supersedes" in keys:
+        got = counterpart("supersedes")
+        if got:
+            val, n, tkeys = got
+            tstatus = tkeys.get("status", ("", 0))[0]
+            if status == "proposed" and tstatus != "accepted":
+                errs.append((n, "a proposed successor's supersedes target must be accepted, got '%s'" % tstatus))
+            if status in ("accepted", "superseded"):
+                if tstatus != "superseded":
+                    errs.append((n, "supersedes target must be superseded, got '%s'" % tstatus))
+                elif tkeys.get("superseded-by", ("", 0))[0] != name:
+                    errs.append((n, "supersedes target's superseded-by does not name this file"))
+    if "superseded-by" in keys:
+        got = counterpart("superseded-by")
+        if got:
+            val, n, tkeys = got
+            tstatus = tkeys.get("status", ("", 0))[0]
+            if tstatus not in ("accepted", "superseded"):
+                errs.append((n, "superseded-by target must be accepted or superseded, got '%s'" % tstatus))
+            elif tkeys.get("supersedes", ("", 0))[0] != name:
+                errs.append((n, "superseded-by target's supersedes does not name this file"))
+
+
 def validate(path):
     try:
         with open(path, encoding="utf-8") as fh:
@@ -104,6 +184,8 @@ def validate(path):
     keys, body_start, errs = parse_frontmatter(lines)
     if not any(msg.startswith("file must start") for _, msg in errs):
         check_meta(path, keys, errs)
+        check_body(lines, body_start, errs)
+        check_pointers(path, keys, errs)
     return ["%s:%d: %s" % (path, n, msg) for n, msg in sorted(errs)]
 
 

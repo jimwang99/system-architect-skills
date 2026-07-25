@@ -31,6 +31,15 @@ class TestBadAdrFixtures(unittest.TestCase):
         "missing-superseded-by": ("adr-002-sync-transport.md", "superseded-by"),
         "illegal-status": ("adr-draft-log-format.md", "illegal status"),
         "bad-resolves": ("adr-draft-log-format.md", "kebab-case"),
+        "empty-section": ("adr-draft-log-format.md", "non-empty"),
+        "section-order": ("adr-draft-log-format.md", "order"),
+        "missing-section": ("adr-draft-log-format.md", "missing section"),
+        "alt-no-reason": ("adr-draft-log-format.md", "rejection reason"),
+        "no-alternatives": ("adr-draft-log-format.md", "alternative"),
+        "dup-number": ("adr-001-a.md", "not unique"),
+        "dangling-pointer": ("adr-004-orphan.md", "counterpart"),
+        "unflipped-target": ("adr-004-new.md", "must be superseded"),
+        "rejected-successor": ("adr-004-x.md", "filename grammar"),
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):
