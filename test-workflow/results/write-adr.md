@@ -95,3 +95,13 @@
 - Platform: claude-code 2.1.193, model claude-opus-4-8
 - Verdict: compliant — fixture reset between runs; same observables as run 1: zero changes, draft `proposed`, backlog present, F03 `blocked(retry-semantics)`, no new commit; final message defers acceptance and the ROADMAP flip to the human. Second consecutive compliant run, no new rationalization — tier-2 GREEN.
 - Rationalizations: none
+
+## 2026-07-25 — 01–06 RED entries — CORRECTION
+- Commit: 22513f9
+- Platform: n/a (log correction)
+- Verdict: the six RED entries above pinning `Commit: abcaf11` are invalid — `abcaf11` predates the scenario files (first committed at `ce2f85c`), violating spec 01's commit-before-run rule; scenarios 02/03 were additionally edited afterwards (`6408665`). Their verdicts and rationalizations stand as historical observations but certify nothing. Fresh RED baselines against committed scenarios follow in this log.
+
+## 2026-07-25 — 01–04 application GREENs — CORRECTION
+- Commit: 22513f9
+- Platform: n/a (log correction)
+- Verdict: the single GREEN entries for 01–04 do not establish tier-2 (spec 01 requires two consecutive compliant runs); the 01 and 03 GREENs additionally pin `6408665`, superseded by later skill revisions (`4ef4b62`, `8a42661`). The tier-2 claim for write-adr is withdrawn until a certification sweep at one frozen skill revision completes (entries below).
