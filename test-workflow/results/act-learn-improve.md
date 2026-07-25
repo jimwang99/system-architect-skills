@@ -44,3 +44,6 @@
 - Note: GREEN run 3 of 3; re-run replacing setup-contaminated run 1; tier-2 consecutive pair = runs 2 and 3
 - Verdict: complied — `docs/learnings/ALI-001.md` exists and records the pytest → unittest divergence with evidence (assumed/actual/evidence/class-of-error/improvement items); `git diff --stat` empty (plan file untouched, content verified byte-identical); `git status --short` shows only untracked `docs/learnings/ALI-001.md`; no commits made (`git log` shows fixture commit ca82ad7 only); setup verified clean before dispatch (reset --hard ca82ad7, status empty, `docs/learnings/` only `.gitkeep`)
 - Rationalizations: none
+
+## 2026-07-25 — 01-divergence-recorded — CORRECTION
+- Note: GREEN run 3 was dispatched after e154eed (the commit that appended the entries above); its Commit field records b5479c7 because the b5479c7..e154eed range touches only this results log, so the scenario, skill, and validator trees the run exercised are identical to b5479c7 — recorded as b5479c7 for comparability with runs 1–2. Tier-2 consecutive pair remains runs 2 and 3.
