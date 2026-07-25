@@ -163,7 +163,7 @@ One file per skill under `test-workflow/results/`, append-only, one short entry 
 - Rationalizations: "sequencing is about dependencies, not ritual"
 ```
 
-Phases are `RED`, `GREEN`, `REFACTOR`, or `CORRECTION`. `Commit` is the repository HEAD at run time and pins the exact scenario and skill revision the entry proves something about — editing either file later does not silently re-scope old results. A scenario file is therefore committed before its first recorded run; an entry whose `Commit` does not contain the scenario and skill it names is invalid. Entries are never rewritten; a mistake is corrected by appending a `CORRECTION` entry that names the superseded entries. `Platform` records both the harness version and the model identity. No transcript dumps; quotes and verdicts only.
+Phases are `RED`, `GREEN`, `REFACTOR`, `TIER1`, or `CORRECTION`. A `TIER1` entry records a wording-gate outcome: the scenario field names the gate, the verdict records the candidate tally (pass = 5/5 compliant), and the entry names the RED baselines that discharge the control condition when full-scenario baselines substitute for micro-controls. `Commit` is the repository HEAD at run time and pins the exact scenario and skill revision the entry proves something about — editing either file later does not silently re-scope old results. A scenario file is therefore committed before its first recorded run; an entry whose `Commit` does not contain the scenario and skill it names is invalid. Entries are never rewritten; a mistake is corrected by appending a `CORRECTION` entry that names the superseded entries. `Platform` records both the harness version and the model identity. No transcript dumps; quotes and verdicts only.
 
 ## TESTING.md
 
