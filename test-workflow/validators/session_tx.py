@@ -122,10 +122,16 @@ def cmd_abandon(root):
     for e in m["entries"]:
         p = os.path.join(root, e["path"])
         if e["mode"] == "created":
+            # Un-stage first: os.remove alone would leave a ghost index entry
+            # that a later commit resurrects. --ignore-unmatch tolerates not-staged.
+            git(root, "rm", "--cached", "--force", "--ignore-unmatch", "--", e["path"])
             if os.path.lexists(p):
                 os.remove(p)
         else:
-            git(root, "checkout", "--", e["path"])
+            # checkout from HEAD, not plain `checkout --`: the latter restores the
+            # worktree FROM the index, so a mid-session `git add` would survive in
+            # both. The spec requires abandon to reset index and worktree.
+            git(root, "checkout", "HEAD", "--", e["path"])
     os.remove(manifest_path(root))
     print("abandoned; %d path(s) rolled back" % len(m["entries"]))
     return 0

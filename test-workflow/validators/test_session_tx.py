@@ -277,6 +277,51 @@ class TestAbandon(unittest.TestCase):
         self.assertFalse(os.path.exists(manifest))
 
 
+class TestAbandonStagedMidSession(unittest.TestCase):
+    """Case 10: abandon must reset the index too — mid-session `git add` of both a
+    tracked and a created manifest path must not survive abandon."""
+
+    def setUp(self):
+        self.repo = make_repo()
+
+    def test_abandon_resets_index(self):
+        with open(os.path.join(self.repo, "base.txt")) as f:
+            original_base = f.read()
+
+        tx(self.repo, "begin")
+        r = tx(self.repo, "track", "base.txt", "created.md")
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+        # modify tracked file, write created file
+        with open(os.path.join(self.repo, "base.txt"), "a") as f:
+            f.write("session change\n")
+        with open(os.path.join(self.repo, "created.md"), "w") as f:
+            f.write("new content\n")
+
+        # stage BOTH mid-session (e.g. a sub-step or a crashed/retried approve)
+        git(self.repo, "add", "base.txt", "created.md")
+
+        r = tx(self.repo, "abandon")
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+        # index clean: no staged changes survive
+        staged = git(self.repo, "diff", "--cached")
+        self.assertEqual(staged.stdout, "", "index not clean after abandon:\n%s" % staged.stdout)
+        # worktree clean for tracked paths
+        unstaged = git(self.repo, "diff")
+        self.assertEqual(unstaged.stdout, "", "worktree not clean after abandon:\n%s" % unstaged.stdout)
+        # tracked file byte-identical to pre-session
+        with open(os.path.join(self.repo, "base.txt")) as f:
+            self.assertEqual(f.read(), original_base)
+        # created file gone from disk and from the index (no ghost AD entry)
+        self.assertFalse(os.path.exists(os.path.join(self.repo, "created.md")))
+        ls = git(self.repo, "ls-files", "--", "created.md")
+        self.assertEqual(ls.stdout.strip(), "", "ghost index entry for created.md")
+        # fully clean repo: nothing staged, nothing modified, nothing untracked
+        status = git(self.repo, "status", "--porcelain")
+        self.assertEqual(status.stdout, "", "repo not clean after abandon:\n%s" % status.stdout)
+
+
 class TestDeletionFlow(unittest.TestCase):
     """Case 9: track base.txt, delete it, preview shows deletion diff, approve commits deletion."""
 
