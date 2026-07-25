@@ -33,6 +33,11 @@ class TestBadFixtures(unittest.TestCase):
         "bad-milestone-state.md": "illegal milestone state",
         "bad-duplicate-feature-id.md": "duplicate feature ID",
         "bad-duplicate-milestone-id.md": "duplicate milestone ID",
+        "bad-tuple-state-none.md": "illegal summary tuple",
+        "bad-tuple-review-ready-wip.md": "illegal summary tuple",
+        "bad-agreement-state.md": "does not match summary",
+        "bad-agreement-active-feature.md": "active feature",
+        "bad-ordering-past-not-accepted.md": "before the current milestone",
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):

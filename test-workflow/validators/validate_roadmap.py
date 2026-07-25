@@ -148,12 +148,67 @@ def check_vocab(summary, milestones, errs):
                     errs.append((n, "illegal feature status '%s'" % val))
 
 
+def ref_id(value):
+    return value.split(" — ")[0].strip() if value != "none" else "none"
+
+
+def check_agreement(summary, milestones, errs):
+    if summary is None:
+        return
+    need = ("Current milestone", "Milestone state", "Active feature")
+    if any(k not in summary.keys for k in need):
+        return  # missing keys already reported by check_summary
+    (cm_raw, cm_line) = summary.keys["Current milestone"]
+    (ms, ms_line) = summary.keys["Milestone state"]
+    (af_raw, af_line) = summary.keys["Active feature"]
+    cm, af = ref_id(cm_raw), ref_id(af_raw)
+
+    if cm == "none":
+        if ms != "none" or af != "none":
+            errs.append((cm_line, "illegal summary tuple: current milestone is none but state/feature are not"))
+        for m in milestones:
+            state = m.keys.get("State", ("", m.line))[0]
+            if state in MIDFLIGHT:
+                errs.append((m.line, "milestone %s is mid-flight but current milestone is none" % m.id))
+        return
+
+    if ms == "none":
+        errs.append((ms_line, "illegal summary tuple: milestone state none with a current milestone"))
+        return
+    if ms in ("planning-pending", "planned", "review-ready", "accepted") and af != "none":
+        errs.append((af_line, "illegal summary tuple: active feature set in state '%s'" % ms))
+
+    target = next((m for m in milestones if m.id == cm), None)
+    if target is None:
+        errs.append((cm_line, "current milestone %s has no section" % cm))
+        return
+    state = target.keys.get("State", ("", target.line))[0]
+    if state != ms:
+        errs.append((target.line, "milestone %s state '%s' does not match summary '%s'" % (cm, state, ms)))
+
+    if af != "none":
+        feat = next((f for f in target.features if f.id == af), None)
+        if feat is None:
+            errs.append((af_line, "active feature %s not found under %s" % (af, cm)))
+        elif feat.keys.get("Status", ("", 0))[0] != "WIP":
+            errs.append((feat.line, "active feature %s is not WIP" % af))
+
+    idx = milestones.index(target)
+    for m in milestones[:idx]:
+        if m.keys.get("State", ("", m.line))[0] != "accepted":
+            errs.append((m.line, "milestone %s before the current milestone must be accepted" % m.id))
+    for m in milestones[idx + 1:]:
+        if m.keys.get("State", ("", m.line))[0] not in FUTURE_OK:
+            errs.append((m.line, "milestone %s after the current milestone must be planning-pending or planned" % m.id))
+
+
 def validate(path):
     with open(path, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
     summary, milestones, errs = parse(lines)
     check_summary(lines, summary, errs)
     check_vocab(summary, milestones, errs)
+    check_agreement(summary, milestones, errs)
     return ["%s:%d: %s" % (path, n, msg) for n, msg in sorted(errs)]
 
 
