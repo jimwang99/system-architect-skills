@@ -8,7 +8,7 @@ Stdlib only, Python 3.9+. Exit 0 on pass; exit 1 with one
 import sys
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 MILESTONE_STATES = {
     "planning-pending", "planned", "in-progress", "paused",
@@ -26,6 +26,7 @@ EV_KEY = re.compile(r"^  - ([A-Z][A-Za-z ]*): (.*?)\s*$")
 SUMMARY_REQ = ("Current milestone", "Milestone state", "Active feature", "Next action")
 FEATURE_REQ = ("Status", "Description", "Acceptance", "Test intent")
 EVIDENCE_REQ = ("Base", "Commits", "Tests", "Reviewer", "Verdict", "Findings")
+KNOWN_KEYS = set(SUMMARY_REQ) | set(FEATURE_REQ) | {"State", "Learning", "Evidence"}
 ACCEPT_VERDICTS = {"approve", "approve-with-findings"}
 FINDINGS = re.compile(
     r"^(none|[^;]+: (fixed|refuted\(.+?\))(; [^;]+: (fixed|refuted\(.+?\)))*)$")
@@ -97,7 +98,9 @@ def parse(lines):
             key, val = k.group(1), k.group(2)
             in_evidence = key == "Evidence"
             if key in cur.keys:
-                errors.append((n, "duplicate key '%s'" % key))
+                # Known keys: duplicates are errors. Unknown keys: first occurrence stored, later ignored.
+                if key in KNOWN_KEYS:
+                    errors.append((n, "duplicate key '%s'" % key))
             else:
                 cur.keys[key] = (val, n)
             continue
@@ -235,7 +238,10 @@ def check_features(milestones, errs):
                         errs.append((fn, "Findings must be 'none' or list each blocking finding as fixed/refuted(...)"))
             elif base in ("WIP", "blocked", "failed"):
                 if phase >= 1:
-                    errs.append((n, "feature %s out of order: second mid-flight feature" % f.id))
+                    if phase == 2:
+                        errs.append((n, "feature %s out of order: mid-flight feature after todo" % f.id))
+                    else:
+                        errs.append((n, "feature %s out of order: second mid-flight feature" % f.id))
                 phase = 1
                 if base == "failed":
                     val = f.keys.get("Learning", ("", 0))[0]
