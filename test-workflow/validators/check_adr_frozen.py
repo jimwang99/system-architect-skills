@@ -59,11 +59,12 @@ def main():
     shallow = git(root, "rev-parse", "--is-shallow-repository")
     if shallow.stdout.strip() == "true":
         return fail("%s: shallow clone — freeze lineage unprovable, failing closed" % path)
-    # -M01: follow renames down to 1% similarity. A proposed->accepted edit on a
-    # small ADR drops rename similarity well below git's default 50% threshold, so
-    # without this --follow stops at the freeze commit and never sees the proposed
-    # ancestor, wrongly failing closed on a legitimately frozen ADR.
-    log = git(root, "log", "--follow", "-M01", "--format=%H", "--name-only", "--", rel)
+    # -M40: pin rename detection explicitly — git's default threshold is 50% and
+    # configurable, so an unpinned --follow could behave differently across git
+    # versions/configs. 40% gives margin for accept-transition frontmatter edits on
+    # small ADRs. The follow-chain bridge risk is threshold-independent: any bridged
+    # file with a differing body fails the body comparison anyway.
+    log = git(root, "log", "--follow", "-M40", "--format=%H", "--name-only", "--", rel)
     if log.returncode != 0 or not log.stdout.strip():
         return fail("%s: no history for file — failing closed" % path)
     # Output per commit is "<40-hex hash>\n\n<historical name>\n". Walk the lines
