@@ -54,23 +54,18 @@ def main():
     rel = os.path.relpath(path, root)
     with open(path, encoding="utf-8") as fh:
         wt_status, wt_body = split_frontmatter(fh.read())
-    if wt_status not in FROZEN:
-        return 0
+    # Shallowness fails closed for EVERY status: the worktree frontmatter is
+    # untrusted input (a defrosted file self-reports proposed), and truncated
+    # history can neither prove nor rule out a freeze point.
     shallow = git(root, "rev-parse", "--is-shallow-repository")
     if shallow.stdout.strip() == "true":
         return fail("%s: shallow clone — freeze lineage unprovable, failing closed" % path)
-    # -M40: pin rename detection explicitly — git's default threshold is 50% and
-    # configurable, so an unpinned --follow could behave differently across git
-    # versions/configs. 40% gives margin for accept-transition frontmatter edits on
-    # small ADRs. The follow-chain bridge risk is threshold-independent: any bridged
-    # file with a differing body fails the body comparison anyway.
     log = git(root, "log", "--follow", "-M40", "--format=%H", "--name-only", "--", rel)
     if log.returncode != 0 or not log.stdout.strip():
-        return fail("%s: no history for file — failing closed" % path)
-    # Output per commit is "<40-hex hash>\n\n<historical name>\n". Walk the lines
-    # pairing each hash with the following non-empty path; splitting on blank lines
-    # would fragment each entry because --format=%H emits its own trailing newline.
-    entries = []  # (commit, historical_name), newest first
+        if wt_status in FROZEN:
+            return fail("%s: no history for file — failing closed" % path)
+        return 0  # brand-new or uncommitted draft; nothing frozen yet
+    entries = []  # (commit, historical_name), newest first — parsing unchanged
     commit = None
     for line in log.stdout.splitlines():
         s = line.strip()
@@ -88,14 +83,19 @@ def main():
         if show.returncode != 0:
             continue
         status, body = split_frontmatter(show.stdout)
-        if status == "proposed":
-            saw_proposed = True
+        if freeze is None and status == "proposed":
+            saw_proposed = True  # only ancestors strictly before the freeze point count
         if status in FROZEN and freeze is None:
             freeze = (commit, name, body)
     if freeze is None:
-        return fail("%s: status is frozen but no freeze point found in history — failing closed" % path)
+        if wt_status in FROZEN:
+            return fail("%s: status is frozen but no freeze point found in history — failing closed" % path)
+        return 0
     if not saw_proposed:
         return fail("%s: no proposed ancestor before the freeze point — failing closed (imported or rewritten history)" % path)
+    if wt_status not in FROZEN:
+        return fail("%s: worktree status is %r but a freeze point exists at %s — frozen records never return to proposed, failing closed"
+                    % (path, wt_status, freeze[0][:7]))
     _, _, frozen_body = freeze
     if frozen_body.rstrip("\n") != wt_body.rstrip("\n"):
         f_lines = frozen_body.rstrip("\n").splitlines()

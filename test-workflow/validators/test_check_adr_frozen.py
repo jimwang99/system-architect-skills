@@ -171,6 +171,47 @@ class TestFrozenCheck(unittest.TestCase):
         p = write(d.name, "adr-001-x.md", accept(PROPOSED))
         self.assertEqual(check(p)[0], 2)
 
+    def test_defrosted_status_with_freeze_point_fails(self):
+        # D1 regression: freeze, then flip frontmatter back to proposed and edit the body.
+        repo = self.scratch()
+        write(repo, "docs/adr/adr-draft-x.md", PROPOSED)
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "draft")
+        git(repo, "mv", "docs/adr/adr-draft-x.md", "docs/adr/adr-001-x.md")
+        write(repo, "docs/adr/adr-001-x.md", accept(PROPOSED))
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "accept")
+        write(repo, "docs/adr/adr-001-x.md", PROPOSED.replace("## Decision\n\nd", "## Decision\n\nREWRITTEN"))
+        code, err = check(os.path.join(repo, "docs/adr/adr-001-x.md"))
+        self.assertEqual(code, 1)
+        self.assertIn("freeze point", err)
+
+    def test_proposed_after_freeze_is_not_an_ancestor(self):
+        # Rm12: the only proposed version sits AFTER the freeze point; lineage is unproven.
+        repo = self.scratch()
+        write(repo, "docs/adr/adr-001-x.md", accept(PROPOSED))
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "born frozen")
+        write(repo, "docs/adr/adr-001-x.md", PROPOSED)
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "defrost")
+        write(repo, "docs/adr/adr-001-x.md", accept(PROPOSED))
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "refreeze")
+        code, err = check(os.path.join(repo, "docs/adr/adr-001-x.md"))
+        self.assertEqual(code, 1)
+        self.assertIn("proposed ancestor", err)
+
+    def test_proposed_worktree_in_shallow_clone_fails_closed(self):
+        # Worktree status is untrusted, so shallowness fails closed for every status.
+        repo = self.scratch()
+        write(repo, "docs/adr/adr-draft-x.md", PROPOSED)
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "draft")
+        git(repo, "add", "-A"); git(repo, "commit", "-qm", "pad", "--allow-empty")
+        clone_parent = tempfile.TemporaryDirectory()
+        self.addCleanup(clone_parent.cleanup)
+        clone = os.path.join(clone_parent.name, "clone")
+        subprocess.run(["git", "clone", "-q", "--depth", "1", "file://" + repo, clone],
+                       check=True, capture_output=True)
+        code, err = check(os.path.join(clone, "docs/adr/adr-draft-x.md"))
+        self.assertEqual(code, 1)
+        self.assertIn("shallow", err)
+
 
 if __name__ == "__main__":
     unittest.main()
