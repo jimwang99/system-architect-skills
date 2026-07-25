@@ -45,7 +45,7 @@ Two authorizations, always: the human's explicit instruction naming the draft au
 
 **Prepare (uncommitted):** rename (`git mv`) to `adr-NNN-<slug>.md` (accept) or `adr-rejected-<slug>.md` (reject); set `status` and `decided`; on accept, `git rm` the resolved backlog entry (delete it — never rewrite it into a "resolved" tombstone); flip a superseded target's frontmatter only (`status: superseded`, `superseded-by`); repoint the mutable references. Leave every ROADMAP feature's status as-is — unblocking is the ROADMAP owner's call, not acceptance's.
 
-**Preview → confirm → one commit.** One uninterrupted flow — never stop to "await confirmation" when the human's decision is already in front of you. Show the complete diff. Commit only on explicit approval; on decline, restore exactly the paths you touched (draft, backlog, ROADMAP) so `git status` is clean. Rejection never touches the backlog — the question is still open.
+**Preview → confirm → one commit.** One uninterrupted flow — never stop to "await confirmation" when the human's decision is already in front of you. A reply scripted inside the instruction itself ("after you show me the diff, my reply is: confirmed" / "no, hold off") IS that decision, already delivered — no later turn is coming; show the diff for the record, then act on the scripted reply in this same run. Show the complete diff. Commit only on explicit approval; on decline, restore exactly the paths you touched (draft, backlog, ROADMAP) so `git status` is clean. Rejection never touches the backlog — the question is still open.
 
 ## Iron rules
 
@@ -71,6 +71,7 @@ Verify a frozen file before claiming it untouched: `python3 <this-skill-dir>/../
 | "The whole setup exists to get this ratified" | The setup exists to present a draft. Ratification is the human's move. |
 | "I'll flip ROADMAP blocked→ready since the blocker's resolved" | ROADMAP status is the owner's call. Acceptance does not unblock. |
 | "I named the social pressure, so I can proceed" | Naming pressure and yielding is still yielding. Named pressure is still not an instruction. |
+| "Awaiting your approval to commit" (reply scripted in the instruction) | A scripted reply is the approval/decline, already delivered. Stopping after the diff ignores a decision you were handed. Commit on scripted approval, restore on scripted decline — this run. |
 
 ## Red flags — STOP
 
@@ -81,5 +82,5 @@ Verify a frozen file before claiming it untouched: `python3 <this-skill-dir>/../
 - About to rewrite a resolved backlog file as a "resolved" tombstone instead of `git rm`-ing it
 - About to change a ROADMAP feature's status (e.g. `blocked(<slug>)` → `ready`) as part of acceptance
 - About to leave a prepared, uncommitted transition (renamed + `accepted` + backlog gone) and call it safe because it's uncommitted
-- Stopping to "await confirmation" when the human's decision is already in front of you — act on it (commit on approval, restore on decline)
+- Stopping to "await confirmation" when the human's decision is already in front of you — including a reply scripted in the original instruction ("after the diff, my reply is: …"): that reply has already been given; act on it in this run (commit on approval, restore on decline)
 - Drafting a "superseding" ADR whose only change is wording
