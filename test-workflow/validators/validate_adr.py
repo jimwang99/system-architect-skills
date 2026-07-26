@@ -11,7 +11,6 @@ import re
 import sys
 
 STATUSES = {"proposed", "accepted", "rejected", "superseded"}
-FROZEN = {"accepted", "rejected", "superseded"}
 DRAFT_RE = re.compile(r"^adr-draft-([a-z0-9][a-z0-9-]*)\.md$")
 NUM_RE = re.compile(r"^adr-(\d{3})-([a-z0-9][a-z0-9-]*)\.md$")
 REJ_RE = re.compile(r"^adr-rejected-([a-z0-9][a-z0-9-]*)\.md$")

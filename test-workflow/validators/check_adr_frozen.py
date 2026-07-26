@@ -75,6 +75,7 @@ def main():
     shallow = git(root, "rev-parse", "--is-shallow-repository")
     if shallow.stdout.strip() == "true":
         return fail("%s: shallow clone — freeze lineage unprovable, failing closed" % path)
+    # -M40: pinned rename-detection threshold — git's default (50%) is config-sensitive; 40% gives margin for frontmatter-only accept edits on small files.
     log = git(root, "log", "--follow", "-M40", "--format=%H", "--name-only", "--", rel)
     if log.returncode != 0 or not log.stdout.strip():
         if wt_status in FROZEN:

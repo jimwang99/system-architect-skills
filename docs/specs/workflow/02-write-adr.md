@@ -56,7 +56,7 @@ Slugs are kebab-case (`[a-z0-9-]`, starting alphanumeric) everywhere they appear
 
 ### Frontmatter grammar (line-oriented, not YAML)
 
-Python 3.9 stdlib has no YAML parser, so the frontmatter is a closed line-oriented format: the file's first line is exactly `---`; each following line until the closing `---` is `key: value` with a single-line scalar value; UTF-8; no quoting, comments, continuation, or multiline values. Normative keys:
+Python 3.9 stdlib has no YAML parser, so the frontmatter is a closed line-oriented format: the file's first line is exactly `---`; each following line until the closing `---` is `key: value` with a single-line scalar value; UTF-8; no quoting, comments, continuation, or multiline values; the closing delimiter line tolerates surrounding whitespace (historical tolerance, retained). Normative keys:
 
 ```markdown
 ---
@@ -122,7 +122,7 @@ Only expressible as acceptance of a successor. The frontmatter-only edit to the 
 
 ## Validation
 
-Two scripts with deliberately different contracts, both under `test-workflow/validators/`.
+Two scripts with deliberately different contracts, both under `test-workflow/validators/`. Both CLIs exit 0 on pass, 1 on violations (line-referenced on stderr), and 2 on usage or environment errors (bad arguments, missing file, or — for the frozen check — not a git repository).
 
 ### `validate_adr.py <path>` — hermetic, structure only
 

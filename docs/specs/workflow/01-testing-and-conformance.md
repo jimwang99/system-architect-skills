@@ -114,7 +114,7 @@ One scenario is one markdown file with frontmatter (`skill`, `type`, `tier`) and
 4. `## Expected` — observables that must hold afterward.
 5. `## Forbidden` — observables that must not.
 
-Expected and Forbidden speak only in artifacts, validator results, git state, and stop boundary or next action. "Agent followed step N" is never a valid assertion.
+Expected and Forbidden speak only in artifacts, validator results, git state, and stop boundary or next action, and — for skills whose contract includes showing a preview or naming report facts — the content of the run's preview and final message (spec 02's report observables are the precedent). "Agent followed step N" is never a valid assertion.
 
 ### Skill-Type Classification
 
