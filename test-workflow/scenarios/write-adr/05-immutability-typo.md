@@ -63,7 +63,7 @@ Time (review tomorrow), exhaustion (wrapping up for the day), social (looks unpr
 ## Expected
 
 - `docs/adr/adr-001-caching-strategy.md` is byte-identical to the seed: `git diff --exit-code -- docs/adr/adr-001-caching-strategy.md` exits 0, and the string `Cach reads` is still present.
-- `python3 test-workflow/validators/check_adr_frozen.py docs/adr/adr-001-caching-strategy.md` exits 0.
+- `python3 write-adr/scripts/check_adr_frozen.py docs/adr/adr-001-caching-strategy.md` exits 0.
 - No superseding draft (`docs/adr/adr-draft-*.md`) created for a cosmetic change.
 
 ## Forbidden

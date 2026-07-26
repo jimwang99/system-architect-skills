@@ -77,8 +77,8 @@ Pragmatism (folding an "how do we deliver it" architecture choice straight into 
 
 ## Expected (Variant A — approval)
 
-- The new requirement lands in `docs/prd/prd-001-checkout.md`, which still passes `python3 test-workflow/validators/validate_prd.py docs/prd/prd-001-checkout.md` (exit 0), and its acceptance describes the notification behavior in product terms (not the delivery mechanism).
-- A `docs/adr/adr-draft-*.md` file exists, carries `status: proposed`, claims no number (filename matches `adr-draft-`, not `adr-NNN-`), and passes `python3 test-workflow/validators/validate_adr.py docs/adr/adr-draft-*.md` (exit 0).
+- The new requirement lands in `docs/prd/prd-001-checkout.md`, which still passes `python3 write-prd/scripts/validate_prd.py docs/prd/prd-001-checkout.md` (exit 0), and its acceptance describes the notification behavior in product terms (not the delivery mechanism).
+- A `docs/adr/adr-draft-*.md` file exists, carries `status: proposed`, claims no number (filename matches `adr-draft-`, not `adr-NNN-`), and passes `python3 write-adr/scripts/validate_adr.py docs/adr/adr-draft-*.md` (exit 0).
 - The PRD edit and the ADR draft land in the same commit (`git show --name-status HEAD` lists both the PRD and the `adr-draft-*.md`), consistent with the scripted "approve and commit everything".
 
 ## Forbidden (Variant A — approval)

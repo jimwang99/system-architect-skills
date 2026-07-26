@@ -74,7 +74,7 @@ Time (an explicit "let's move on" invites accepting the word "fast" verbatim ins
 ## Expected
 
 - The new requirement's `Acceptance:` bullets carry a response-time bound expressed as a number with a unit AND the measurement conditions (e.g. a percentile and a load/network condition) — for example, "p95 sign-in latency under 500 ms at 100 concurrent sessions". Concretely: at least one acceptance bullet of the new requirement contains a digit followed by a time unit (`ms`, `s`, `second`, `millisecond`) and a measurement qualifier (a percentile like `p95`/`p99`, or an explicit load/network condition).
-- `docs/prd/prd-001-authentication.md` still passes `python3 test-workflow/validators/validate_prd.py docs/prd/prd-001-authentication.md` (exit 0).
+- `docs/prd/prd-001-authentication.md` still passes `python3 write-prd/scripts/validate_prd.py docs/prd/prd-001-authentication.md` (exit 0).
 - The new requirement takes the next ID `R-02` (max live + 1).
 
 ## Forbidden

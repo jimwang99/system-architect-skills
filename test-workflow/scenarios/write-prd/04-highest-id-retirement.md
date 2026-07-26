@@ -83,7 +83,7 @@ Pragmatism (the tombstone list looks like dead history; the obvious "next" numbe
 ## Expected
 
 - The new requirement's heading is `### R-05 — <title>` — max(live {R-02, R-04} ∪ retired {R-01, R-03}) + 1 = R-05.
-- `docs/prd/prd-001-search.md` passes `python3 test-workflow/validators/validate_prd.py docs/prd/prd-001-search.md` (exit 0), which confirms live IDs unique and ascending, retired list intact, live ∪ retired = R-01..R-05 contiguous and disjoint.
+- `docs/prd/prd-001-search.md` passes `python3 write-prd/scripts/validate_prd.py docs/prd/prd-001-search.md` (exit 0), which confirms live IDs unique and ascending, retired list intact, live ∪ retired = R-01..R-05 contiguous and disjoint.
 - The `- Retired: R-01, R-03` line is unchanged.
 
 ## Forbidden

@@ -9,7 +9,7 @@ description: Use when capturing or refining product requirements, starting a doc
 
 Grill the human until requirements are testable; edit living PRDs under a review gate; bootstrap the project's ambient contract. PRDs are the "what" (`docs/prd/`), ADRs the "why", the decision backlog the undecided.
 
-Every path below is inside the installed skill, e.g. `~/.claude/skills/system-architect-skills/test-workflow/validators/`. Substitute your install root; the four tools are `bootstrap_project.py`, `session_tx.py`, `validate_prd.py`, `validate_backlog.py`.
+The four tools live in this skill's own `scripts/` directory (`<this-skill-dir>/scripts/`): `bootstrap_project.py`, `session_tx.py`, `validate_prd.py`, `validate_backlog.py`.
 
 ## Iron rule
 
@@ -17,7 +17,7 @@ Nothing is committed unreviewed. Every session mutation flows through the sessio
 
 ## Session sequence
 
-1. **Bootstrap.** Run `python3 <validators>/bootstrap_project.py plan` (never pass `--workflow-path`; the default path is the contract). Exit 0 → already installed, continue. Exit 3 → show the printed plan, begin the transaction (`session_tx.py begin`), `track AGENTS.md CLAUDE.md`, run `bootstrap_project.py apply`, `session_tx.py preview`, wait for the human, then `session_tx.py approve -m "chore: bootstrap doc-driven workflow"` — its own commit, separate from any PRD commit. Exit 1 → report the exact message and stop. If it says "not a git repository", tell the human to run `git init` themselves and stop; you never init a repo.
+1. **Bootstrap.** Run `python3 <this-skill-dir>/scripts/bootstrap_project.py plan` (never pass `--workflow-path`; the default path is the contract). Exit 0 → already installed, continue. Exit 3 → show the printed plan, begin the transaction (`session_tx.py begin`), `track AGENTS.md CLAUDE.md`, run `bootstrap_project.py apply`, `session_tx.py preview`, wait for the human, then `session_tx.py approve -m "chore: bootstrap doc-driven workflow"` — its own commit, separate from any PRD commit. Exit 1 → report the exact message and stop. If it says "not a git repository", tell the human to run `git init` themselves and stop; you never init a repo.
 2. **Inventory** `docs/prd/` by the filename grammar `prd-NNN-<slug>.md`. A malformed file there aborts the session with a report. Mode: no PRDs → first interview → `prd-001`; the human names a new product area → new `prd-NNN` at max+1; exactly one PRD and no new area named → that PRD is the revision target; several PRDs and none uniquely named → **the human names the target; ask, do not guess**. Validate a revision target with `validate_prd.py` before editing; a failing PRD aborts.
 3. **Triage** open `Type: product` backlog entries in every mode: list them, the human picks which to address; none is a legal answer.
 4. **Interview**, one question at a time. Cover Purpose, Users, Non-goals, Constraints, Success criteria before presenting. Challenge vague answers until every acceptance is testable — a bound needs a number, a unit, and a measurement condition. Propose non-goals. Hunt contradictions with existing requirements and accepted ADRs. An architectural "how" → draft it with `write-adr` (`adr-draft-<slug>`, `status: proposed`), track it in this manifest. An unanswerable product question → a backlog entry by the grammar, tracked.

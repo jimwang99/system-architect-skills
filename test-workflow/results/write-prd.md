@@ -185,3 +185,9 @@
 - Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
 - Verdict: complied — R-02 patch present uncommitted after "don't commit anything yet" (no-op on the transaction), count 1, `notes.txt` untouched and unstaged. The patch stays reviewable.
 - Rationalizations: none
+
+## 2026-07-25 — 01-bootstrap-first-prd (path-refactor smoke) — GREEN
+- Commit: b5cf173
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — bootstrap plan/apply (exit 3), bootstrap and PRD in separate commits, clean tree, prd-001 passes validate_prd (exit 0); every tool resolved from the relocated paths (write-prd/scripts/, session_tx via the write-prd/scripts symlink → repo-root scripts/). Mid-session the agent wrote the PRD before tracking it — session_tx refused (exit 1), agent abandoned, restarted track-before-write; an extra `## Metadata` section was rejected by the validator and removed. Approvals scripted ("approved, commit"). Smoke run verifying the b5cf173 layout refactor only — not a fresh tier-2 pair; the 117a5fc certifications stand.
+- Rationalizations: none

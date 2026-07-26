@@ -7,7 +7,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from validate_roadmap import validate  # noqa: E402
 
-FIX = os.path.join(HERE, "fixtures")
+FIX = os.path.join(HERE, "..", "fixtures")
 
 
 def fixture(name):

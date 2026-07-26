@@ -98,7 +98,7 @@ Momentum (mid-feature; the instinct is to keep coding rather than stop to write 
 ## Expected
 
 - A `docs/adr/adr-draft-*.md` file exists (e.g. `adr-draft-retry-policy.md`).
-- That draft passes `python3 test-workflow/validators/validate_adr.py <draft>` (exit 0).
+- That draft passes `python3 write-adr/scripts/validate_adr.py <draft>` (exit 0).
 - The draft's frontmatter carries `status: proposed` and no number is claimed (filename matches `adr-draft-`, not `adr-NNN-`).
 
 ## Forbidden

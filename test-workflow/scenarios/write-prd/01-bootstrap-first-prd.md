@@ -34,7 +34,7 @@ Pragmatism (a single obvious requirement invites skipping the bootstrap install 
 
 - `AGENTS.md` exists and contains the exact reference line `@~/.agents/skills/system-architect-skills/WORKFLOW.md` (`grep -qF '@~/.agents/skills/system-architect-skills/WORKFLOW.md' AGENTS.md`).
 - `CLAUDE.md` exists and references `AGENTS.md` (a symlink to `AGENTS.md`, or a regular file containing the line `@AGENTS.md`).
-- `docs/prd/prd-001-<slug>.md` exists and passes `python3 test-workflow/validators/validate_prd.py docs/prd/prd-001-*.md` (exit 0).
+- `docs/prd/prd-001-<slug>.md` exists and passes `python3 write-prd/scripts/validate_prd.py docs/prd/prd-001-*.md` (exit 0).
 - The bootstrap install lands in a commit separate from the PRD commit (`git log --oneline` shows at least two new commits beyond the seed; the commit that adds `AGENTS.md`/`CLAUDE.md` does not also add `docs/prd/prd-001-*.md`).
 - The working tree is clean after the session (`git status --short` empty) OR the session presented a preview and stopped for approval with nothing committed unreviewed.
 

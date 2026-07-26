@@ -23,8 +23,11 @@ Owned elsewhere: per-skill scenarios (each focused spec), the concrete reviewer 
 ```text
 test-workflow/
 ├── TESTING.md                     # verified versions + rerun triggers
-├── validators/
-│   └── validate_roadmap.py        # proving case; later specs add siblings
+├── tests/
+│   ├── test_<tool>.py             # deterministic suites for the production tools
+│   └── validate_roadmap.py        # proving case; parked here until a skill owns ROADMAP
+├── fixtures/
+│   └── <artifact>/                # good/ and bad/<violation-class>/ sets
 ├── scenarios/
 │   └── <skill-name>/
 │       └── <NN>-<slug>.md         # one scenario per file
@@ -32,14 +35,14 @@ test-workflow/
     └── <skill-name>.md            # compact append-only log per skill
 ```
 
-- `test-workflow/` is top-level so skill directories stay pure (`SKILL.md` plus `references/` only).
+- Production tools live with their owner (revised 2026-07-25): each skill's validators and helpers in `<skill>/scripts/` (e.g. `write-adr/scripts/validate_adr.py`), cross-skill workflow tools at repo-root `scripts/` (e.g. `scripts/session_tx.py`, reached from a consuming skill via a relative symlink in its `scripts/`). `test-workflow/` holds only test artifacts. Earlier revisions kept every validator under `test-workflow/validators/` so skill directories stayed pure; that was reversed once production tools accumulated under a test-named tree and `write-hardware-spec/scripts/` had already broken the purity convention.
 - Future test families for non-workflow skills get sibling `test-*` directories; nothing in this spec applies to them.
 - The whole repository is symlinked into `~/.claude/skills/` and `~/.agents/skills/`; test artifacts are inert there because platforms read only `SKILL.md` unless a skill references another file.
 
 ## Validator Framework
 
 - One validator is one Python file, stdlib only, compatible with the system Python 3.9.
-- CLI contract: `python3 test-workflow/validators/validate_<artifact>.py <path>`; exit 0 on pass, nonzero on failure with one line-referenced error per violation on stderr.
+- CLI contract: `python3 <owning-skill>/scripts/validate_<artifact>.py <path>`; exit 0 on pass, nonzero on failure with one line-referenced error per violation on stderr. A validator whose owning skill does not exist yet (today: `validate_roadmap.py`, until the roadmap-owning spec lands) sits beside the tests in `test-workflow/tests/`.
 - Validators check structure only. Prose quality, judgment calls, and boundary behavior stay with agent scenarios.
 - Dual-use: test lanes assert with validators, and skills run the same validator as a self-check gate in the step that writes the artifact. The recommended default is to gate; each focused spec records its skill's decision.
 - Validators take the artifact path as their only required argument so they run identically inside a target project, a test fixture, and either platform.
