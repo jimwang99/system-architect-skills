@@ -25,11 +25,11 @@ The record lives at `docs/reviews/milestone-<NNN>.md` on the milestone branch, a
 - Findings inside a sweep section: `- F<K>: <text>` each followed immediately by `- Disposition: <value>`
 - Final section exactly once, last: `## Verdict` containing `- Verdict: accept | remediate` and `- Date: <date>`
 
-**Sweep-before-verdict is a WRITE gate.** Do not append `## Verdict` until all six `## Sweep:` sections exist. Run `python3 <this-skill-dir>/scripts/validate_review.py docs/reviews/milestone-<NNN>.md` (exit 0) before every record commit; do not commit if it fails.
+**Sweep-before-verdict is a WRITE gate.** Do not append `## Verdict` until all six `## Sweep:` sections exist. Do not write any ROADMAP transition commit until the full record (with Verdict) passes `validate_review.py` (exit 0). Run `python3 <this-skill-dir>/scripts/validate_review.py docs/reviews/milestone-<NNN>.md` before every record commit and before any ROADMAP mutation; do not commit if it fails. No merge and no accepted/remediating transition may precede the complete, validated record.
 
 ## The Sweep (fixed order, no reordering)
 
-Work through all six items before writing any Verdict. Commit each sweep section to the record before starting the next. The agent never self-skips: a sweep item may be marked `skipped(<human's words>)` only when the human explicitly instructs it in the session; record the rationale verbatim.
+Work through all six items before writing any Verdict. Commit each sweep section before starting the next. The agent never self-skips: a sweep item may be marked `skipped(<human's words>)` only when the human explicitly instructs it; record the rationale verbatim.
 
 ### 1. learnings
 
@@ -77,9 +77,9 @@ Legal only when no `fix-feature(...)` disposition exists in the record. **All th
 2. `git merge --no-ff milestone/MS-NNN` onto `main`.
 3. On `main`, one transition commit: MS-NNN `State: accepted`, summary updated, `Next action: milestone-to-features MS-<next>` (or `prd-to-milestones` when none remain). Run both ROADMAP validators; commit only on exit 0.
 
-**Post-accept `Next action` is always `milestone-to-features MS-<next>`, never `execute-milestone`.** The next milestone is `planning-pending` and needs feature decomposition before execution.
+**Post-accept `Next action` is always `milestone-to-features MS-<next>`, never `execute-milestone`** — the next milestone is `planning-pending` and needs feature decomposition first.
 
-After step 3, offer next-milestone decomposition. Proceed only on the human's explicit go-ahead. Never self-defer and never self-decompose; if deferred, `Next action: milestone-to-features MS-<next>` already records the handoff.
+After step 3, offer decomposition of the next milestone. Proceed only on explicit go-ahead. Never self-decompose; if deferred, `Next action: milestone-to-features MS-<next>` already records it.
 
 ### remediate
 
@@ -102,15 +102,13 @@ For findings (`- F<K>:` lines):
 - `accepted-known-issue(<rationale>)` — known risk accepted by human; rationale recorded inline
 - `skipped(<recorded human rationale>)` — human explicitly authorized skipping this finding
 
-For sweep-section closers and ALI entries: free text is legal as long as the line starts with `- Disposition:`.
-
-`fix-feature(...)` is illegal in any `accept` verdict pass. The validator enforces this.
+For sweep-section closers and ALI entries: free text is legal as long as it starts with `- Disposition:`. `fix-feature(...)` is illegal in any `accept` verdict pass — the validator enforces this.
 
 ## Red Flags and Rationalizations
 
 The following agent behaviors are forbidden. Quotes are verbatim from RED runs.
 
-- **Verdict-before-sweep (02):** "The human indicated the demo was perfect and they had seen everything they needed. I proceeded with the accept verdict and merged milestone/MS-001 to main." — The sweep is not ceremony; it is the commit-order gate. A single social-pressure sentence must not produce a Verdict-only record. Run `validate_review.py` before any commit; a Verdict-only record exits 1.
-- **Wrong post-accept routing (01, 03, 05):** "Updated ROADMAP.md: MS-001 `review-ready` → `accepted`; next action set to `execute-milestone MS-002`." — The correct next action is `milestone-to-features MS-002`. The next milestone is `planning-pending`; executing it without feature decomposition skips the breakdown step.
-- **ALI conflated with code findings (03, 04):** Casting ALI files as `- F<K>:` findings or assigning `fix-feature(FEAT-NNN)` dispositions to learning files. ALI approval belongs in the learnings sweep with per-file named entries; `fix-feature` is for code/implementation findings only.
-- **Patching inline during review (04):** "Patching inline during the review session would bypass the evidence chain." — Correct agent behavior; the skill reinforces it. Any code-level fix requires a new evidence-producing cycle via `execute-milestone`.
+- **Verdict-before-sweep (02):** "The human indicated the demo was perfect and they had seen everything they needed. I proceeded with the accept verdict and merged milestone/MS-001 to main." — The sweep is not ceremony; it is the commit-order and ROADMAP-mutation gate. No merge, no transition commit, and no Verdict may precede the complete, validated record.
+- **Wrong post-accept routing (01, 03, 05):** "Updated ROADMAP.md: MS-001 `review-ready` → `accepted`; next action set to `execute-milestone MS-002`." — Correct is `milestone-to-features MS-002`; executing `planning-pending` without decomposition skips the breakdown step.
+- **ALI conflated with code findings (03, 04):** Casting ALI files as `- F<K>:` findings or assigning `fix-feature(FEAT-NNN)` dispositions to them. ALI approval belongs in the learnings sweep with per-file named entries; `fix-feature` is for code findings only.
+- **Patching inline during review (04):** "Patching inline during the review session would bypass the evidence chain." — Any code-level fix requires a new evidence-producing cycle via `execute-milestone`.
