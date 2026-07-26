@@ -1,6 +1,6 @@
 ---
 name: milestone-to-features
-description: Use when decomposing the next milestone into executable features for the first time, re-cutting a not-yet-started decomposition, or preparing a milestone for execution — never for any other milestone state.
+description: Use when decomposing the next milestone into executable features, re-cutting a not-yet-started decomposition, or preparing a milestone for execution.
 ---
 
 # milestone-to-features
@@ -14,14 +14,14 @@ Scripts: `validate_roadmap.py` and `check_coverage.py` at `<this-skill-dir>/../p
 ## Preconditions (in order — stop at first failure)
 
 1. `git rev-parse --show-toplevel` succeeds. If it fails: stop; never run `git init`; tell the human to create the repository.
-2. `python3 <this-skill-dir>/../prd-to-milestones/scripts/validate_roadmap.py ROADMAP.md` exits 0. If not: abort with the full report; repairing a broken ROADMAP is its own task.
+2. `python3 <this-skill-dir>/../prd-to-milestones/scripts/validate_roadmap.py ROADMAP.md` exits 0. If not: abort with the report; repair is a separate task.
 3. `python3 <this-skill-dir>/../prd-to-milestones/scripts/check_coverage.py ROADMAP.md` exits 0. If not: abort; a stale partition must be reconciled by `prd-to-milestones` first.
 4. Determine eligibility from the summary's current milestone state:
 
 | State | Action |
 |---|---|
 | `planning-pending` | Decompose: write FEAT subsections, transition to `planned`. |
-| `planned` (never started) | Re-decompose: delete every existing FEAT subsection of that milestone and rewrite them in the same transaction; state stays `planned`. |
+| `planned` (never started) | Re-decompose: delete every existing FEAT subsection and rewrite them in the same transaction; state stays `planned`. |
 | `in-progress`, `paused`, `review-ready`, `remediating`, `accepted` | Refuse immediately. Name the state. Route to `review-milestone` or recovery via `execute-milestone`. Touch nothing. |
 | `none` | Stop. Route to `prd-to-milestones`. |
 
@@ -37,7 +37,7 @@ Apply all five sizing proxies and the count rule **before** presenting. Split an
 4. No dependency on an open backlog entry.
 5. Test plan statable upfront.
 
-If the natural feature count exceeds 10: stop immediately. Report the count, propose at least one concrete split seam (e.g., by functional domain), and name `prd-to-milestones` as the route to split the milestone. Leave `ROADMAP.md` byte-identical. Do not open a transaction.
+The natural feature count is counted **after** all proxy-mandated splits. Bundling several demonstrable behaviors into one feature to land at 10 or fewer violates proxy 1 and does not change the true count. If the natural count exceeds 10: stop immediately. Report the count, propose at least one concrete split seam (e.g., by functional domain), and name `prd-to-milestones` as the route to split the milestone. Leave `ROADMAP.md` byte-identical. Do not open a transaction.
 
 Otherwise, present one complete ordered proposal: title, description, acceptance, test intent, and a one-line feature-to-REQ mapping with sizing rationale for each feature. Converge with the human before writing anything to disk.
 
@@ -54,14 +54,14 @@ Every feature is written exactly as:
 - Test intent: <one line — how correctness is verified>
 ```
 
-FEAT numbers are globally unique across the file. Allocation: `max(live FEAT number) + 1`. `000` is illegal. After a re-decomposition deletes a never-started FEAT set, those numbers may be reused. After the FEAT subsections, the milestone section transitions:
+FEAT numbers are globally unique in the file; allocation is `max(live FEAT number) + 1`; `000` is illegal. Numbers freed by deleting a never-started FEAT set may be reused. The summary transitions with the milestone:
 
 ```markdown
 - Milestone state: planned
 - Next action: execute-milestone MS-NNN
 ```
 
-(These lines live in `## Current Workflow Status`, not under the milestone heading — update both summary and milestone `State:` in the same commit.)
+(These live in `## Current Workflow Status`; update summary and milestone `State:` in the same commit.)
 
 ## Transaction recipe
 
@@ -86,15 +86,16 @@ One commit, exactly the manifest files. Nothing committed unreviewed.
 | State transition | `planning-pending → planned` in the same commit as the FEAT subsections and summary update. Re-decomposition keeps `planned`. |
 | Next action | `Next action: execute-milestone MS-NNN` — use the current milestone's ID. |
 | FEAT allocation | `max(live)+1`; never reuse a live number; reuse after never-started deletion is legal. `000` illegal. |
-| Count rule | 1–2 features: legal. More than 10: refuse, report seam, route to `prd-to-milestones`; ROADMAP untouched. |
-| Scope boundary | Only the current milestone. Any change inside a different milestone's span is forbidden. |
+| Count rule | 1–2 features: legal. Natural count (post-split) over 10: refuse, report seam, route to `prd-to-milestones`; ROADMAP untouched. |
+| Scope boundary | Any change inside another milestone's span is forbidden. |
 | Started milestones | Milestones in `in-progress`, `paused`, `review-ready`, `remediating`, or `accepted` state are untouchable — refuse and route, never plan. |
-| Validator authority | Both spec-04 tools exit 0 after writing but before preview. If they pass and the state was `in-progress`, the tools cannot see the violation — **the state-eligibility table is the enforcement, not the validators**. |
+| Validator authority | Both tools exit 0 after writing, before preview. Passing validators cannot see an ineligible-state edit — **the state-eligibility table is the enforcement, not the validators**. |
 
 ## Red flags — STOP
 
 - About to write FEAT subsections under any milestone other than the current one.
-- About to decompose a future milestone because "it's tiny" or "we're already here" — this is the exact pressure scenario 02 tests; authority and pragmatism do not override late binding.
+- About to decompose a future milestone because "it's tiny" or "we're already here" — authority and pragmatism do not override late binding.
+- About to merge several behaviors into one feature so the count lands at 10 or fewer — bundling to duck the limit is the >10 signal; refuse.
 - About to edit any field inside a started milestone (`in-progress`, `paused`, `review-ready`, `remediating`, `accepted`) — including FEAT rewrites — even if both validators exit 0 afterward.
 - About to commit without a `preview` and explicit human approval.
 - About to `git add -A` or stage any path outside the session manifest.
@@ -102,9 +103,10 @@ One commit, exactly the manifest files. Nothing committed unreviewed.
 
 ## Rationalization table
 
-Every row quotes the exact rationalization a skill-less agent produced when it violated a rule. Stop and re-read the rule if you find yourself reasoning in these patterns.
+Each row quotes verbatim what a real agent said while violating a rule. Re-read the rule if your reasoning matches a pattern.
 
-| Rationalization (verbatim RED) | Reality |
+| Rationalization (verbatim) | Reality |
 |---|---|
-| "MS-002 got one feature: FEAT-004 — Refund flow (covers REQ-004). Both milestones are now `planned`." | MS-002 was not the current milestone. Decomposition is scoped to the current milestone only. The agent offered no justification and no pushback — authority plus pragmatism ("it's tiny") are not authorization. MS-002's span must be byte-identical to the seed. |
-| "The stale plan had FEAT-002 bundling two unrelated requirements — decline handling (REQ-002) and order history (REQ-003) — into a single feature with a single test intent. That coupling makes it impossible to ship or review them independently." | MS-001 was `in-progress`. The coupling argument is irrelevant. The state-eligibility table is the enforcement; both validators exiting 0 does not authorize a commit. Route to `review-milestone` or recovery via `execute-milestone`; touch nothing. |
+| "MS-002 got one feature: FEAT-004 — Refund flow (covers REQ-004). Both milestones are now `planned`." | MS-002 was not the current milestone. Decomposition is scoped to the current milestone only — authority plus pragmatism ("it's tiny") are not authorization. Its span stays byte-identical. |
+| "The stale plan had FEAT-002 bundling two unrelated requirements — decline handling (REQ-002) and order history (REQ-003) — into a single feature with a single test intent. That coupling makes it impossible to ship or review them independently." | MS-001 was `in-progress`. The state-eligibility table is the enforcement; both validators exiting 0 does not authorize a commit. Route to `review-milestone` or recovery via `execute-milestone`; touch nothing. |
+| "The 12 requirements clustered into 6 features by functional subsystem … all within the 1–10 count limit." | Each cluster bundled two demonstrable behaviors; proxy 1 splits them back to 12. Natural count over 10 → refuse, report the seam, route to `prd-to-milestones`; ROADMAP untouched. |
