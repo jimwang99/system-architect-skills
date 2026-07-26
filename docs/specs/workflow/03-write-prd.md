@@ -22,7 +22,7 @@ Both validators implement these exact rules; prose elsewhere in this spec defers
 
 - Slug: `[a-z0-9]+(?:-[a-z0-9]+)*` — no leading, trailing, or doubled hyphen. (Stricter than the `[a-z0-9][a-z0-9-]*` that `validate_adr.py` ships; tightening that is a ledgered spec 02 follow-up, not this spec's work.)
 - PRD number: exactly three digits, `001`–`999`. `000` is illegal. If allocation would exceed `999`, abort and escalate to the human; never wrap or widen silently.
-- Requirement ID: `R-` followed by two or more digits, zero-padded to two below 100, minimum `R-01`. `R-00` is illegal.
+- Requirement ID: `REQ-` followed by exactly three digits, `REQ-001`–`REQ-999`. `REQ-000` is illegal. No other width is legal.
 - Placeholder: a value is a placeholder iff, after stripping surrounding whitespace, it case-insensitively equals `TBD` or `TODO`. Exact-value only — `TODO later` is not caught; prose quality stays with humans.
 - Parser model: line-oriented, single pass. Fenced code blocks (``` fences) are opaque — headings and key lines inside them are content, never structure. An unknown `- Key:` line and its indented continuation lines belong to the enclosing block and are ignored together. Blank lines between blocks are insignificant.
 
@@ -39,9 +39,9 @@ The `Requirements` section opens with an optional retirement tombstone line, fol
 ```markdown
 ## Requirements
 
-- Retired: R-02, R-05
+- Retired: REQ-002, REQ-005
 
-### R-03 — Session expiry
+### REQ-003 — Session expiry
 
 - Statement: Sessions expire after a configurable idle timeout.
 - Acceptance:
@@ -49,11 +49,11 @@ The `Requirements` section opens with an optional retirement tombstone line, fol
   - The timeout is configurable per deployment, default 30 minutes.
 ```
 
-Heading grammar is `### R-NN — <title>`. Each block carries `- Statement:` exactly once (one sentence; the skill owns sentence discipline, the validator checks presence and non-emptiness) followed by `- Acceptance:` exactly once with one or more nested, non-empty, testable bullets. Other `- Key:` lines are permitted and ignored per the parser model.
+Heading grammar is `### REQ-NNN — <title>`. Each block carries `- Statement:` exactly once (one sentence; the skill owns sentence discipline, the validator checks presence and non-emptiness) followed by `- Acceptance:` exactly once with one or more nested, non-empty, testable bullets. Other `- Key:` lines are permitted and ignored per the parser model.
 
-Requirement IDs are never reused, and the tombstone makes that locally checkable: removing a requirement block is legal only together with adding its ID to `Retired` in the same commit. Live IDs are unique and strictly ascending in document order; the `Retired` list is ascending with no duplicates; the two sets are disjoint; and their union is exactly the contiguous range `R-01`..`R-<max>`. New IDs are assigned as max(live ∪ retired) + 1 — retiring the highest ID therefore never frees it. A gap not covered by the tombstone is a validation error (silent removal); a collision with the tombstone is a validation error (reuse).
+Requirement IDs are never reused, and the tombstone makes that locally checkable: removing a requirement block is legal only together with adding its ID to `Retired` in the same commit. Live IDs are unique and strictly ascending in document order; the `Retired` list is ascending with no duplicates; the two sets are disjoint; and their union is exactly the contiguous range `REQ-001`..`REQ-<max>`. New IDs are assigned as max(live ∪ retired) + 1 — retiring the highest ID therefore never frees it. A gap not covered by the tombstone is a validation error (silent removal); a collision with the tombstone is a validation error (reuse).
 
-The citation form for a requirement, used by later specs (ROADMAP `Acceptance:` pointers), is `prd-NNN R-NN`.
+The citation form for a requirement, used by later specs (ROADMAP `Acceptance:` pointers), is `PRD-NNN REQ-NNN`.
 
 ## validate_prd.py
 
@@ -64,8 +64,8 @@ Spec-01 validator conventions: stdlib Python 3.9, path argument, one `path:line:
 3. The six required H2 sections appear exactly once each, in the required order, before any unknown H2 section.
 4. Every required section is non-empty (content beyond its heading).
 5. The `Requirements` section contains only: at most one `- Retired:` line before the first requirement block, then requirement blocks whose headings match the requirement-ID grammar.
-6. Live R-IDs are unique and strictly ascending; the `Retired` list is ascending with no duplicates.
-7. Live and retired IDs are disjoint, and their union is exactly `R-01`..`R-<max>` contiguous.
+6. Live REQ-IDs are unique and strictly ascending; the `Retired` list is ascending with no duplicates.
+7. Live and retired IDs are disjoint, and their union is exactly `REQ-001`..`REQ-<max>` contiguous.
 8. `Statement` appears exactly once per requirement, before `Acceptance`, with a non-empty value.
 9. `Acceptance` appears exactly once per requirement, with at least one nested non-empty bullet.
 10. No `Statement` value or acceptance bullet is a placeholder.
@@ -183,7 +183,7 @@ Classification: write-prd is a technique skill — application and gap scenarios
 
 Two lanes, per spec 01.
 
-**Deterministic fixture lane** (scripted tests, no agent): every bootstrap state-table row including both stop-on-symlink cases; the malformed-section stop; append-then-fail rollback; abandonment deleting session-created untracked files while preserving a pre-existing dirty non-manifest path; approval-withheld leaving the exact session patch uncommitted; manifest preflight rejecting a pre-dirtied path. Validator fixtures cover one bad fixture per check and per near-miss class: trailing- and double-hyphen slugs, `prd-000`, `R-00`, tombstone-live collision, gap without tombstone, retired list out of order, metadata under `## Options`, fenced-code decoy headings and keys, `TODO`-cased placeholders.
+**Deterministic fixture lane** (scripted tests, no agent): every bootstrap state-table row including both stop-on-symlink cases; the malformed-section stop; append-then-fail rollback; abandonment deleting session-created untracked files while preserving a pre-existing dirty non-manifest path; approval-withheld leaving the exact session patch uncommitted; manifest preflight rejecting a pre-dirtied path. Validator fixtures cover one bad fixture per check and per near-miss class: trailing- and double-hyphen slugs, `prd-000`, `REQ-000`, tombstone-live collision, gap without tombstone, retired list out of order, metadata under `## Options`, fenced-code decoy headings and keys, `TODO`-cased placeholders.
 
 **Tier-2 scenarios** (Claude Code; RED baselines captured before the skill exists; all assertions observable — files, validator exits, git state):
 
@@ -218,3 +218,5 @@ This spec's implementation is done when:
 - Codex tier-3 conformance runs (deferred, as for specs 01 and 02).
 - Backlog entry prioritization, aging policy, and a `Scope:` field (rejected as YAGNI for a solo short backlog; revisit if triage noise appears).
 - Git-history-based allocation for PRD numbers (deletion is illegal, so the filename scan stays sound — the spec 02 argument; requirement IDs get tombstones instead because retirement is legal).
+
+Erratum (2026-07-25): ID forms normalized by spec 04 (REQ-NNN fixed three-digit, citations PRD-NNN REQ-NNN); this supersedes the two-tier width rule.

@@ -42,7 +42,7 @@ test-workflow/
 ## Validator Framework
 
 - One validator is one Python file, stdlib only, compatible with the system Python 3.9.
-- CLI contract: `python3 <owning-skill>/scripts/validate_<artifact>.py <path>`; exit 0 on pass, nonzero on failure with one line-referenced error per violation on stderr. A validator whose owning skill does not exist yet (today: `validate_roadmap.py`, until the roadmap-owning spec lands) sits beside the tests in `test-workflow/tests/`.
+- CLI contract: `python3 <owning-skill>/scripts/validate_<artifact>.py <path>`; exit 0 on pass, nonzero on failure with one line-referenced error per violation on stderr. `validate_roadmap.py` is owned by prd-to-milestones (spec 04) at `prd-to-milestones/scripts/`.
 - Validators check structure only. Prose quality, judgment calls, and boundary behavior stay with agent scenarios.
 - Dual-use: test lanes assert with validators, and skills run the same validator as a self-check gate in the step that writes the artifact. The recommended default is to gate; each focused spec records its skill's decision.
 - Validators take the artifact path as their only required argument so they run identically inside a target project, a test fixture, and either platform.
@@ -61,25 +61,25 @@ test-workflow/
 8. `review-ready` and `accepted` milestones contain only `done` features.
 9. `blocked(<slug>)` slugs are format-checked only (lowercase alphanumerics and hyphens); whether `docs/decision-backlog/<slug>.md` exists is a workflow-skill concern, because validators must run identically on fixtures outside any project. `failed(<reason>)` features carry a `Learning:` key of the form `docs/learnings/ALI-NNN.md`; the path format is checked, not the file's existence.
 10. `Next action` is non-empty and is not a placeholder (`TBD`, `TODO`).
-11. Structural strictness: any heading whose text is grammar-shaped but malformed — `M` or `F` followed by digits, not exactly matching `## M<NN> — <title>` or `### F<NN> — <title>` (hyphen for em dash, wrong digit count, wrong heading level) — is an error. Non-grammar-shaped sections (e.g. `## Notes`) are permitted and ignored, parallel to unknown keys.
+11. Structural strictness: any heading whose text is grammar-shaped but malformed — `MS`, `FEAT`, `M`, or `F` followed by digits at heading levels `#{1,6}`, not exactly matching `## MS-NNN — <title>` or `### FEAT-NNN — <title>` — is an error. Non-grammar-shaped sections (e.g. `## Notes`) are permitted and ignored, parallel to unknown keys.
 
 ## ROADMAP.md Grammar (Normative)
 
 ```markdown
 ## Current Workflow Status
 
-- Current milestone: M03 — Authentication      (or `none`)
-- Milestone state: in-progress                 (or `none`)
-- Active feature: F04 — WIP                    (or `none`)
-- Checkpoint: recovery                         (optional)
-- Blocker: reviewer unavailable                (optional)
-- Next action: execute-milestone M03
+- Current milestone: MS-003 — Authentication      (or `none`)
+- Milestone state: in-progress                    (or `none`)
+- Active feature: FEAT-004 — WIP                  (or `none`)
+- Checkpoint: recovery                            (optional)
+- Blocker: reviewer unavailable                   (optional)
+- Next action: execute-milestone MS-003
 
-## M03 — Authentication
+## MS-003 — Authentication
 
 - State: in-progress
 
-### F04 — Session tokens
+### FEAT-004 — Session tokens
 
 - Status: WIP
 - Description: one sentence of scope.
@@ -95,17 +95,19 @@ test-workflow/
   - Findings: none | <each blocking finding: fixed | refuted(<evidence>)>
 ```
 
-Milestone sections repeat per milestone in planned order; feature subsections repeat per feature in execution order. Keys are literal; unknown keys are permitted and ignored by the validator. Headings are strict where grammar-shaped: a repeated `## Current Workflow Status` section and any near-miss `M`/`F` heading are validation errors; other sections are ignored.
+Milestone sections repeat per milestone in planned order; feature subsections repeat per feature in execution order. Keys are literal; unknown keys are permitted and ignored by the validator. Headings are strict where grammar-shaped: a repeated `## Current Workflow Status` section and any near-miss `MS`/`FEAT`/`M`/`F` heading are validation errors; other sections are ignored.
 
 The summary tuple `(Current milestone, Milestone state, Active feature)` must be one of:
 
 | Current milestone | Milestone state | Active feature |
 |---|---|---|
 | `none` | `none` | `none` |
-| `M<NN>` | `planning-pending`, `planned` | `none` |
-| `M<NN>` | `in-progress`, `remediating` | one `WIP` feature, or `none` between features |
-| `M<NN>` | `paused` | the preserved `WIP` feature, or `none` |
-| `M<NN>` | `review-ready`, `accepted` | `none` |
+| `MS-NNN` | `planning-pending`, `planned` | `none` |
+| `MS-NNN` | `in-progress`, `remediating` | one `WIP` feature, or `none` between features |
+| `MS-NNN` | `paused` | the preserved `WIP` feature, or `none` |
+| `MS-NNN` | `review-ready`, `accepted` | `none` |
+
+Erratum (2026-07-25): IDs follow spec 04's naming scheme (PREFIX-NNN, three digits); milestone sections additionally require Goal and Covers keys and may retire milestone numbers — spec 04 is the naming and milestone-grammar authority.
 
 ## Scenario Conventions
 

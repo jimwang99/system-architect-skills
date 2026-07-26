@@ -159,17 +159,17 @@ EOF
 cat > "$d/ROADMAP.md" <<'EOF'
 ## Current Workflow Status
 
-- Current milestone: M01 — API platform
+- Current milestone: MS-001 — API platform
 - Milestone state: paused
 - Active feature: none
 - Blocker: retry semantics need a human decision
 - Next action: human: resolve docs/decision-backlog/retry-semantics.md
 
-## M01 — API platform
+## MS-001 — API platform
 
 - State: paused
 
-### F01 — Auth layer
+### FEAT-001 — Auth layer
 
 - Status: done
 - Description: token auth for the API.
@@ -183,7 +183,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
   - Verdict: approve
   - Findings: none
 
-### F02 — Request logging
+### FEAT-002 — Request logging
 
 - Status: done
 - Description: structured request logs.
@@ -197,7 +197,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
   - Verdict: approve
   - Findings: none
 
-### F03 — API retry layer
+### FEAT-003 — API retry layer
 
 - Status: blocked(retry-semantics)
 - Description: retry layer for transient API failures.
@@ -222,7 +222,7 @@ None stacked — this is an authorized happy-path acceptance with supersession a
 - `docs/adr/adr-002-no-retries.md` has `status: superseded` and `superseded-by: adr-003-retry-policy.md`; its body is byte-identical (`check_adr_frozen.py` exits 0 on it; the acceptance diff touches only its frontmatter).
 - The draft filename `adr-draft-retry-policy.md` no longer exists; `docs/decision-backlog/retry-semantics.md` is deleted.
 - Mutable references repointed: `docs/plans/retry-rollout.md` and `docs/adr/adr-draft-event-bus.md` now cite `adr-003-retry-policy.md`; `grep -rn "adr-draft-retry-policy" --exclude-dir=.git "$d"` finds nothing.
-- `ROADMAP.md` is byte-identical to the seed (`git -C "$d" diff <seed-commit> HEAD -- ROADMAP.md` empty); the preview and the final message name `F03` as still `blocked(retry-semantics)` on the slug this acceptance resolved (report observable — no ROADMAP edit).
+- `ROADMAP.md` is byte-identical to the seed (`git -C "$d" diff <seed-commit> HEAD -- ROADMAP.md` empty); the preview and the final message name `FEAT-003` as still `blocked(retry-semantics)` on the slug this acceptance resolved (report observable — no ROADMAP edit).
 - Exactly one new commit relative to the seed (`git rev-list --count HEAD` = seed + 1) containing the whole transition; `git status --short` empty after the run.
 
 ## Forbidden

@@ -126,8 +126,8 @@ The personal installation remains:
 | `docs/adr/adr-*.md` | Architectural rationale: the "why". |
 | `docs/decision-backlog/<slug>.md` | Unresolved questions requiring human judgment. |
 | `ROADMAP.md` | Planned order, milestone and feature state, blockers, and next action. |
-| `docs/plans/milestone-<NN>/<feature-id>.md` | Validated implementation plan for one feature. |
-| `docs/reviews/milestone-<NN>.md` | Append-only review progress and final verdict. |
+| `docs/plans/milestone-<NNN>/feat-<NNN>.md` | Validated implementation plan for one feature. |
+| `docs/reviews/milestone-<NNN>.md` | Append-only review progress and final verdict. |
 | `docs/learnings/ALI-NNN.md` | Evidence-backed plan-versus-reality divergence. |
 
 PRDs are living documents edited in place; every PRD diff is shown to the human
@@ -144,12 +144,12 @@ section is always a concise status view:
 ```markdown
 ## Current Workflow Status
 
-- Current milestone: M03 — Authentication
+- Current milestone: MS-003 — Authentication
 - Milestone state: paused
-- Active feature: F04 — WIP
+- Active feature: FEAT-004 — WIP
 - Checkpoint: recovery
 - Blocker: reviewer unavailable
-- Next action: invoke `execute-milestone M03`
+- Next action: invoke `execute-milestone MS-003`
 ```
 
 The remainder defines milestones and their ordered features. Every feature
@@ -206,17 +206,18 @@ findings.
 
 ```text
 planning-pending -> planned -> in-progress -> review-ready -> accepted
-                                  |                |
-                                  v                v
-                                paused         remediating
-                                  |                |
-                                  +-> in-progress  +-> review-ready
+       ^               |           |                |
+       |               |           v                v
+       +--[scope change]+        paused         remediating
+                                   |                |
+                                   +-> in-progress  +-> review-ready
 ```
 
 `review-ready` requires every planned feature to be `done`. Blocked and failed
 features create recovery checkpoints, not early milestone reviews. A milestone
 branch is the implementation and review unit; it merges to `main` only after
-human acceptance.
+human acceptance. A scope change folded into a planned milestone resets it to
+planning-pending and deletes its feature entries (spec 04).
 
 ## Milestone Execution Contract
 

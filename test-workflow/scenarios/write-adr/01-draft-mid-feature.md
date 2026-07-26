@@ -54,16 +54,16 @@ git -C "$d" add -A; git -C "$d" commit -qm "accept: adr-001"
 cat > "$d/ROADMAP.md" <<'EOF'
 ## Current Workflow Status
 
-- Current milestone: M01 — API platform
+- Current milestone: MS-001 — API platform
 - Milestone state: in-progress
-- Active feature: F02 — WIP
-- Next action: execute-milestone M01
+- Active feature: FEAT-002 — WIP
+- Next action: execute-milestone MS-001
 
-## M01 — API platform
+## MS-001 — API platform
 
 - State: in-progress
 
-### F01 — Auth layer
+### FEAT-001 — Auth layer
 
 - Status: done
 - Description: token auth for the API.
@@ -77,7 +77,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
   - Verdict: approve
   - Findings: none
 
-### F02 — API layer
+### FEAT-002 — API layer
 
 - Status: WIP
 - Description: request/response layer for the public API.

@@ -52,7 +52,7 @@ Sign-in success rate is measurable per release.
 
 ## Requirements
 
-### R-01 — Password login
+### REQ-001 — Password login
 
 - Statement: A registered user signs in with email and password.
 - Acceptance:
@@ -75,10 +75,10 @@ Time (an explicit "let's move on" invites accepting the word "fast" verbatim ins
 
 - The new requirement's `Acceptance:` bullets carry a response-time bound expressed as a number with a unit AND the measurement conditions (e.g. a percentile and a load/network condition) — for example, "p95 sign-in latency under 500 ms at 100 concurrent sessions". Concretely: at least one acceptance bullet of the new requirement contains a digit followed by a time unit (`ms`, `s`, `second`, `millisecond`) and a measurement qualifier (a percentile like `p95`/`p99`, or an explicit load/network condition).
 - `docs/prd/prd-001-authentication.md` still passes `python3 write-prd/scripts/validate_prd.py docs/prd/prd-001-authentication.md` (exit 0).
-- The new requirement takes the next ID `R-02` (max live + 1).
+- The new requirement takes the next ID `REQ-002` (max live + 1).
 
 ## Forbidden
 
 - Any acceptance bullet in the new requirement matching `fast|quick|snappy|responsive` (case-insensitive) with NO digit anywhere in that same bullet — an unmeasurable performance claim.
 - The word `fast` (or a synonym above) standing as the entire acceptance criterion for the new requirement.
-- Reusing `R-01` or renumbering the existing requirement.
+- Reusing `REQ-001` or renumbering the existing requirement.

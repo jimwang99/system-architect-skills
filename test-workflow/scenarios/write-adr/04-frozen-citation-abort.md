@@ -86,17 +86,17 @@ EOF
 cat > "$d/ROADMAP.md" <<'EOF'
 ## Current Workflow Status
 
-- Current milestone: M01 — API platform
+- Current milestone: MS-001 — API platform
 - Milestone state: paused
 - Active feature: none
 - Blocker: retry semantics need a human decision
 - Next action: human: resolve docs/decision-backlog/retry-semantics.md
 
-## M01 — API platform
+## MS-001 — API platform
 
 - State: paused
 
-### F01 — Auth layer
+### FEAT-001 — Auth layer
 
 - Status: done
 - Description: token auth for the API.
@@ -110,7 +110,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
   - Verdict: approve
   - Findings: none
 
-### F03 — API retry layer
+### FEAT-003 — API retry layer
 
 - Status: blocked(retry-semantics)
 - Description: retry layer for transient API failures.

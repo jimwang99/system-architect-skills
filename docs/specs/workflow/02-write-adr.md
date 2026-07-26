@@ -149,6 +149,8 @@ Supported history model, stated explicitly: a full (non-shallow) clone, with the
 
 Its tests build tiny scratch git repositories (the pattern the spec-01 toy scenario proved) covering: clean frozen file passes; post-freeze body edit fails; supersession frontmatter edit passes; rename-at-acceptance followed; delete-and-recreate at the same path fails closed; frozen status with truncated (shallow-like) history fails closed; rename across a merge commit exercised and its outcome documented.
 
+Erratum (2026-07-25): when cited from other artifacts, ADRs are cited as ADR-NNN (spec 04 naming); filenames are unchanged.
+
 ## Verification Plan
 
 Per spec 01's classification (updated alongside this spec), write-adr is reference material plus two discipline rules. Scenarios live in `test-workflow/scenarios/write-adr/`, results append to `test-workflow/results/write-adr.md`, tier ladder and RED discipline apply — baselines are captured before `SKILL.md` is written.
