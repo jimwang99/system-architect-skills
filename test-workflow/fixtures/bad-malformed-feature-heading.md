@@ -1,15 +1,17 @@
 ## Current Workflow Status
 
-- Current milestone: M02 — Parser
+- Current milestone: MS-002 — Parser
 - Milestone state: in-progress
-- Active feature: F03 — WIP
+- Active feature: FEAT-003 — WIP
 - Next action: execute-milestone M02
 
-## M01 — Setup
+## MS-001 — Setup
 
 - State: accepted
+- Goal: increment 31 works end to end.
+- Covers: PRD-001 REQ-031
 
-### F01 — Scaffold
+### FEAT-001 — Scaffold
 
 - Status: done
 - Description: scaffold the project.
@@ -23,11 +25,13 @@
   - Verdict: approve
   - Findings: none
 
-## M02 — Parser
+## MS-002 — Parser
 
 - State: in-progress
+- Goal: increment 32 works end to end.
+- Covers: PRD-001 REQ-032
 
-### F02 — Tokenizer
+### FEAT-002 — Tokenizer
 
 - Status: done
 - Description: split input into tokens.
@@ -48,11 +52,13 @@
 - Acceptance: golden files match.
 - Test intent: golden-file comparison tests.
 
-## M03 — CLI
+## MS-003 — CLI
 
 - State: planned
+- Goal: increment 33 works end to end.
+- Covers: PRD-001 REQ-033
 
-### F04 — Renderer
+### FEAT-004 — Renderer
 
 - Status: todo
 - Description: render AST to text.
