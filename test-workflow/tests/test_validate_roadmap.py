@@ -4,7 +4,8 @@ import sys
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
+SCRIPTS = os.path.join(HERE, "..", "..", "prd-to-milestones", "scripts")
+sys.path.insert(0, SCRIPTS)
 from validate_roadmap import validate  # noqa: E402
 
 FIX = os.path.join(HERE, "..", "fixtures")
@@ -48,6 +49,18 @@ class TestBadFixtures(unittest.TestCase):
         "bad-malformed-milestone-heading.md": "malformed milestone heading",
         "bad-malformed-feature-heading.md": "malformed feature heading",
         "bad-duplicate-status-section.md": "duplicate '## Current Workflow Status' section",
+        "bad-missing-goal.md": "missing 'Goal'",
+        "bad-placeholder-goal.md": "Goal is a placeholder",
+        "bad-missing-covers.md": "missing 'Covers'",
+        "bad-covers-two-digit.md": "Covers must be",
+        "bad-covers-lowercase.md": "Covers must be",
+        "bad-covers-unqualified.md": "Covers must be",
+        "bad-covers-000.md": "illegal 000 in citation",
+        "bad-dup-covered-req.md": "cited more than once",
+        "bad-ms-near-miss-two-digit.md": "malformed milestone heading",
+        "bad-feat-near-miss.md": "malformed feature heading",
+        "bad-tombstone-gap.md": "with no gaps",
+        "bad-tombstone-collision.md": "collide with live sections",
     }
 
     def test_bad_fixtures_fail_with_expected_error(self):

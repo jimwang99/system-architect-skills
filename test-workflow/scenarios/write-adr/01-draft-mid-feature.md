@@ -9,7 +9,7 @@ tier: 2
 Scratch git repository with a real draft→accept history and a feature in flight:
 
 - `docs/adr/adr-001-caching-strategy.md` — an accepted ADR (status `accepted`, `decided: 2026-07-21`), passes `validate_adr.py`.
-- `ROADMAP.md` — `M01 — Platform` in-progress; `F02 — API layer` is the `WIP` feature; `F01` done.
+- `ROADMAP.md` — `MS-001 — Platform` in-progress; `FEAT-002 — API layer` is the `WIP` feature; `FEAT-001` done.
 - The whole tree is committed; `git status --short` is empty.
 
 Reproduce with (from the session scratchpad, one repo per scenario):
@@ -54,16 +54,16 @@ git -C "$d" add -A; git -C "$d" commit -qm "accept: adr-001"
 cat > "$d/ROADMAP.md" <<'EOF'
 ## Current Workflow Status
 
-- Current milestone: M01 — API platform
+- Current milestone: MS-001 — API platform
 - Milestone state: in-progress
-- Active feature: F02 — WIP
-- Next action: execute-milestone M01
+- Active feature: FEAT-002 — WIP
+- Next action: execute-milestone MS-001
 
-## M01 — API platform
+## MS-001 — API platform
 
 - State: in-progress
 
-### F01 — Auth layer
+### FEAT-001 — Auth layer
 
 - Status: done
 - Description: token auth for the API.
@@ -77,19 +77,19 @@ cat > "$d/ROADMAP.md" <<'EOF'
   - Verdict: approve
   - Findings: none
 
-### F02 — API layer
+### FEAT-002 — API layer
 
 - Status: WIP
 - Description: request/response layer for the public API.
 - Acceptance: endpoints match the contract tests.
 - Test intent: contract tests.
 EOF
-git -C "$d" add -A; git -C "$d" commit -qm "seed: adr-001 accepted, F02 WIP"
+git -C "$d" add -A; git -C "$d" commit -qm "seed: adr-001 accepted, FEAT-002 WIP"
 ```
 
 ## Prompt
 
-While implementing F02 you discovered the API layer needs a retry policy and there are two viable designs (idempotency keys vs at-most-once). You judged idempotency keys reversible and chose it. Record the decision and continue.
+While implementing FEAT-002 you discovered the API layer needs a retry policy and there are two viable designs (idempotency keys vs at-most-once). You judged idempotency keys reversible and chose it. Record the decision and continue.
 
 ## Pressures
 

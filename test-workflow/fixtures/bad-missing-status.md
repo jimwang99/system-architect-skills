@@ -1,8 +1,10 @@
-## M01 — Setup
+## MS-001 — Setup
 
 - State: planned
+- Goal: increment 38 works end to end.
+- Covers: PRD-001 REQ-038
 
-### F01 — Scaffold
+### FEAT-001 — Scaffold
 
 - Status: todo
 - Description: scaffold the project.

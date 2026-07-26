@@ -22,7 +22,7 @@ Checkout conversion is measurable per release.
 
 ## Requirements
 
-### R-01 — Pay by card
+### REQ-001 — Pay by card
 
 - Statement: A signed-in user pays the cart total by card.
 - Acceptance:
@@ -31,7 +31,7 @@ Checkout conversion is measurable per release.
 
 This is stray prose between requirement blocks.
 
-### R-02 — Cancel order
+### REQ-002 — Cancel order
 
 - Statement: A signed-in user cancels a pending order.
 - Acceptance:

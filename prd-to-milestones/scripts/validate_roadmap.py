@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate a ROADMAP.md against the doc-driven workflow grammar.
 
-Spec: docs/specs/workflow/01-testing-and-conformance.md.
+Spec: docs/specs/workflow/04-prd-to-milestones.md.
 Stdlib only, Python 3.9+. Exit 0 on pass; exit 1 with one
 "path:line: message" per violation on stderr.
 """
@@ -18,21 +18,27 @@ MIDFLIGHT = {"in-progress", "paused", "review-ready", "remediating"}
 FUTURE_OK = {"planning-pending", "planned"}
 FEATURE_STATUS = re.compile(
     r"^(todo|WIP|done|blocked\([a-z0-9][a-z0-9-]*\)|failed\(.+\))$")
-M_HEAD = re.compile(r"^## (M\d{2}) — (.+)$")
-F_HEAD = re.compile(r"^### (F\d{2}) — (.+)$")
+M_HEAD = re.compile(r"^## (MS-[0-9]{3}) — (.+)$")
+F_HEAD = re.compile(r"^### (FEAT-[0-9]{3}) — (.+)$")
 KEY = re.compile(r"^- ([A-Z][A-Za-z ]*): ?(.*?)\s*$")
 EV_KEY = re.compile(r"^  - ([A-Z][A-Za-z ]*): (.*?)\s*$")
+NEAR_MISS = re.compile(r"^#{1,6} (MS|FEAT|M|F)-?[0-9]+\b")
+COVERS = re.compile(r"^PRD-([0-9]{3}) REQ-([0-9]{3})(?:, PRD-([0-9]{3}) REQ-([0-9]{3}))*$")
+CITATION = re.compile(r"PRD-([0-9]{3}) REQ-([0-9]{3})")
+RETIRED_MS = re.compile(r"^MS-([0-9]{3})(?:, MS-([0-9]{3}))*$")
+MS_TOKEN = re.compile(r"MS-([0-9]{3})")
+PLACEHOLDERS = {"tbd", "todo"}
 
 SUMMARY_REQ = ("Current milestone", "Milestone state", "Active feature", "Next action")
 FEATURE_REQ = ("Status", "Description", "Acceptance", "Test intent")
 EVIDENCE_REQ = ("Base", "Commits", "Tests", "Reviewer", "Verdict", "Findings")
-KNOWN_KEYS = set(SUMMARY_REQ) | set(FEATURE_REQ) | {"State", "Learning", "Evidence"}
+MILESTONE_REQ = ("State", "Goal", "Covers")
+KNOWN_KEYS = set(SUMMARY_REQ) | set(FEATURE_REQ) | set(MILESTONE_REQ) | {"Learning", "Evidence", "Retired milestones"}
 ACCEPT_VERDICTS = {"approve", "approve-with-findings"}
 FINDINGS = re.compile(
     r"^(none|[^;]+: (fixed|refuted\(.+?\))(; [^;]+: (fixed|refuted\(.+?\)))*)$")
 LEARNING = re.compile(r"^docs/learnings/ALI-\d{3}\.md$")
 STATUS_HEADING = "## Current Workflow Status"
-NEAR_MISS = re.compile(r"^#{2,6} ([MF])\d+\b")
 
 
 @dataclass
@@ -88,9 +94,9 @@ def parse(lines):
             continue
         nm = NEAR_MISS.match(line)
         if nm:
-            kind = "milestone" if nm.group(1) == "M" else "feature"
-            expected = "## M<NN> — <title>" if kind == "milestone" else "### F<NN> — <title>"
-            errors.append((n, "malformed %s heading, expected '%s' (two digits, em dash)" % (kind, expected)))
+            kind = "milestone" if nm.group(1) in ("MS", "M") else "feature"
+            expected = "## MS-NNN — <title>" if kind == "milestone" else "### FEAT-NNN — <title>"
+            errors.append((n, "malformed %s heading, expected '%s' (three digits, em dash)" % (kind, expected)))
             cur, in_evidence = None, False
             if kind == "milestone":
                 cur_m = None
@@ -152,10 +158,30 @@ def check_vocab(summary, milestones, errs):
             val, n = m.keys["State"]
             if val not in MILESTONE_STATES:
                 errs.append((n, "illegal milestone state '%s'" % val))
+        if "Goal" not in m.keys:
+            errs.append((m.line, "milestone %s missing 'Goal'" % m.id))
+        else:
+            val, n = m.keys["Goal"]
+            if not val.strip():
+                errs.append((n, "Goal is empty"))
+            elif val.strip().lower() in PLACEHOLDERS:
+                errs.append((n, "Goal is a placeholder"))
+        if "Covers" not in m.keys:
+            errs.append((m.line, "milestone %s missing 'Covers'" % m.id))
+        else:
+            val, n = m.keys["Covers"]
+            if not COVERS.match(val):
+                errs.append((n, "Covers must be 'PRD-NNN REQ-NNN, ...' (three digits each)"))
+            else:
+                for c in CITATION.finditer(val):
+                    if c.group(1) == "000" or c.group(2) == "000":
+                        errs.append((n, "illegal 000 in citation '%s'" % c.group(0)))
         for f in m.features:
             if f.id in seen_f:
                 errs.append((f.line, "duplicate feature ID %s" % f.id))
             seen_f[f.id] = f
+            if f.id.endswith("-000"):
+                errs.append((f.line, "illegal feature number 000"))
             for req in FEATURE_REQ:
                 if req not in f.keys:
                     errs.append((f.line, "feature %s missing '%s'" % (f.id, req)))
@@ -167,6 +193,45 @@ def check_vocab(summary, milestones, errs):
 
 def ref_id(value):
     return value.split(" — ")[0].strip() if value != "none" else "none"
+
+
+def check_citations(milestones, errs):
+    seen = {}
+    for m in milestones:
+        val, n = m.keys.get("Covers", ("", m.line))
+        for c in CITATION.finditer(val):
+            key = c.group(0)
+            if key in seen:
+                errs.append((n, "REQ cited more than once: '%s' (first at line %d)" % (key, seen[key])))
+            else:
+                seen[key] = n
+
+
+def check_ms_numbering(summary, milestones, errs):
+    def num(tok):
+        return int(tok.split("-")[1])
+    live = {}
+    for m in milestones:
+        if m.id.endswith("-000"):
+            errs.append((m.line, "illegal milestone number 000"))
+        live.setdefault(num(m.id), m)
+    retired = []
+    if summary is not None and "Retired milestones" in summary.keys:
+        val, n = summary.keys["Retired milestones"]
+        if not RETIRED_MS.match(val):
+            errs.append((n, "malformed Retired milestones line, expected 'MS-NNN, ...'"))
+        else:
+            retired = [int(t.group(1)) for t in MS_TOKEN.finditer(val)]
+            if 0 in retired:
+                errs.append((n, "illegal milestone number 000"))
+            if retired != sorted(set(retired)):
+                errs.append((n, "Retired milestones must be ascending without duplicates"))
+            collide = set(retired) & set(live)
+            if collide:
+                errs.append((n, "retired milestone IDs collide with live sections: %s" % sorted(collide)))
+    union = sorted((set(live) | set(retired)) - {0})
+    if union and union != list(range(1, union[-1] + 1)):
+        errs.append((min(m.line for m in milestones) if milestones else 1, "live and retired milestones must cover MS-001..MS-%03d with no gaps" % union[-1]))
 
 
 def check_agreement(summary, milestones, errs):
@@ -274,6 +339,8 @@ def validate(path):
     summary, milestones, errs = parse(lines)
     check_summary(lines, summary, errs)
     check_vocab(summary, milestones, errs)
+    check_citations(milestones, errs)
+    check_ms_numbering(summary, milestones, errs)
     check_agreement(summary, milestones, errs)
     check_features(milestones, errs)
     return ["%s:%d: %s" % (path, n, msg) for n, msg in sorted(errs)]

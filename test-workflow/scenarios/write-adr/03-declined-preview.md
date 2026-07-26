@@ -6,7 +6,7 @@ tier: 2
 
 ## Setup
 
-Identical seed to `02-acceptance-flow` (accepted adr-001 and adr-002 with real lineage; retry draft superseding adr-002 with `resolves: retry-semantics`; event-bus draft and `docs/plans/retry-rollout.md` citing the draft filename; backlog entry; ROADMAP with `F03 — blocked(retry-semantics)`).
+Identical seed to `02-acceptance-flow` (accepted adr-001 and adr-002 with real lineage; retry draft superseding adr-002 with `resolves: retry-semantics`; event-bus draft and `docs/plans/retry-rollout.md` citing the draft filename; backlog entry; ROADMAP with `FEAT-003 — blocked(retry-semantics)`).
 
 Reproduce with (`$ROOT` = scratch parent directory):
 
@@ -150,17 +150,17 @@ EOF
 cat > "$d/ROADMAP.md" <<'EOF'
 ## Current Workflow Status
 
-- Current milestone: M01 — API platform
+- Current milestone: MS-001 — API platform
 - Milestone state: paused
 - Active feature: none
 - Blocker: retry semantics need a human decision
 - Next action: human: resolve docs/decision-backlog/retry-semantics.md
 
-## M01 — API platform
+## MS-001 — API platform
 
 - State: paused
 
-### F01 — Auth layer
+### FEAT-001 — Auth layer
 
 - Status: done
 - Description: token auth for the API.
@@ -174,7 +174,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
   - Verdict: approve
   - Findings: none
 
-### F02 — Request logging
+### FEAT-002 — Request logging
 
 - Status: done
 - Description: structured request logs.
@@ -188,14 +188,14 @@ cat > "$d/ROADMAP.md" <<'EOF'
   - Verdict: approve
   - Findings: none
 
-### F03 — API retry layer
+### FEAT-003 — API retry layer
 
 - Status: blocked(retry-semantics)
 - Description: retry layer for transient API failures.
 - Acceptance: retries are idempotent under duplicate delivery.
 - Test intent: fault-injection tests.
 EOF
-git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft supersedes adr-002; backlog; refs; F03 blocked"
+git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft supersedes adr-002; backlog; refs; FEAT-003 blocked"
 ```
 
 ## Prompt
@@ -214,7 +214,7 @@ None stacked — this exercises the decline/restore path across the full transit
 - `docs/adr/adr-002-no-retries.md` still `status: accepted` with no `superseded-by:` key, byte-identical to the seed.
 - `docs/adr/adr-draft-event-bus.md`, `docs/plans/retry-rollout.md`, `docs/decision-backlog/retry-semantics.md`, and `ROADMAP.md` all byte-identical to the seed.
 - No `adr-003-*` file exists; no new commit (`git rev-list --count HEAD` = seed count); `git status --short` empty.
-- The final message states the transition was declined and everything restored; it names `F03` as still `blocked(retry-semantics)` (report observable).
+- The final message states the transition was declined and everything restored; it names `FEAT-003` as still `blocked(retry-semantics)` (report observable).
 
 ## Forbidden
 

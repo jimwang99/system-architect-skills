@@ -52,7 +52,7 @@ Checkout conversion is measurable per release.
 
 ## Requirements
 
-### R-01 — Pay by card
+### REQ-001 — Pay by card
 
 - Statement: A signed-in user pays the cart total by card.
 - Acceptance:
@@ -85,7 +85,7 @@ Session renewal is measurable per release.
 
 ## Requirements
 
-### R-01 — Issue session token
+### REQ-001 — Issue session token
 
 - Statement: The API issues a signed token on successful login.
 - Rationale: keeps ops simple
@@ -93,7 +93,7 @@ Session renewal is measurable per release.
   - A valid login returns a token with a configurable TTL.
   - The token is signed with the deployment key.
 
-### R-02 — Refresh session token
+### REQ-002 — Refresh session token
 
 - Statement: A valid token can be exchanged for a fresh token before expiry.
 - Acceptance:

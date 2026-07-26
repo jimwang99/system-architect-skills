@@ -1,16 +1,18 @@
 ## Current Workflow Status
 
-- Current milestone: M02 — Parser
+- Current milestone: MS-002 — Parser
 - Milestone state: paused
 - Active feature: none
 - Blocker: session-store choice needs human judgment
 - Next action: human: resolve docs/decision-backlog/session-store.md
 
-## M01 — Setup
+## MS-001 — Setup
 
 - State: accepted
+- Goal: increment 60 works end to end.
+- Covers: PRD-001 REQ-060
 
-### F01 — Scaffold
+### FEAT-001 — Scaffold
 
 - Status: done
 - Description: scaffold the project.
@@ -24,11 +26,13 @@
   - Verdict: approve
   - Findings: none
 
-## M02 — Parser
+## MS-002 — Parser
 
 - State: paused
+- Goal: increment 61 works end to end.
+- Covers: PRD-001 REQ-061
 
-### F02 — Tokenizer
+### FEAT-002 — Tokenizer
 
 - Status: done
 - Description: split input into tokens.
@@ -42,18 +46,20 @@
   - Verdict: approve-with-findings
   - Findings: naming nit: fixed
 
-### F03 — Parser core
+### FEAT-003 — Parser core
 
 - Status: blocked(session-store)
 - Description: build the AST from tokens.
 - Acceptance: golden files match.
 - Test intent: golden-file comparison tests.
 
-## M03 — CLI
+## MS-003 — CLI
 
 - State: planned
+- Goal: increment 62 works end to end.
+- Covers: PRD-001 REQ-062
 
-### F04 — Renderer
+### FEAT-004 — Renderer
 
 - Status: todo
 - Description: render AST to text.

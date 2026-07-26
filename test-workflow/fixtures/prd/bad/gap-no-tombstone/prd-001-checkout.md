@@ -22,7 +22,7 @@ Checkout conversion is measurable per release.
 
 ## Requirements
 
-### R-02 — Pay by card
+### REQ-002 — Pay by card
 
 - Statement: A signed-in user pays the cart total by card.
 - Acceptance:

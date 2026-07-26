@@ -10,8 +10,8 @@
 | `docs/adr/adr-*.md` | Architectural rationale — the why. Accepted/rejected bodies are frozen. |
 | `docs/decision-backlog/<slug>.md` | Undecided questions awaiting human judgment. |
 | `ROADMAP.md` | Milestone/feature state, blockers, next action. |
-| `docs/plans/milestone-<NN>/<feature-id>.md` | One feature's validated implementation plan. |
-| `docs/reviews/milestone-<NN>.md` | Append-only milestone review record. |
+| `docs/plans/milestone-<NNN>/feat-<NNN>.md` | One feature's validated implementation plan. |
+| `docs/reviews/milestone-<NNN>.md` | Append-only milestone review record. |
 | `docs/learnings/ALI-NNN.md` | Evidence-backed plan-versus-reality divergence. |
 
 ## Dispatch

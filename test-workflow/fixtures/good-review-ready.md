@@ -1,15 +1,17 @@
 ## Current Workflow Status
 
-- Current milestone: M02 — Parser
+- Current milestone: MS-002 — Parser
 - Milestone state: review-ready
 - Active feature: none
-- Next action: human: run review-milestone M02
+- Next action: human: run review-milestone MS-002
 
-## M01 — Setup
+## MS-001 — Setup
 
 - State: accepted
+- Goal: increment 63 works end to end.
+- Covers: PRD-001 REQ-063
 
-### F01 — Scaffold
+### FEAT-001 — Scaffold
 
 - Status: done
 - Description: scaffold the project.
@@ -23,11 +25,13 @@
   - Verdict: approve
   - Findings: none
 
-## M02 — Parser
+## MS-002 — Parser
 
 - State: review-ready
+- Goal: increment 64 works end to end.
+- Covers: PRD-001 REQ-064
 
-### F02 — Tokenizer
+### FEAT-002 — Tokenizer
 
 - Status: done
 - Description: split input into tokens.
@@ -41,7 +45,7 @@
   - Verdict: approve-with-findings
   - Findings: naming nit: fixed
 
-### F03 — Parser core
+### FEAT-003 — Parser core
 
 - Status: done
 - Description: build the AST from tokens.
@@ -55,11 +59,13 @@
   - Verdict: approve-with-findings
   - Findings: naming nit: fixed
 
-## M03 — CLI
+## MS-003 — CLI
 
 - State: planned
+- Goal: increment 65 works end to end.
+- Covers: PRD-001 REQ-065
 
-### F04 — Renderer
+### FEAT-004 — Renderer
 
 - Status: todo
 - Description: render AST to text.
