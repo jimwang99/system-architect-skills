@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "authentication failed" >&2
+exit 41

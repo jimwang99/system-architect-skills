@@ -1,0 +1,2 @@
+#!/bin/sh
+echo '{"verdict": "approve-with-findings", "findings": [{"severity": "advisory", "title": "style nit", "detail": "rename x"}]}'

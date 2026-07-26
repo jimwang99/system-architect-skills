@@ -1,0 +1,9 @@
+#!/bin/sh
+c=$(cat "$STUB_STATE/calls" 2>/dev/null || echo 0)
+echo $((c+1)) > "$STUB_STATE/calls"
+if [ "$c" = "0" ]; then
+    echo "authentication failed" >&2
+    exit 41
+else
+    echo '{"verdict": "approve", "findings": []}'
+fi
