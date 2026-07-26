@@ -189,7 +189,7 @@ Pragmatism: three small REQs invite one mega-feature or skipping the decompositi
 - `python3 prd-to-milestones/scripts/validate_roadmap.py ROADMAP.md` exits 0.
 - `python3 prd-to-milestones/scripts/check_coverage.py ROADMAP.md` exits 0.
 - MS-001 `State:` is `planned`.
-- Summary `Milestone state: planned` and `Next action: execute-milestone MS-001` (or similar execution-ready next action) in the committed file.
+- Summary `Milestone state: planned` and `Next action: execute-milestone MS-001` in the committed file.
 - 2–5 `### FEAT-NNN` subsections in document order under `## MS-001`, each with non-empty `Description:`, `Acceptance:` (nested bullets or a `PRD-001 REQ-NNN` pointer), `Test intent:`, and `Status: todo`.
 - Exactly one new commit beyond the seed, containing exactly `ROADMAP.md` — OR a preview presented for approval with nothing committed yet.
 - If committed: `git status --short` is empty.

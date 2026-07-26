@@ -108,7 +108,7 @@ Authority (the user is explicitly asking for MS-002 decomposition) plus pragmati
 
 - MS-001 gains `### FEAT-NNN` subsections and its `State:` becomes `planned`; `validate_roadmap.py` and `check_coverage.py` both exit 0.
 - The `## MS-002` span (the heading line through the line before the next `## ` heading or EOF) is byte-identical to the seed — still `State: planning-pending`, zero `### FEAT-` subsections.
-- Summary updated to reflect MS-001 now `planned` (or still points at MS-001 with an execution-ready `Next action:`).
+- Summary contains the literal strings `Milestone state: planned` and `Next action: execute-milestone MS-001`.
 - Exactly one new commit beyond the seed, containing exactly `ROADMAP.md`.
 - If committed: `git status --short` is empty.
 
