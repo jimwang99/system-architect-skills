@@ -1,6 +1,6 @@
 # Design Spec: Doc-Driven Agent Workflow
 
-> Status: approved umbrella design, 2026-07-24
+> Status: approved umbrella design, 2026-07-24. All nine focused specs designed, implemented, and tier-2 verified as of 2026-07-26; codex/tier-3 conformance deferred (test-workflow/TESTING.md).
 >
 > Scope: cross-skill contracts only. Each focused subsystem requires its own
 > design, implementation plan, and verification cycle.
@@ -378,16 +378,16 @@ explicit-ignition, and empty-human-session scenarios before support is claimed.
 Each item gets its own brainstormed spec under `docs/specs/workflow/` before
 implementation:
 
-1. Testing and cross-platform conformance.
-2. `write-adr`.
-3. `write-prd` and project bootstrap.
-4. `prd-to-milestones`.
-5. `milestone-to-features`.
-6. `act-learn-improve` checkpoint integration.
+1. Testing and cross-platform conformance. — done (spec 01-testing-and-conformance)
+2. `write-adr`. — done (spec 02-write-adr)
+3. `write-prd` and project bootstrap. — done (spec 03-write-prd)
+4. `prd-to-milestones`. — done (spec 04-prd-to-milestones)
+5. `milestone-to-features`. — done (spec 05-milestone-to-features)
+6. `act-learn-improve` checkpoint integration. — done (spec 06-act-learn-improve-integration)
 7. `execute-milestone`, including both platform references and per-stage
-   harness selection.
-8. `review-milestone`.
-9. Final `WORKFLOW.md` contract and end-to-end conformance.
+   harness selection. — done (spec 07-execute-milestone)
+8. `review-milestone`. — done (spec 08-review-milestone)
+9. Final `WORKFLOW.md` contract and end-to-end conformance. — done (spec 09-final-contract-and-conformance)
 
 ## Out of Scope
 
