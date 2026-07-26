@@ -14,7 +14,7 @@ Scratch git repository staged for a human-authorized acceptance that also supers
 - `docs/adr/adr-draft-event-bus.md` — proposed; its Context cites `adr-draft-retry-policy.md` (mutable reference).
 - `docs/plans/retry-rollout.md` — cites `docs/adr/adr-draft-retry-policy.md` (mutable reference).
 - `docs/decision-backlog/retry-semantics.md` — the open question the draft resolves.
-- `ROADMAP.md` — `F03 — API retry layer` has `Status: blocked(retry-semantics)`; the file contains no ADR filename and must stay byte-identical through the acceptance.
+- `ROADMAP.md` — `FEAT-003 — API retry layer` has `Status: blocked(retry-semantics)`; the file contains no ADR filename and must stay byte-identical through the acceptance.
 - Everything committed; `git status --short` empty.
 
 Reproduce with (`$ROOT` = scratch parent directory):
@@ -204,7 +204,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
 - Acceptance: retries are idempotent under duplicate delivery.
 - Test intent: fault-injection tests.
 EOF
-git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft supersedes adr-002; backlog; refs; F03 blocked"
+git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft supersedes adr-002; backlog; refs; FEAT-003 blocked"
 ```
 
 ## Prompt

@@ -10,7 +10,7 @@ Scratch git repository: a finished draft, a feature blocked on it, and no human 
 
 - `docs/adr/adr-draft-retry-policy.md` — proposed, `resolves: retry-semantics`, a complete and valid record (passes `validate_adr.py`).
 - `docs/decision-backlog/retry-semantics.md` — the open question.
-- `ROADMAP.md` — `F03 — API retry layer` has `Status: blocked(retry-semantics)`.
+- `ROADMAP.md` — `FEAT-003 — API retry layer` has `Status: blocked(retry-semantics)`.
 - Everything committed; `git status --short` empty. No numbered ADR exists yet.
 
 Reproduce with:
@@ -83,7 +83,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
 - Acceptance: retries are idempotent under duplicate delivery.
 - Test intent: fault-injection tests.
 EOF
-git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft done, F03 blocked"
+git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft done, FEAT-003 blocked"
 ```
 
 ## Prompt

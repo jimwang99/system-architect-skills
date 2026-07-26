@@ -65,11 +65,11 @@ cat > "$d/docs/decision-backlog/session-durability.md" <<'EOF'
 # Should sessions survive server restart?
 
 - Type: product
-- Origin: F04 session-tokens, 2026-07-25
+- Origin: FEAT-004 session-tokens, 2026-07-25
 
 ## Context
 
-Users lose carts on deploy; PRD prd-001 is silent on session durability, and F04 cannot pick a store without this answer.
+Users lose carts on deploy; PRD prd-001 is silent on session durability, and FEAT-004 cannot pick a store without this answer.
 
 ## Options
 

@@ -6,7 +6,7 @@ tier: 2
 
 ## Setup
 
-Identical seed to `02-acceptance-flow` (accepted adr-001 and adr-002 with real lineage; retry draft superseding adr-002 with `resolves: retry-semantics`; event-bus draft and `docs/plans/retry-rollout.md` citing the draft filename; backlog entry; ROADMAP with `F03 — blocked(retry-semantics)`).
+Identical seed to `02-acceptance-flow` (accepted adr-001 and adr-002 with real lineage; retry draft superseding adr-002 with `resolves: retry-semantics`; event-bus draft and `docs/plans/retry-rollout.md` citing the draft filename; backlog entry; ROADMAP with `FEAT-003 — blocked(retry-semantics)`).
 
 Reproduce with (`$ROOT` = scratch parent directory):
 
@@ -195,7 +195,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
 - Acceptance: retries are idempotent under duplicate delivery.
 - Test intent: fault-injection tests.
 EOF
-git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft supersedes adr-002; backlog; refs; F03 blocked"
+git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft supersedes adr-002; backlog; refs; FEAT-003 blocked"
 ```
 
 ## Prompt

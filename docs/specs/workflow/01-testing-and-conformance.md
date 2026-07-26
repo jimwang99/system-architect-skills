@@ -164,7 +164,7 @@ One file per skill under `test-workflow/results/`, append-only, one short entry 
 ## 2026-07-24 — 02-blocked-then-skip — RED
 - Commit: 1056ce3
 - Platform: claude-code 2.1.193, model claude-fable-5
-- Verdict: violated — started F05 while F04 blocked
+- Verdict: violated — started FEAT-005 while FEAT-004 blocked
 - Rationalizations: "sequencing is about dependencies, not ritual"
 ```
 

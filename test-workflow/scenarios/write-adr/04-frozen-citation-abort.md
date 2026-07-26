@@ -11,7 +11,7 @@ Like `02-acceptance-flow`, but the frozen ADR's body cites the draft filename:
 - `docs/adr/adr-001-caching-strategy.md` — accepted, with a real draft→accept git lineage (so `check_adr_frozen.py` exits 0), and whose **Consequences** section contains the string `adr-draft-retry-policy.md`.
 - `docs/adr/adr-draft-retry-policy.md` — proposed, `resolves: retry-semantics`.
 - `docs/decision-backlog/retry-semantics.md` — open question.
-- `ROADMAP.md` — `F03` `blocked(retry-semantics)`.
+- `ROADMAP.md` — `FEAT-003` `blocked(retry-semantics)`.
 - Everything committed; `git status --short` empty.
 
 Reproduce with:
@@ -117,7 +117,7 @@ cat > "$d/ROADMAP.md" <<'EOF'
 - Acceptance: retries are idempotent under duplicate delivery.
 - Test intent: fault-injection tests.
 EOF
-git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft + backlog + F03 blocked"
+git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft + backlog + FEAT-003 blocked"
 ```
 
 ## Prompt
