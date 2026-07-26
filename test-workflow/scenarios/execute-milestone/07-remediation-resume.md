@@ -6,7 +6,7 @@ tier: 2
 
 ## Setup
 
-MS-001 is `remediating` after a review that dispositioned one integration finding as `fix-feature(FEAT-002)`. FEAT-001 is `done` with full evidence; FEAT-002 is `todo`. `docs/reviews/milestone-001.md` is committed with all six sweep sections and `- Verdict: remediate`. The test suite covers both greet (passing) and farewell (failing — not yet implemented). The skill must resume the milestone and run FEAT-002 through the fix-feature loop.
+MS-001 is `remediating` after a review that dispositioned one integration finding as `fix-feature(FEAT-002)`. MS-001 originally covered only REQ-001 (greet); FEAT-001 is `done` with full evidence. FEAT-002 was appended by the remediate step to fix the farewell integration concern. `docs/reviews/milestone-001.md` carries all six sweep sections and `- Verdict: remediate`. The test suite covers both greet (passing) and farewell (failing — not yet implemented). The skill must resume the milestone and run FEAT-002 through the fix-feature loop.
 
 Reproduce:
 
@@ -85,19 +85,20 @@ if __name__ == "__main__":
     unittest.main()
 EOF
 
+# MS-001 covers only REQ-001; MS-002 (planning-pending) covers REQ-002
 cat > "$TARGET/ROADMAP.md" <<'EOF'
 ## Current Workflow Status
 
-- Current milestone: MS-001 — App
+- Current milestone: MS-001 — Greeter
 - Milestone state: planned
 - Active feature: none
 - Next action: execute-milestone MS-001
 
-## MS-001 — App
+## MS-001 — Greeter
 
 - State: planned
-- Goal: ship greet() and farewell().
-- Covers: PRD-001 REQ-001, PRD-001 REQ-002
+- Goal: ship greet() returning "hello".
+- Covers: PRD-001 REQ-001
 
 ### FEAT-001 — Implement greet()
 
@@ -106,12 +107,11 @@ cat > "$TARGET/ROADMAP.md" <<'EOF'
 - Acceptance: PRD-001 REQ-001
 - Test intent: unit test asserting greet() returns "hello"
 
-### FEAT-002 — Implement farewell()
+## MS-002 — Farewell
 
-- Status: todo
-- Description: Implement farewell() in src/app.py.
-- Acceptance: PRD-001 REQ-002
-- Test intent: unit test asserting farewell() returns "bye"
+- State: planning-pending
+- Goal: ship farewell() returning "bye".
+- Covers: PRD-001 REQ-002
 EOF
 
 git -C "$TARGET" add -A && git -C "$TARGET" commit -qm "seed: initial state"
@@ -122,16 +122,16 @@ git -C "$TARGET" checkout -qb milestone/MS-001
 cat > "$TARGET/ROADMAP.md" <<'EOF'
 ## Current Workflow Status
 
-- Current milestone: MS-001 — App
+- Current milestone: MS-001 — Greeter
 - Milestone state: in-progress
 - Active feature: none
 - Next action: execute-milestone MS-001
 
-## MS-001 — App
+## MS-001 — Greeter
 
 - State: in-progress
-- Goal: ship greet() and farewell().
-- Covers: PRD-001 REQ-001, PRD-001 REQ-002
+- Goal: ship greet() returning "hello".
+- Covers: PRD-001 REQ-001
 
 ### FEAT-001 — Implement greet()
 
@@ -140,12 +140,11 @@ cat > "$TARGET/ROADMAP.md" <<'EOF'
 - Acceptance: PRD-001 REQ-001
 - Test intent: unit test asserting greet() returns "hello"
 
-### FEAT-002 — Implement farewell()
+## MS-002 — Farewell
 
-- Status: todo
-- Description: Implement farewell() in src/app.py.
-- Acceptance: PRD-001 REQ-002
-- Test intent: unit test asserting farewell() returns "bye"
+- State: planning-pending
+- Goal: ship farewell() returning "bye".
+- Covers: PRD-001 REQ-002
 EOF
 
 git -C "$TARGET" add ROADMAP.md && git -C "$TARGET" commit -qm "ignition: MS-001 planned -> in-progress"
@@ -155,16 +154,16 @@ IGNITION_SHA=$(git -C "$TARGET" rev-parse HEAD)
 cat > "$TARGET/ROADMAP.md" <<'EOF'
 ## Current Workflow Status
 
-- Current milestone: MS-001 — App
+- Current milestone: MS-001 — Greeter
 - Milestone state: in-progress
 - Active feature: FEAT-001 — Implement greet()
 - Next action: execute-milestone MS-001
 
-## MS-001 — App
+## MS-001 — Greeter
 
 - State: in-progress
-- Goal: ship greet() and farewell().
-- Covers: PRD-001 REQ-001, PRD-001 REQ-002
+- Goal: ship greet() returning "hello".
+- Covers: PRD-001 REQ-001
 
 ### FEAT-001 — Implement greet()
 
@@ -173,12 +172,11 @@ cat > "$TARGET/ROADMAP.md" <<'EOF'
 - Acceptance: PRD-001 REQ-001
 - Test intent: unit test asserting greet() returns "hello"
 
-### FEAT-002 — Implement farewell()
+## MS-002 — Farewell
 
-- Status: todo
-- Description: Implement farewell() in src/app.py.
-- Acceptance: PRD-001 REQ-002
-- Test intent: unit test asserting farewell() returns "bye"
+- State: planning-pending
+- Goal: ship farewell() returning "bye".
+- Covers: PRD-001 REQ-002
 EOF
 
 git -C "$TARGET" add ROADMAP.md && git -C "$TARGET" commit -qm "claim: FEAT-001 todo -> WIP"
@@ -197,8 +195,8 @@ EOF
 
 git -C "$TARGET" add docs/plans/milestone-001/feat-001.md && git -C "$TARGET" commit -qm "plan: feat-001 plan file"
 
-# impl already present (src/app.py has greet()); impl commit
-git -C "$TARGET" commit -q --allow-empty -m "impl: greet() returns hello — tests pass 1/2"
+# impl commit (greet() already in src/app.py; tests 1/1 for greet pass — farewell import error skipped in this run)
+git -C "$TARGET" commit -q --allow-empty -m "impl: greet() returns hello — tests pass 1/1"
 IMPL_SHA=$(git -C "$TARGET" rev-parse HEAD)
 
 cat > "$TARGET/docs/reviews/milestone-001-feat-001.json" <<'EOF'
@@ -211,16 +209,16 @@ HEAD_SHA="$IMPL_SHA"
 cat > "$TARGET/ROADMAP.md" <<EOF
 ## Current Workflow Status
 
-- Current milestone: MS-001 — App
+- Current milestone: MS-001 — Greeter
 - Milestone state: in-progress
 - Active feature: none
 - Next action: execute-milestone MS-001
 
-## MS-001 — App
+## MS-001 — Greeter
 
 - State: in-progress
-- Goal: ship greet() and farewell().
-- Covers: PRD-001 REQ-001, PRD-001 REQ-002
+- Goal: ship greet() returning "hello".
+- Covers: PRD-001 REQ-001
 
 ### FEAT-001 — Implement greet()
 
@@ -231,36 +229,35 @@ cat > "$TARGET/ROADMAP.md" <<EOF
 - Evidence:
   - Base: ${BASE_SHA}
   - Commits: ${BASE_SHA}..${HEAD_SHA}
-  - Tests: pass — 1/2
+  - Tests: pass — 1/1
   - Reviewer: workflow-review stub
   - Verdict: approve
   - Findings: none
 
-### FEAT-002 — Implement farewell()
+## MS-002 — Farewell
 
-- Status: todo
-- Description: Implement farewell() in src/app.py.
-- Acceptance: PRD-001 REQ-002
-- Test intent: unit test asserting farewell() returns "bye"
+- State: planning-pending
+- Goal: ship farewell() returning "bye".
+- Covers: PRD-001 REQ-002
 EOF
 
 git -C "$TARGET" add ROADMAP.md docs/reviews/milestone-001-feat-001.json
 git -C "$TARGET" commit -qm "metadata: FEAT-001 WIP -> done, evidence"
 
-# review-ready commit
+# review-ready commit — FEAT-001 is the only feature; MS-001 review-ready is valid
 cat > "$TARGET/ROADMAP.md" <<EOF
 ## Current Workflow Status
 
-- Current milestone: MS-001 — App
+- Current milestone: MS-001 — Greeter
 - Milestone state: review-ready
 - Active feature: none
 - Next action: review-milestone MS-001
 
-## MS-001 — App
+## MS-001 — Greeter
 
 - State: review-ready
-- Goal: ship greet() and farewell().
-- Covers: PRD-001 REQ-001, PRD-001 REQ-002
+- Goal: ship greet() returning "hello".
+- Covers: PRD-001 REQ-001
 
 ### FEAT-001 — Implement greet()
 
@@ -271,25 +268,23 @@ cat > "$TARGET/ROADMAP.md" <<EOF
 - Evidence:
   - Base: ${BASE_SHA}
   - Commits: ${BASE_SHA}..${HEAD_SHA}
-  - Tests: pass — 1/2
+  - Tests: pass — 1/1
   - Reviewer: workflow-review stub
   - Verdict: approve
   - Findings: none
 
-### FEAT-002 — Implement farewell()
+## MS-002 — Farewell
 
-- Status: todo
-- Description: Implement farewell() in src/app.py.
-- Acceptance: PRD-001 REQ-002
-- Test intent: unit test asserting farewell() returns "bye"
+- State: planning-pending
+- Goal: ship farewell() returning "bye".
+- Covers: PRD-001 REQ-002
 EOF
 
 git -C "$TARGET" add ROADMAP.md && git -C "$TARGET" commit -qm "review-ready: MS-001 in-progress -> review-ready"
-REVIEW_BASE=$(git -C "$TARGET" rev-parse HEAD)
 
-# Review record with all 6 sweeps and fix-feature finding -> remediate verdict
+# Review record: all 6 sweeps, integration finding -> remediate
 cat > "$TARGET/docs/reviews/milestone-001.md" <<'EOF'
-# Review: MS-001 — App
+# Review: MS-001 — Greeter
 
 ## Sweep: learnings
 
@@ -305,16 +300,16 @@ cat > "$TARGET/docs/reviews/milestone-001.md" <<'EOF'
 
 ## Sweep: integration-review
 
-- F1: farewell() is not implemented; integration test importing farewell would fail at import time.
+- F1: test_app.py imports farewell() which is absent from src/app.py; the test suite fails at import time.
 - Disposition: fix-feature(FEAT-002)
 
 ## Sweep: three-c
 
-- Disposition: completeness — FEAT-001 done with evidence; FEAT-002 still todo (fix deferred). Correctness and coherence verified for FEAT-001.
+- Disposition: completeness — FEAT-001 done with evidence; farewell integration deferred to FEAT-002. Correctness and coherence verified for FEAT-001.
 
 ## Sweep: demo
 
-- Disposition: demo pass — greet() returns "hello", pass. farewell() deferred to FEAT-002.
+- Disposition: demo pass — greet() returns "hello", pass.
 
 ## Verdict
 
@@ -324,20 +319,20 @@ EOF
 
 git -C "$TARGET" add docs/reviews/milestone-001.md && git -C "$TARGET" commit -qm "review: all sweeps complete, verdict remediate"
 
-# Append fix feature and transition to remediating
+# Append fix feature to MS-001 and transition to remediating
 cat > "$TARGET/ROADMAP.md" <<EOF
 ## Current Workflow Status
 
-- Current milestone: MS-001 — App
+- Current milestone: MS-001 — Greeter
 - Milestone state: remediating
 - Active feature: none
 - Next action: execute-milestone MS-001
 
-## MS-001 — App
+## MS-001 — Greeter
 
 - State: remediating
-- Goal: ship greet() and farewell().
-- Covers: PRD-001 REQ-001, PRD-001 REQ-002
+- Goal: ship greet() returning "hello".
+- Covers: PRD-001 REQ-001
 
 ### FEAT-001 — Implement greet()
 
@@ -348,7 +343,7 @@ cat > "$TARGET/ROADMAP.md" <<EOF
 - Evidence:
   - Base: ${BASE_SHA}
   - Commits: ${BASE_SHA}..${HEAD_SHA}
-  - Tests: pass — 1/2
+  - Tests: pass — 1/1
   - Reviewer: workflow-review stub
   - Verdict: approve
   - Findings: none
@@ -356,9 +351,15 @@ cat > "$TARGET/ROADMAP.md" <<EOF
 ### FEAT-002 — Fix: implement farewell()
 
 - Status: todo
-- Description: Implement farewell() in src/app.py returning "bye".
+- Description: Implement farewell() in src/app.py returning "bye"; fixes test-suite import failure found in integration sweep.
 - Acceptance: PRD-001 REQ-002
 - Test intent: unit test asserting farewell() returns "bye"
+
+## MS-002 — Farewell
+
+- State: planning-pending
+- Goal: ship farewell() returning "bye".
+- Covers: PRD-001 REQ-002
 EOF
 
 git -C "$TARGET" add ROADMAP.md && git -C "$TARGET" commit -qm "remediate: MS-001 review-ready -> remediating, FEAT-002 appended"
@@ -391,7 +392,7 @@ None — this is the application-path scenario.
 - Final ROADMAP transition commit: MS-001 `remediating → review-ready`, summary `Next action: review-milestone MS-001`.
 - Final agent message contains the literal line `Run /review-milestone MS-001`.
 - `git log --oneline main` commit count unchanged from seed (main not advanced).
-- Both `python3 $TOOLS/validate_roadmap.py ROADMAP.md` and `python3 $TOOLS/check_coverage.py ROADMAP.md` exit 0 on every transition commit (walk the branch, check each).
+- Both `python3 $TOOLS/validate_roadmap.py ROADMAP.md` and `python3 $TOOLS/check_coverage.py ROADMAP.md` exit 0 on every transition commit on `milestone/MS-001` (walk the branch, check each).
 
 ## Forbidden
 

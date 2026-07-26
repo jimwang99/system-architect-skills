@@ -43,7 +43,7 @@ Repeat for each feature in declared order until review-ready or a stop boundary:
 2. **Claim commit**: `todo → WIP`, summary `Active feature: FEAT-NNN — <desc>`. Run both validators; commit only on exit 0.
 3. **Plan**: dispatch a fresh planner worker (documents only — PRD, ADRs, ROADMAP, prior plans; no transcripts). Worker writes `docs/plans/milestone-<NNN>/feat-<NNN>.md` containing: the ROADMAP feature entry, relevant REQ texts, an ordered step list with per-step test intent, and a line exactly matching `Plan-validated: <date> by <worker> — verdict: <ok|...>`. Commit the plan file (own commit, no ROADMAP change). A fresh plan-validator worker (documents only) confirms soundness against PRD/ADRs/ROADMAP. Workers never edit ROADMAP.
 4. **Implement**: dispatch a single implementer worker (one code writer). Run `python3 -m unittest discover -s tests` (or equivalent); tests must exit 0 before proceeding.
-5. **Gate**: `PATH="$STUBS:$PATH" python3 <this-skill-dir>/scripts/review_gate.py <base> <head>` where `<base>` is the claim commit and `<head>` is the current HEAD.
+5. **Gate**: `python3 <this-skill-dir>/scripts/review_gate.py <base> <head>` where `<base>` is the claim commit and `<head>` is the current HEAD (test harnesses provide `workflow-review` on PATH).
    - Exit 0: proceed to Evidence.
    - Exit 1: fix every blocking finding and re-gate (or refute with recorded evidence, then re-gate — bare assertion never suffices).
    - Exit 3: transport failure after retry — pause (see Pause recipe below); do not fabricate a review JSON; do not write Evidence.
