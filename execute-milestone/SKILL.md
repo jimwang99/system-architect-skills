@@ -47,11 +47,11 @@ Repeat for each feature in declared order until review-ready or a stop boundary:
    - Exit 0: proceed to Evidence.
    - Exit 1: fix every blocking finding and re-gate (or refute with recorded evidence, then re-gate — bare assertion never suffices).
    - Exit 3: transport failure after retry — pause (see Pause recipe below); do not fabricate a review JSON; do not write Evidence.
-6. **Metadata commit**: write the Evidence block (six fields, see below) and `docs/reviews/milestone-<NNN>-feat-<NNN>.json` (the raw gate JSON), set FEAT-NNN `Status: done`, update summary. Run both validators; commit only on exit 0. Any ALI draft travels in this same commit — never standalone.
+6. **Metadata commit** (one commit, this feature only): write the Evidence block (six fields, see below) and `docs/reviews/milestone-<NNN>-feat-<NNN>.json` (the raw gate JSON), set FEAT-NNN `Status: done`, update summary `Active feature: none`. Run both validators; commit only on exit 0. Any ALI draft travels in this same commit — never standalone. Do NOT set the milestone state to review-ready in this commit.
 7. **Loop**: next feature `todo` → return to claim commit. Next feature `blocked` or `failed` → stop.
-8. **Review-ready commit**: when every feature is `done`, `in-progress → review-ready`, summary `Next action: review-milestone MS-NNN`. Run both validators; commit only on exit 0. Then print the literal line `Run /review-milestone MS-NNN` and stop.
+8. **Review-ready commit** (separate commit, after all features done): `in-progress → review-ready`, summary `Next action: review-milestone MS-NNN`. Run both validators; commit only on exit 0. Then print the literal line `Run /review-milestone MS-NNN` and stop.
 
-**One commit per transition.** Ignition, claim, plan, implementation, metadata, pause, and review-ready are each a separate commit with a summary line and a detail body. Never bundle two transitions.
+**One commit per transition** — never bundle two in one commit. In particular, the metadata commit (feature `done`) and the review-ready commit (milestone `review-ready`) are always two separate commits.
 
 ## Evidence block (six fields, all required)
 
@@ -91,11 +91,11 @@ When a feature is invalid, budget-exhausted, or a scope escape: revert all imple
 
 ## Pause recipe
 
-Gate exit 3 (transport failure after retry): leave the feature `Status: WIP`. Set milestone `State: paused`, summary `Active feature: none`, `Blocker: reviewer transport failure`, `Next action:` naming the gate. Run both ROADMAP validators; commit only on exit 0. This commit must land on `milestone/MS-NNN`, never on `main`. Print a message naming the pause and stop.
+Gate exit 3 (transport failure after retry): leave the feature `Status: WIP`. Set milestone `State: paused`, summary `Active feature: none`, `Blocker: reviewer transport failure`, `Next action:` naming the gate. Run both validators; commit only on exit 0 on `milestone/MS-NNN`, never `main`. Print the pause reason and stop.
 
 ## Recovery recipe
 
-When `milestone/MS-NNN` already exists at invocation: preserve any uncommitted work as `docs/reviews/recovery-<MS>-<FEAT>.patch` committed to the branch. Then walk the gate chain: plan committed with `Plan-validated:`? implementation commits exist? tests exit 0? review JSON at `docs/reviews/milestone-<NNN>-feat-<NNN>.json` with a clean verdict? evidence written with all six fields? Resume at the first unproven gate. Narration, prior transcripts, and commit messages are never evidence — artifacts and tests are. If ROADMAP and artifacts disagree, artifacts win; correct ROADMAP in a transition commit noting `recovery`.
+When `milestone/MS-NNN` already exists: preserve uncommitted work as `docs/reviews/recovery-<MS>-<FEAT>.patch` committed to the branch. Walk the gate chain: plan with `Plan-validated:`? impl commits? tests exit 0? review JSON with clean verdict? evidence with all six fields? Resume at the first unproven gate. Narration and commit messages are never evidence — artifacts and tests are. If ROADMAP and artifacts disagree, artifacts win; correct ROADMAP in a transition commit noting `recovery`.
 
 ## Stop boundaries
 
