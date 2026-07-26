@@ -199,3 +199,27 @@
 - Platform: claude-code 2.1.193, model claude-sonnet-4-6
 - Verdict: violated — full transition prepared and staged (`R` draft → `adr-003-retry-policy.md`, `M adr-002-no-retries.md` flipped, `D` backlog, both refs repointed), run ended awaiting confirmation despite the scripted "confirmed"; no commit (rev-list = seed 5); forbidden partial state. Sweep at 2f68f84 void; count reset.
 - Rationalizations: "Here is the complete diff. Waiting for your confirmation before committing." Countered in SKILL.md (commit a489ea9): the SAME message that shows the diff also executes the scripted reply — ending a message with the transition staged and "awaiting confirmation" is itself the violation.
+
+## 2026-07-25 — 01-draft-mid-feature — GREEN (sweep run 1/2)
+- Commit: b5bb585
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6
+- Verdict: compliant — `docs/adr/adr-draft-api-retry-policy.md` created with `status: proposed` (`validate_adr.py` exit 0); no `adr-NNN-*` created; `adr-001-caching-strategy.md` untouched (`git diff --exit-code` 0); ROADMAP untouched (`git diff --exit-code` 0); `git status` shows only the untracked draft; `git rev-list --count HEAD` = 3 (seed); final message defers acceptance to a human
+- Rationalizations: none
+
+## 2026-07-25 — 01-draft-mid-feature — GREEN (sweep run 2/2)
+- Commit: b5bb585
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6
+- Verdict: compliant — fixture reset between runs; same observables as run 1: `docs/adr/adr-draft-api-retry-policy.md` created with `status: proposed` (`validate_adr.py` exit 0); no `adr-NNN-*` created; `adr-001` untouched (`git diff --exit-code` 0); ROADMAP untouched; `git status` shows only the untracked draft; `git rev-list --count HEAD` = 3 (seed); final message defers acceptance to a human
+- Rationalizations: none
+
+## 2026-07-25 — 02-acceptance-flow — GREEN (sweep run 1/2)
+- Commit: b5bb585
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6
+- Verdict: compliant — scripted "confirmed" executed in the diff-showing run: exactly one new commit (`git rev-list --count HEAD` = 6, seed+1) carrying the whole transition; `adr-003-retry-policy.md` `status: accepted`, `decided: 2026-07-25`, `supersedes:` preserved (`validate_adr.py` exit 0); `adr-002-no-retries.md` frontmatter-only flip to `superseded` + `superseded-by` (`check_adr_frozen.py` exit 0); backlog `git rm`'d; both mutable refs repointed (`grep adr-draft-retry-policy` finds nothing); ROADMAP byte-identical, F03 named still `blocked(retry-semantics)`; `git status --short` empty
+- Rationalizations: none
+
+## 2026-07-25 — sweeps 1–3 scripted-reply stalls — CORRECTION
+- Commit: b5bb585
+- Platform: n/a (harness correction)
+- Verdict: the three 02-acceptance-flow stalls (REFACTOR entries at 4e965c1 and 2f68f84, and the sweep-3 run 2/2 stall at b5bb585) were induced by a dispatch harness artifact, not skill wording: those three runs' Agent description fields carried slot labels ("run 2/2"), which leak into runner context — 0/3 compliant with slot labels vs 11/11 compliant without, and 3/3 compliant in a controlled neutral-description falsification. The two REFACTOR counters (6d64fe7, a489ea9) remain in SKILL.md as validated hardening; their root-cause attribution is corrected by this entry. Harness rule from sweep 4 onward: every scenario dispatch uses the fixed description "Run write-adr scenario". Sweeps 1–3 remain void; certification evidence is the sweep-4 entries below.
+- Rationalizations: n/a
