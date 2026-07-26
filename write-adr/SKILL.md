@@ -33,19 +33,19 @@ After writing or editing any ADR: `python3 <this-skill-dir>/../test-workflow/val
 
 ## Accept / Reject (human authorizes; you may only execute)
 
-Two authorizations, always: the human's explicit instruction naming the draft authorizes *preparing*; the human's approval of the diff authorizes *committing*. Status changes only at the commit — a renamed, `accepted`, backlog-deleted working tree is the forbidden partial state whether or not committed. A reply scripted inside the instruction ("after you show me the diff, my reply is: confirmed" / "no, hold off") IS that decision, already delivered.
+Two authorizations, always: the human's explicit instruction naming the draft authorizes *preparing*; the human's approval of the diff authorizes *committing*. Status changes only at the commit — a renamed, `accepted`, backlog-deleted working tree is the forbidden partial state whether or not committed.
 
 **Preflight — stop with a clear error and zero changes if any check fails:**
 - draft exists, `status: proposed`, validator-clean
 - destination name and number are free (number = max existing + 1; numbers are never reused; numbered ADRs are never deleted or renamed)
 - `resolves:` target exists in `docs/decision-backlog/`
 - `supersedes:` target exists and is `accepted`
-- no unrelated uncommitted changes on paths you will touch
+- no unrelated uncommitted changes on paths you touch
 - reference scan on the draft filename: hits in mutable artifacts (ROADMAP, plans, backlog, proposed ADR bodies) get repointed; a hit inside a frozen ADR body aborts the WHOLE acceptance — zero changes, report which frozen file cites the draft, stop. The rename manufactures a dangling link inside that frozen body; living with it is the human's call.
 
 **Prepare (uncommitted):** `git mv` to `adr-NNN-<slug>.md` (accept) or `adr-rejected-<slug>.md` (reject); set `status` and `decided`; on accept, `git rm` the resolved backlog entry — never rewrite it into a "resolved" tombstone; flip a superseded target's frontmatter only (`status: superseded`, `superseded-by`); repoint the mutable references. ROADMAP stays byte-identical — unblocking is the owner's call; the preview and report name each feature still `blocked(<slug>)` on the resolved slug.
 
-**Preview → confirm → one commit.** Show the complete diff; never end the run with the transition staged awaiting a reply the instruction already scripted — a scripted "confirmed" means commit NOW, this run; a scripted decline means restore NOW; commit only on explicit approval; on decline restore exactly the paths you touched so `git status` is clean. Rejection leaves the backlog intact — the question stays open.
+**Preview → confirm → one commit.** Show the complete diff. When the reply is already scripted in the instruction, the SAME message that shows the diff also executes it: quote the scripted reply, then commit (scripted approval) or restore (scripted decline) before the message ends — ending a message with the transition staged and "awaiting confirmation" is itself the violation. Otherwise commit only on explicit approval; on decline restore exactly the paths you touched so `git status` is clean. Rejection never touches the backlog — the question is still open.
 
 ## Iron rules
 
@@ -76,4 +76,4 @@ Two authorizations, always: the human's explicit instruction naming the draft au
 - About to delete a numbered ADR, reuse a number, or rewrite a resolved backlog entry instead of `git rm`-ing it
 - About to change any ROADMAP feature's status as part of a transition
 - About to leave a prepared, uncommitted transition and call it safe because it's uncommitted
-- About to stop and "await confirmation" when the decision is already scripted in the instruction
+- About to end a message with a staged transition and no commit while the instruction already scripted the reply
