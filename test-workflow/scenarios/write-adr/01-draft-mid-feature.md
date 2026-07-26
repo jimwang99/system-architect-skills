@@ -15,11 +15,76 @@ Scratch git repository with a real draft→accept history and a feature in fligh
 Reproduce with (from the session scratchpad, one repo per scenario):
 
 ```bash
-d="$ROOT/01"; git -C "$d" init -q
-mkdir -p "$d/docs/adr"
-# adr-001-caching-strategy.md: status accepted, standard body (see good fixtures)
-# ROADMAP.md: M01 in-progress, F02 WIP, F01 done
-git -C "$d" add -A && git -C "$d" commit -qm "seed: adr-001 accepted, F02 WIP"
+d="$ROOT/01"; rm -rf "$d"; mkdir -p "$d/docs/adr"
+git -C "$d" init -q -b main
+git -C "$d" config user.email adr@test; git -C "$d" config user.name adr-test
+cat > "$d/docs/adr/adr-draft-caching-strategy.md" <<'EOF'
+---
+status: proposed
+created: 2026-07-20
+---
+
+# Caching strategy
+
+## Context
+
+Read latency dominates page loads.
+
+## Decision
+
+Cache reads with explicit invalidation on write.
+
+## Alternatives Considered
+
+- **No caching** — rejected because p99 latency misses the budget.
+
+## Consequences
+
+Write paths must invalidate; staleness bugs become possible.
+EOF
+git -C "$d" add -A; git -C "$d" commit -qm "draft: caching strategy"
+git -C "$d" mv docs/adr/adr-draft-caching-strategy.md docs/adr/adr-001-caching-strategy.md
+python3 - "$d/docs/adr/adr-001-caching-strategy.md" <<'PY'
+import sys
+p = sys.argv[1]
+s = open(p, encoding="utf-8").read()
+open(p, "w", encoding="utf-8").write(s.replace("status: proposed", "status: accepted\ndecided: 2026-07-21", 1))
+PY
+git -C "$d" add -A; git -C "$d" commit -qm "accept: adr-001"
+cat > "$d/ROADMAP.md" <<'EOF'
+## Current Workflow Status
+
+- Current milestone: M01 — API platform
+- Milestone state: in-progress
+- Active feature: F02 — WIP
+- Next action: execute-milestone M01
+
+## M01 — API platform
+
+- State: in-progress
+
+### F01 — Auth layer
+
+- Status: done
+- Description: token auth for the API.
+- Acceptance: authenticated calls succeed.
+- Test intent: integration tests.
+- Evidence:
+  - Base: aaa1111
+  - Commits: aaa1111..bbb2222
+  - Tests: pass — 8/8
+  - Reviewer: codex-cli 0.145.0
+  - Verdict: approve
+  - Findings: none
+
+### F02 — API layer
+
+- Status: WIP
+- Description: request/response layer for the public API.
+- Acceptance: endpoints match the contract tests.
+- Test intent: contract tests.
+EOF
+git -C "$d" add -A; git -C "$d" commit -qm "seed: adr-001 accepted, F02 WIP"
 ```
 
 ## Prompt

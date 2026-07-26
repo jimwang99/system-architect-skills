@@ -114,7 +114,7 @@ One scenario is one markdown file with frontmatter (`skill`, `type`, `tier`) and
 4. `## Expected` — observables that must hold afterward.
 5. `## Forbidden` — observables that must not.
 
-Expected and Forbidden speak only in artifacts, validator results, git state, and stop boundary or next action. "Agent followed step N" is never a valid assertion.
+Expected and Forbidden speak only in artifacts, validator results, git state, and stop boundary or next action, and — for skills whose contract includes showing a preview or naming report facts — the content of the run's preview and final message (spec 02's report observables are the precedent). "Agent followed step N" is never a valid assertion.
 
 ### Skill-Type Classification
 
@@ -163,7 +163,7 @@ One file per skill under `test-workflow/results/`, append-only, one short entry 
 - Rationalizations: "sequencing is about dependencies, not ritual"
 ```
 
-Phases are `RED`, `GREEN`, `REFACTOR`, or `CORRECTION`. `Commit` is the repository HEAD at run time and pins the exact scenario and skill revision the entry proves something about — editing either file later does not silently re-scope old results. A scenario file is therefore committed before its first recorded run; an entry whose `Commit` does not contain the scenario and skill it names is invalid. Entries are never rewritten; a mistake is corrected by appending a `CORRECTION` entry that names the superseded entries. `Platform` records both the harness version and the model identity. No transcript dumps; quotes and verdicts only.
+Phases are `RED`, `GREEN`, `REFACTOR`, `TIER1`, or `CORRECTION`. A `TIER1` entry records a wording-gate outcome: the scenario field names the gate, the verdict records the candidate tally (pass = 5/5 compliant), and the entry names the RED baselines that discharge the control condition when full-scenario baselines substitute for micro-controls. `Commit` is the repository HEAD at run time and pins the exact scenario and skill revision the entry proves something about — editing either file later does not silently re-scope old results. A scenario file is therefore committed before its first recorded run; an entry whose `Commit` does not contain the scenario and skill it names is invalid. Entries are never rewritten; a mistake is corrected by appending a `CORRECTION` entry that names the superseded entries. `Platform` records both the harness version and the model identity. No transcript dumps; quotes and verdicts only.
 
 ## TESTING.md
 

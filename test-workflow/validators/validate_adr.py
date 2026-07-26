@@ -5,17 +5,32 @@ Spec: docs/specs/workflow/02-write-adr.md.
 Stdlib only, Python 3.9+. Exit 0 pass; 1 violations ("path:line: message"
 on stderr); 2 usage/environment errors.
 """
+import datetime
 import os
 import re
 import sys
 
 STATUSES = {"proposed", "accepted", "rejected", "superseded"}
-FROZEN = {"accepted", "rejected", "superseded"}
 DRAFT_RE = re.compile(r"^adr-draft-([a-z0-9][a-z0-9-]*)\.md$")
 NUM_RE = re.compile(r"^adr-(\d{3})-([a-z0-9][a-z0-9-]*)\.md$")
 REJ_RE = re.compile(r"^adr-rejected-([a-z0-9][a-z0-9-]*)\.md$")
-DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$", re.ASCII)
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
+
+def iso_date(value):
+    """Lexical YYYY-MM-DD (the regex) AND a real calendar date (fromisoformat).
+    The regex stays authoritative for form: on Python 3.11+ fromisoformat alone
+    also accepts compact (20260228) and ISO-week (2026-W09-6) forms."""
+    if not DATE_RE.match(value):
+        return False
+    try:
+        datetime.date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
 KEY_RE = re.compile(r"^([a-z][a-z-]*): (.+?)\s*$")
 NORMATIVE_KEYS = {"status", "created", "decided", "resolves", "supersedes", "superseded-by"}
 
@@ -24,7 +39,7 @@ def parse_frontmatter(lines):
     """Return (keys, body_start_index, errors). keys: name -> (value, line_no)."""
     errors = []
     keys = {}
-    if not lines or lines[0].strip() != "---":
+    if not lines or lines[0] != "---":
         errors.append((1, "file must start with '---' frontmatter delimiter"))
         return keys, 0, errors
     i = 1
@@ -70,7 +85,7 @@ def check_meta(path, keys, errs):
         errs.append((1, "filename matches no ADR naming pattern"))
     if "created" not in keys:
         errs.append((1, "missing required key 'created'"))
-    elif not DATE_RE.match(keys["created"][0]):
+    elif not iso_date(keys["created"][0]):
         errs.append((keys["created"][1], "created is not an ISO date"))
     if status == "proposed":
         if "decided" in keys:
@@ -78,7 +93,7 @@ def check_meta(path, keys, errs):
     else:
         if "decided" not in keys:
             errs.append((sline, "decided is required once status is '%s'" % status))
-        elif not DATE_RE.match(keys["decided"][0]):
+        elif not iso_date(keys["decided"][0]):
             errs.append((keys["decided"][1], "decided is not an ISO date"))
     if status == "superseded" and "superseded-by" not in keys:
         errs.append((sline, "status superseded requires superseded-by"))
@@ -99,16 +114,42 @@ H1_RE = re.compile(r"^# .+$")
 SECTION_ORDER = ["## Context", "## Decision", "## Alternatives Considered", "## Consequences"]
 ALT_RE = re.compile(r"^- \*\*.+\*\* — .+$")
 NONE_ALT_RE = re.compile(r"^- None — .+$")
+FENCE_RE = re.compile(r"^\s{0,3}(`{3,})")
+
+
+def mask_fences(body):
+    """Blank fence-interior and fence-delimiter lines for STRUCTURAL recognition only.
+
+    Decision 5 of the review-fix design: a fenced block is content, not structure.
+    Heading and bullet checks read the masked copy; non-emptiness reads the original
+    lines, so a section whose only content is a code block is still non-empty."""
+    masked = []
+    fence = 0  # opening backtick-run length, 0 = outside a fence
+    for l in body:
+        m = FENCE_RE.match(l)
+        if fence == 0:
+            if m:
+                fence = len(m.group(1))
+                masked.append("")
+            else:
+                masked.append(l)
+        else:
+            masked.append("")
+            s = l.strip()
+            if s and set(s) == {"`"} and len(s) >= fence:
+                fence = 0
+    return masked
 
 
 def check_body(lines, body_start, errs):
     body = lines[body_start:]
+    masked = mask_fences(body)
     offset = body_start + 1  # 1-based line number of body[0]
-    h1s = [i for i, l in enumerate(body) if H1_RE.match(l)]
+    h1s = [i for i, l in enumerate(masked) if H1_RE.match(l)]
     if len(h1s) != 1:
         errs.append((offset, "body must contain exactly one H1 title"))
     positions = {}
-    for i, l in enumerate(body):
+    for i, l in enumerate(masked):
         if l.strip() in SECTION_ORDER:
             if l.strip() in positions:
                 errs.append((offset + i, "duplicate section: '%s' appears twice" % l.strip()))
@@ -119,12 +160,16 @@ def check_body(lines, body_start, errs):
     present = [positions[n] for n in SECTION_ORDER if n in positions]
     if present != sorted(present):
         errs.append((offset, "sections out of order (mandated: Context, Decision, Alternatives Considered, Consequences)"))
+    if len(h1s) == 1 and positions:
+        first_section = min(positions.values())
+        if h1s[0] > first_section:
+            errs.append((offset + h1s[0], "H1 title must precede all sections"))
     if len(positions) == len(SECTION_ORDER) and present == sorted(present):
         bounds = present + [len(body)]
         for idx, name in enumerate(SECTION_ORDER):
             content = [l for l in body[bounds[idx] + 1:bounds[idx + 1]] if l.strip()]
             if name == "## Alternatives Considered":
-                bullets = [(i, l) for i, l in enumerate(body[bounds[idx] + 1:bounds[idx + 1]], bounds[idx] + 1) if l.startswith("- ")]
+                bullets = [(i, l) for i, l in enumerate(masked[bounds[idx] + 1:bounds[idx + 1]], bounds[idx] + 1) if l.startswith("- ")]
                 if not bullets:
                     errs.append((offset + bounds[idx], "Alternatives Considered needs at least one alternative or an explicit '- None — <reason>'"))
                 for i, l in bullets:
@@ -180,11 +225,11 @@ def check_pointers(path, keys, errs):
 
 
 def validate(path):
-    try:
-        with open(path, encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:  # OSError propagates: environment, not a violation
+        try:
             lines = fh.read().splitlines()
-    except (OSError, UnicodeDecodeError) as exc:
-        return ["%s:1: unreadable: %s" % (path, exc)]
+        except UnicodeDecodeError as exc:
+            return ["%s:1: unreadable: %s" % (path, exc)]
     keys, body_start, errs = parse_frontmatter(lines)
     if not any(msg.startswith("file must start") for _, msg in errs):
         check_meta(path, keys, errs)
@@ -197,7 +242,11 @@ def main():
     if len(sys.argv) != 2:
         print("usage: validate_adr.py <adr-file>", file=sys.stderr)
         return 2
-    errors = validate(sys.argv[1])
+    try:
+        errors = validate(sys.argv[1])
+    except OSError as exc:
+        print("%s: %s" % (sys.argv[1], exc.strerror or exc), file=sys.stderr)
+        return 2
     for e in errors:
         print(e, file=sys.stderr)
     return 1 if errors else 0

@@ -18,18 +18,30 @@ def git(cwd, *args):
     return subprocess.run(("git",) + args, cwd=cwd, capture_output=True, text=True)
 
 
-def split_frontmatter(text):
-    """Return (status, body) — body is everything below the closing '---'."""
-    lines = text.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return None, text
+def git_bytes(cwd, *args):
+    return subprocess.run(("git",) + args, cwd=cwd, capture_output=True)
+
+
+def split_frontmatter_bytes(data):
+    """Return (status, body_bytes) — body is the raw bytes below the closing '---' line.
+
+    Delimiter and key lines tolerate \r (historical files may be CRLF); the body is
+    returned byte-exact, untouched. This parser reads historical revisions that may
+    predate the strict grammar, so delimiter matching stays lenient here on purpose —
+    validate_adr.py is the grammar enforcer.
+    """
+    lines = data.split(b"\n")
+    if not lines or lines[0].strip() != b"---":
+        return None, data
     status = None
-    for i, line in enumerate(lines[1:], 1):
-        if line.strip() == "---":
-            return status, "\n".join(lines[i + 1:])
-        if line.startswith("status: "):
-            status = line[len("status: "):].strip()
-    return status, ""
+    consumed = len(lines[0]) + 1
+    for line in lines[1:]:
+        consumed += len(line) + 1
+        if line.strip() == b"---":
+            return status, data[consumed:]
+        if line.startswith(b"status: "):
+            status = line[len(b"status: "):].strip(b" \r").decode("utf-8", "replace")
+    return status, b""
 
 
 def fail(msg):
@@ -45,6 +57,9 @@ def main():
     # symlinks in --show-toplevel (e.g. macOS /var -> /private/var), and a raw abspath
     # would produce a garbage relative path that git can't match, failing closed wrongly.
     path = os.path.realpath(sys.argv[1])
+    if not os.path.isfile(path):
+        print("%s: no such file" % path, file=sys.stderr)
+        return 2
     directory = os.path.dirname(path)
     top = git(directory, "rev-parse", "--show-toplevel")
     if top.returncode != 0:
@@ -52,25 +67,21 @@ def main():
         return 2
     root = os.path.realpath(top.stdout.strip())
     rel = os.path.relpath(path, root)
-    with open(path, encoding="utf-8") as fh:
-        wt_status, wt_body = split_frontmatter(fh.read())
-    if wt_status not in FROZEN:
-        return 0
+    with open(path, "rb") as fh:
+        wt_status, wt_body = split_frontmatter_bytes(fh.read())
+    # Shallowness fails closed for EVERY status: the worktree frontmatter is
+    # untrusted input (a defrosted file self-reports proposed), and truncated
+    # history can neither prove nor rule out a freeze point.
     shallow = git(root, "rev-parse", "--is-shallow-repository")
     if shallow.stdout.strip() == "true":
         return fail("%s: shallow clone — freeze lineage unprovable, failing closed" % path)
-    # -M40: pin rename detection explicitly — git's default threshold is 50% and
-    # configurable, so an unpinned --follow could behave differently across git
-    # versions/configs. 40% gives margin for accept-transition frontmatter edits on
-    # small ADRs. The follow-chain bridge risk is threshold-independent: any bridged
-    # file with a differing body fails the body comparison anyway.
+    # -M40: pinned rename-detection threshold — git's default (50%) is config-sensitive; 40% gives margin for frontmatter-only accept edits on small files.
     log = git(root, "log", "--follow", "-M40", "--format=%H", "--name-only", "--", rel)
     if log.returncode != 0 or not log.stdout.strip():
-        return fail("%s: no history for file — failing closed" % path)
-    # Output per commit is "<40-hex hash>\n\n<historical name>\n". Walk the lines
-    # pairing each hash with the following non-empty path; splitting on blank lines
-    # would fragment each entry because --format=%H emits its own trailing newline.
-    entries = []  # (commit, historical_name), newest first
+        if wt_status in FROZEN:
+            return fail("%s: no history for file — failing closed" % path)
+        return 0  # brand-new or uncommitted draft; nothing frozen yet
+    entries = []  # (commit, historical_name), newest first — parsing unchanged
     commit = None
     for line in log.stdout.splitlines():
         s = line.strip()
@@ -84,28 +95,33 @@ def main():
     freeze = None
     saw_proposed = False
     for commit, name in reversed(entries):  # oldest -> newest
-        show = git(root, "show", "%s:%s" % (commit, name))
+        show = git_bytes(root, "show", "%s:%s" % (commit, name))
         if show.returncode != 0:
             continue
-        status, body = split_frontmatter(show.stdout)
-        if status == "proposed":
-            saw_proposed = True
+        status, body = split_frontmatter_bytes(show.stdout)
+        if freeze is None and status == "proposed":
+            saw_proposed = True  # only ancestors strictly before the freeze point count
         if status in FROZEN and freeze is None:
             freeze = (commit, name, body)
     if freeze is None:
-        return fail("%s: status is frozen but no freeze point found in history — failing closed" % path)
+        if wt_status in FROZEN:
+            return fail("%s: status is frozen but no freeze point found in history — failing closed" % path)
+        return 0
     if not saw_proposed:
         return fail("%s: no proposed ancestor before the freeze point — failing closed (imported or rewritten history)" % path)
+    if wt_status not in FROZEN:
+        return fail("%s: worktree status is %r but a freeze point exists at %s — frozen records never return to proposed, failing closed"
+                    % (path, wt_status, freeze[0][:7]))
     _, _, frozen_body = freeze
-    if frozen_body.rstrip("\n") != wt_body.rstrip("\n"):
-        f_lines = frozen_body.rstrip("\n").splitlines()
-        w_lines = wt_body.rstrip("\n").splitlines()
+    if frozen_body != wt_body:
+        f_lines = frozen_body.split(b"\n")
+        w_lines = wt_body.split(b"\n")
         for i in range(max(len(f_lines), len(w_lines))):
-            a = f_lines[i] if i < len(f_lines) else "<absent>"
-            b = w_lines[i] if i < len(w_lines) else "<absent>"
+            a = f_lines[i] if i < len(f_lines) else b"<absent>"
+            b = w_lines[i] if i < len(w_lines) else b"<absent>"
             if a != b:
-                return fail("%s: frozen body modified at body line %d: %r -> %r" % (path, i + 1, a, b))
-        return fail("%s: frozen body modified" % path)
+                return fail("%s: frozen body modified at body line %d: %r -> %r"
+                            % (path, i + 1, a.decode("utf-8", "replace"), b.decode("utf-8", "replace")))
     return 0
 
 

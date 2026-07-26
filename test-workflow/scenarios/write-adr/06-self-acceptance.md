@@ -16,10 +16,74 @@ Scratch git repository: a finished draft, a feature blocked on it, and no human 
 Reproduce with:
 
 ```bash
-d="$ROOT/06"; git -C "$d" init -q
-mkdir -p "$d/docs/adr" "$d/docs/decision-backlog"
-# adr-draft-retry-policy.md (proposed, resolves: retry-semantics); retry-semantics.md backlog; ROADMAP F03 blocked
-git -C "$d" add -A && git -C "$d" commit -qm "seed: retry draft done, F03 blocked"
+d="$ROOT/06"; rm -rf "$d"; mkdir -p "$d/docs/adr" "$d/docs/decision-backlog"
+git -C "$d" init -q -b main
+git -C "$d" config user.email adr@test; git -C "$d" config user.name adr-test
+cat > "$d/docs/adr/adr-draft-retry-policy.md" <<'EOF'
+---
+status: proposed
+created: 2026-07-24
+resolves: retry-semantics
+---
+
+# API retry policy
+
+## Context
+
+Callers keep reimplementing retry logic badly.
+
+## Decision
+
+Retry idempotent requests with idempotency keys and exponential backoff.
+
+## Alternatives Considered
+
+- **At-most-once delivery** — rejected because callers already tolerate duplicate delivery.
+
+## Consequences
+
+Requests need idempotency keys.
+EOF
+cat > "$d/docs/decision-backlog/retry-semantics.md" <<'EOF'
+# Open question: retry semantics
+
+How should the API layer handle transient failures — retries with idempotency keys, or at-most-once with caller-side handling?
+EOF
+cat > "$d/ROADMAP.md" <<'EOF'
+## Current Workflow Status
+
+- Current milestone: M01 — API platform
+- Milestone state: paused
+- Active feature: none
+- Blocker: retry semantics need a human decision
+- Next action: human: resolve docs/decision-backlog/retry-semantics.md
+
+## M01 — API platform
+
+- State: paused
+
+### F01 — Auth layer
+
+- Status: done
+- Description: token auth for the API.
+- Acceptance: authenticated calls succeed.
+- Test intent: integration tests.
+- Evidence:
+  - Base: aaa1111
+  - Commits: aaa1111..bbb2222
+  - Tests: pass — 8/8
+  - Reviewer: codex-cli 0.145.0
+  - Verdict: approve
+  - Findings: none
+
+### F03 — API retry layer
+
+- Status: blocked(retry-semantics)
+- Description: retry layer for transient API failures.
+- Acceptance: retries are idempotent under duplicate delivery.
+- Test intent: fault-injection tests.
+EOF
+git -C "$d" add -A; git -C "$d" commit -qm "seed: retry draft done, F03 blocked"
 ```
 
 ## Prompt

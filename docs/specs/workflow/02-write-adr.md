@@ -56,7 +56,7 @@ Slugs are kebab-case (`[a-z0-9-]`, starting alphanumeric) everywhere they appear
 
 ### Frontmatter grammar (line-oriented, not YAML)
 
-Python 3.9 stdlib has no YAML parser, so the frontmatter is a closed line-oriented format: the file's first line is exactly `---`; each following line until the closing `---` is `key: value` with a single-line scalar value; UTF-8; no quoting, comments, continuation, or multiline values. Normative keys:
+Python 3.9 stdlib has no YAML parser, so the frontmatter is a closed line-oriented format: the file's first line is exactly `---`; each following line until the closing `---` is `key: value` with a single-line scalar value; UTF-8; no quoting, comments, continuation, or multiline values; the closing delimiter line tolerates surrounding whitespace (historical tolerance, retained). Normative keys:
 
 ```markdown
 ---
@@ -87,7 +87,7 @@ Duplicate normative keys are errors. Unknown keys are errors unless prefixed `x-
 ## Consequences
 ```
 
-The H1 and the four sections each appear exactly once, in that order. Context, Decision, and Consequences are non-empty. Alternatives Considered contains at least one alternative bullet with an inline why-rejected, or the explicit entry `- None — <reason>`.
+The H1 and the four sections each appear exactly once, in that order. Context, Decision, and Consequences are non-empty. Alternatives Considered contains at least one alternative bullet with an inline why-rejected, or the explicit entry `- None — <reason>`. Fenced code blocks (three or more backticks) are content, not structure: fence interiors are invisible to heading and alternative-bullet recognition, and a section whose only content is a code block is non-empty.
 
 ## Lifecycle Mechanics
 
@@ -108,7 +108,7 @@ proposed --[H accept]--> accepted --[H accept of successor]--> superseded
 - No touched path (draft, destination, superseded target, backlog entry, files to repoint) has unrelated uncommitted changes.
 - Reference scan: every hit on the draft filename is classified. Hits in mutable artifacts (ROADMAP, plans, backlog) and in proposed ADR bodies will be repointed; a hit inside a frozen ADR body aborts the transition — frozen bodies are never edited, and frozen ADRs should never have cited a draft in the first place.
 
-**Prepare (uncommitted)**: assign number; `git mv` draft to `adr-NNN-<slug>.md`; set `status: accepted` and `decided: <today>`; delete the resolved backlog entry and note any ROADMAP feature currently `blocked(<slug>)`; flip the superseded target's frontmatter only (`status: superseded`, `superseded-by: <this file>`); repoint the classified mutable references.
+**Prepare (uncommitted)**: assign number; `git mv` draft to `adr-NNN-<slug>.md`; set `status: accepted` and `decided: <today>`; delete the resolved backlog entry and report — in the preview and the final message, never as a ROADMAP edit — any ROADMAP feature currently `blocked(<slug>)` on the resolved slug (ROADMAP stays byte-identical through the transition); flip the superseded target's frontmatter only (`status: superseded`, `superseded-by: <this file>`); repoint the classified mutable references.
 
 **Preview and confirm**: show the complete diff. The human's explicit confirmation authorizes a single commit containing the whole transition; declining restores exactly the touched paths. The body is frozen from that commit onward.
 
@@ -122,7 +122,7 @@ Only expressible as acceptance of a successor. The frontmatter-only edit to the 
 
 ## Validation
 
-Two scripts with deliberately different contracts, both under `test-workflow/validators/`.
+Two scripts with deliberately different contracts, both under `test-workflow/validators/`. Both CLIs exit 0 on pass, 1 on violations (line-referenced on stderr), and 2 on usage or environment errors (bad arguments, missing file, or — for the frozen check — not a git repository).
 
 ### `validate_adr.py <path>` — hermetic, structure only
 
