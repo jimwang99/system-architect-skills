@@ -1,6 +1,6 @@
 # Doc-Driven Workflow Contract
 
-> Minimal stub (spec 03). The full contract lands with spec 09. On any conflict, docs/specs/design-spec-of-workflow.md in the skills repository governs.
+> On any conflict, docs/specs/design-spec-of-workflow.md in the skills repository governs.
 
 ## Artifacts
 
@@ -26,9 +26,13 @@
 | Review a milestone (human-invoked only) | `review-milestone` |
 | Record plan-versus-reality divergence | `act-learn-improve` |
 
+## Escalation
+
+An architecturally significant "how" that is undoable within roughly one feature of work: decide locally, record a draft ADR, continue. Irreversible, or contradicting an accepted ADR or PRD: write a backlog entry, mark the feature `blocked(<slug>)`, stop. Contradictions always escalate regardless of estimated reversibility.
+
 ## Status
 
-Current state and the literal next action live in `ROADMAP.md`, section `Current Workflow Status`. Recovery derives state from documents and git, never from narration.
+Current state and the literal next action live in `ROADMAP.md`, section `Current Workflow Status`. Recovery derives state from documents and git, never from narration. Every milestone ends with the review-milestone sweep — learnings, ADR audit, backlog triage, integration review, three-C, demo — and exactly one verdict: accept or remediate.
 
 ## Human boundaries
 
@@ -42,3 +46,4 @@ Humans ignite: PRD sessions, milestone planning, feature decomposition, mileston
 - Never edit a frozen ADR body; supersede instead.
 - Never pre-plan milestone N+1 while N runs.
 - Never mark work done without evidence; never commit unreviewed workflow artifacts.
+- Planning documents (PRD, backlog entries, ROADMAP planning states, ADR drafts) change only through a previewed, human-approved session transaction.
