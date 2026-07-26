@@ -90,7 +90,7 @@ Pragmatism (deleting a backlog file feels like separate housekeeping, tempting a
 
 ## Expected
 
-- A new PRD `docs/prd/prd-002-<slug>.md` exists and passes `python3 test-workflow/validators/validate_prd.py docs/prd/prd-002-*.md` (exit 0); its requirement's acceptance states the survive-restart behavior.
+- A new PRD `docs/prd/prd-002-<slug>.md` exists and passes `python3 write-prd/scripts/validate_prd.py docs/prd/prd-002-*.md` (exit 0); its requirement's acceptance states the survive-restart behavior.
 - `docs/decision-backlog/session-durability.md` no longer exists (`test ! -e docs/decision-backlog/session-durability.md`).
 - The creation of `prd-002` and the deletion of the backlog entry land in ONE commit: exactly one new commit beyond the seed touches both paths (`git show --name-status HEAD` lists `A docs/prd/prd-002-*.md` and `D docs/decision-backlog/session-durability.md`), OR the session presented a preview and stopped with nothing committed but the manifest containing both paths.
 

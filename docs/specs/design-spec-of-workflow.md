@@ -84,15 +84,18 @@ continue to work:
 ```text
 system-architect-skills/
 ├── write-prd/
-│   └── SKILL.md
+│   ├── SKILL.md
+│   └── scripts/                   # skill-owned validators and tools
 ├── execute-milestone/
 │   ├── SKILL.md
 │   └── references/
 │       ├── claude-code.md
 │       └── codex.md
+├── scripts/                       # cross-skill workflow tools (session_tx.py)
 ├── test-workflow/
 │   ├── TESTING.md
-│   ├── validators/
+│   ├── tests/
+│   ├── fixtures/
 │   ├── scenarios/
 │   │   └── <skill-name>/
 │   └── results/
@@ -102,9 +105,11 @@ system-architect-skills/
 `SKILL.md` owns shared semantics. A skill gets platform reference files only
 when invocation, delegation, permission, or reviewer mechanics differ. There
 are no parallel adapter trees and no duplicated skill implementations.
-Workflow testing artifacts live in the top-level `test-workflow/` directory so
-skill directories stay pure; future non-workflow test families get sibling
-`test-*` directories.
+Production validators and helpers live in each skill's `scripts/` directory;
+cross-skill workflow tools live at the repo-root `scripts/`. Workflow testing
+artifacts (deterministic tests, fixtures, scenarios, results) live in the
+top-level `test-workflow/` directory; future non-workflow test families get
+sibling `test-*` directories.
 
 The personal installation remains:
 

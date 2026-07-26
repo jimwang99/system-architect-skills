@@ -2,8 +2,8 @@
 import os, subprocess, sys, unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-TOOL = os.path.join(HERE, "validate_prd.py")
-FIX = os.path.join(HERE, "fixtures", "prd")
+TOOL = os.path.join(HERE, "..", "..", "write-prd", "scripts", "validate_prd.py")
+FIX = os.path.join(HERE, "..", "fixtures", "prd")
 GOOD = os.path.join(FIX, "good")
 BAD = os.path.join(FIX, "bad")
 

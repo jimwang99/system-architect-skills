@@ -23,7 +23,7 @@ All ADRs live in `docs/adr/`. Slugs are kebab-case.
 
 Frontmatter is line-oriented `key: value` between `---` delimiters — keys: `status`, `created`, `decided` (frozen only), optional `resolves`, `supersedes`, `superseded-by`; extensions need an `x-` prefix. Body: `# <title>`, then `## Context`, `## Decision`, `## Alternatives Considered` (every bullet `- **<alt>** — rejected because <reason>`, or `- None — <reason>`), `## Consequences` — all non-empty.
 
-After writing or editing any ADR: `python3 <this-skill-dir>/../test-workflow/validators/validate_adr.py <file>` must exit 0. Before claiming a frozen file untouched: `python3 <this-skill-dir>/../test-workflow/validators/check_adr_frozen.py <file>`.
+After writing or editing any ADR: `python3 <this-skill-dir>/scripts/validate_adr.py <file>` must exit 0. Before claiming a frozen file untouched: `python3 <this-skill-dir>/scripts/check_adr_frozen.py <file>`.
 
 ## Drafting (anyone, anytime)
 

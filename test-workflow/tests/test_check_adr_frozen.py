@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCRIPT = os.path.join(HERE, "check_adr_frozen.py")
+SCRIPT = os.path.join(HERE, "..", "..", "write-adr", "scripts", "check_adr_frozen.py")
 
 PROPOSED = """---
 status: proposed

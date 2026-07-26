@@ -5,11 +5,11 @@ import sys
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCRIPT = os.path.join(HERE, "validate_adr.py")
-sys.path.insert(0, HERE)
+SCRIPT = os.path.join(HERE, "..", "..", "write-adr", "scripts", "validate_adr.py")
+sys.path.insert(0, os.path.dirname(SCRIPT))
 from validate_adr import validate  # noqa: E402
 
-FIX = os.path.join(HERE, "fixtures", "adr")
+FIX = os.path.join(HERE, "..", "fixtures", "adr")
 GOOD = os.path.join(FIX, "good")
 BAD = os.path.join(FIX, "bad")
 

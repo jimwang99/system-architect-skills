@@ -122,7 +122,7 @@ Only expressible as acceptance of a successor. The frontmatter-only edit to the 
 
 ## Validation
 
-Two scripts with deliberately different contracts, both under `test-workflow/validators/`. Both CLIs exit 0 on pass, 1 on violations (line-referenced on stderr), and 2 on usage or environment errors (bad arguments, missing file, or — for the frozen check — not a git repository).
+Two scripts with deliberately different contracts, both under `write-adr/scripts/`. Both CLIs exit 0 on pass, 1 on violations (line-referenced on stderr), and 2 on usage or environment errors (bad arguments, missing file, or — for the frozen check — not a git repository).
 
 ### `validate_adr.py <path>` — hermetic, structure only
 

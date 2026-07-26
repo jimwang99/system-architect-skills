@@ -7,8 +7,8 @@ import tempfile
 import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-TOOL = os.path.join(HERE, "bootstrap_project.py")
-TX = os.path.join(HERE, "session_tx.py")
+TOOL = os.path.join(HERE, "..", "..", "write-prd", "scripts", "bootstrap_project.py")
+TX = os.path.join(HERE, "..", "..", "scripts", "session_tx.py")
 
 CANONICAL_SECTION = (
     "## Doc-driven workflow\n"

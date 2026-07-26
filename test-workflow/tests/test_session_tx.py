@@ -3,7 +3,7 @@
 import os, subprocess, sys, tempfile, unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-TOOL = os.path.join(HERE, "session_tx.py")
+TOOL = os.path.join(HERE, "..", "..", "scripts", "session_tx.py")
 
 GIT_ENV = {
     **os.environ,

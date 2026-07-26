@@ -2,8 +2,8 @@
 import os, subprocess, sys, tempfile, shutil, unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-TOOL = os.path.join(HERE, "validate_backlog.py")
-FIX = os.path.join(HERE, "fixtures", "backlog")
+TOOL = os.path.join(HERE, "..", "..", "write-prd", "scripts", "validate_backlog.py")
+FIX = os.path.join(HERE, "..", "fixtures", "backlog")
 
 def run(path):
     return subprocess.run([sys.executable, TOOL, path], capture_output=True, text=True)
