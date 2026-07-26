@@ -51,7 +51,7 @@ List every open backlog entry scoped to this milestone. For each: resolve, keep,
 
 ### 4. integration-review
 
-Run `PATH="$STUBS:$PATH" python3 <this-skill-dir>/../execute-milestone/scripts/review_gate.py <merge-base> <branch-head>` where `<merge-base>` is the milestone ignition commit and `<branch-head>` is the current HEAD of `milestone/MS-NNN`. This gate is scoped to cross-feature integration concerns, not per-feature correctness (already gated at feature level).
+Run `python3 <this-skill-dir>/../execute-milestone/scripts/review_gate.py <merge-base> <branch-head>` where `<merge-base>` is the milestone ignition commit and `<branch-head>` is the current HEAD of `milestone/MS-NNN` (test harnesses provide `workflow-review` on PATH). This gate is scoped to cross-feature integration concerns, not per-feature correctness (already gated at feature level).
 
 - Exit 0: no blocking findings; record `- Disposition: no blocking findings — integration approved`.
 - Exit 1: one or more blocking findings returned. Record each as `- F<K>: <finding>` with a `- Disposition:` (see vocabulary below). Accept is illegal while any finding lacks a terminal disposition. Legal exits: fix now + re-gate; `refuted(<evidence>)`; `accepted-known-issue(<rationale>)` with the human's recorded rationale; or `fix-feature(FEAT-NNN)` which forces `- Verdict: remediate`.
