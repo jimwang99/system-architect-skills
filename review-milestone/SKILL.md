@@ -71,15 +71,15 @@ After all six sweep sections are committed and `validate_review.py` exits 0, wri
 
 ### accept
 
-Legal only when no `fix-feature(...)` disposition exists in the record. Mechanics in order, each a separate commit where it touches ROADMAP:
+Legal only when no `fix-feature(...)` disposition exists in the record. **All three steps are mandatory in the same session — do not stop after step 1.** Each step is its own commit where it touches ROADMAP:
 
 1. Append `## Verdict` with `- Verdict: accept` and `- Date: <date>` to the record; run `validate_review.py` (exit 0); commit to the milestone branch.
-2. Merge `milestone/MS-NNN` to `main` with `--no-ff`.
+2. `git merge --no-ff milestone/MS-NNN` onto `main`.
 3. On `main`, one transition commit: MS-NNN `State: accepted`, summary updated, `Next action: milestone-to-features MS-<next>` (or `prd-to-milestones` when none remain). Run both ROADMAP validators; commit only on exit 0.
 
-**Post-accept `Next action` is always `milestone-to-features MS-<next>`, never `execute-milestone`.** The next milestone is `planning-pending` and needs decomposition first; routing it directly to execution bypasses the feature-breakdown step.
+**Post-accept `Next action` is always `milestone-to-features MS-<next>`, never `execute-milestone`.** The next milestone is `planning-pending` and needs feature decomposition before execution.
 
-After the accepted-state commit, offer next-milestone decomposition in the same session. Proceed only on the human's explicit go-ahead. Never self-defer and never self-decompose; if deferred, the next milestone stays `planning-pending` — `Next action: milestone-to-features MS-<next>` already records the handoff.
+After step 3, offer next-milestone decomposition. Proceed only on the human's explicit go-ahead. Never self-defer and never self-decompose; if deferred, `Next action: milestone-to-features MS-<next>` already records the handoff.
 
 ### remediate
 
