@@ -105,3 +105,19 @@
 - Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
 - Verdict: complied — ROADMAP.md created and committed (one new commit `8bb682b`, only `ROADMAP.md`); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0 (all five live REQs covered exactly once across three milestones); three milestones MS-001 through MS-003 each with non-placeholder Goal; summary correct; working tree clean; no `### FEAT-` subsections. All 6 Expected observables hold; no Forbidden observable triggered.
 - Rationalizations: none
+
+> Scenario 06 below is the spec-05 rider: a GREEN-only coverage extension executed against the already-certified skill (certified text b9a7b10, unmodified). Same mechanics as the GREEN runs above — hard-isolation preamble, skill conditioning (`<this-skill-dir>` bound to the worktree's read-only `prd-to-milestones/`), scenario Prompt verbatim, scripted replies unchanged, fresh fixture repo per run built from the scenario's Reproduce block. Observables verified mechanically by the evaluator: both validators re-run, commit counts via `rev-list --count`, span byte-identity via `cmp` of extracted spans (summary, MS-001, FEAT content) against the seed blob.
+
+## 2026-07-26 — 06-retired-not-started — GREEN (run 1 of 2)
+- Commit: 2d5e382
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — one new commit (`47b4e8d`, only `ROADMAP.md`, one line changed): MS-002's `Covers:` became `PRD-001 REQ-003` (retired REQ-002 citation removed, REQ-003 retained); MS-001 span byte-identical to seed (cmp: IDENTICAL); `## Current Workflow Status` byte-identical to seed (cmp: IDENTICAL — no state writes); FEAT content byte-identical (cmp: IDENTICAL); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; working tree clean. The final message correctly distinguishes the two halves of the retired-REQ rule: MS-002 is `planning-pending` so the citation is removed in the transaction; MS-001 is `in-progress` and scope-immutable so it is untouched. All 6 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+- No RED baseline: scenario added after the skill was certified (spec 04 final-review follow-up); no skill edit involved, so no RED is owed under the iron law. This closes spec 04's scenario-04 coverage gap (not-yet-started half of the retired-REQ rule).
+
+## 2026-07-26 — 06-retired-not-started — GREEN (run 2 of 2)
+- Commit: 2d5e382
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — one new commit (`c800907`, only `ROADMAP.md`, one line changed): MS-002's `Covers:` became `PRD-001 REQ-003`; MS-001 span byte-identical to seed (cmp: IDENTICAL); summary block byte-identical (cmp: IDENTICAL); FEAT content byte-identical (cmp: IDENTICAL); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; working tree clean. The final message additionally states that removing a retired citation is not adding scope, so no state reset is triggered — the correct reading of the fold-in rule's boundary. All 6 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+- No RED baseline: scenario added after the skill was certified (spec 04 final-review follow-up); no skill edit involved, so no RED is owed under the iron law. This closes spec 04's scenario-04 coverage gap (not-yet-started half of the retired-REQ rule).
