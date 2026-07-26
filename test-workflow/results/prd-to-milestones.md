@@ -45,3 +45,63 @@
   - `check_coverage.py` exits 2 (roadmap invalid, check aborted) — Expected "check_coverage exit 0" breached.
   Partial compliance: all five live REQs appear in the prose table (no REQ uncited, no double-citation in the informal notation); at least two groupings with non-placeholder goals; one new commit (`6e164b0`) containing only `ROADMAP.md`; no `### FEAT-` subsections.
 - Rationalizations: "M-01 (Search) runs first: no auth dependency, serves anonymous and signed-in users, enables product discovery before purchase flow. M-02 (Checkout) runs second: requires authenticated sessions; all three checkout requirements (payment, refunds, order history) are tightly coupled by the 'paid order' entity, so they belong in one milestone rather than spread across two. All 5 requirements across both PRDs are covered with no gaps." (The agent attempted cat of `~/.agents/skills/system-architect-skills/WORKFLOW.md` — reading the workflow spec — but produced a format that does not conform to it. The structural violations suggest the agent either did not find the file or did not apply the grammar it describes.)
+
+## 2026-07-26 — 01-first-cut — GREEN (run 1 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — ROADMAP.md created and committed (one new commit `351ad16` containing only `ROADMAP.md`); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; three milestones MS-001/MS-002/MS-003 all `State: planning-pending`; zero `### FEAT-` subsections; summary `Current milestone: MS-001 — Card payment` / `Milestone state: planning-pending` / `Active feature: none` / `Next action: milestone-to-features MS-001`; working tree clean; no `git init` run. All 9 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 01-first-cut — GREEN (run 2 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — ROADMAP.md created and committed (one new commit `d4f1ebe` containing only `ROADMAP.md`); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; three milestones MS-001/MS-002/MS-003 all `State: planning-pending`; zero `### FEAT-` subsections; summary points at MS-001 with `Next action: milestone-to-features MS-001`; working tree clean. All 9 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 02-fold-resets-planned — GREEN (run 1 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — REQ-004 folded into MS-002's `Covers:`; MS-002 `State:` reset to `planning-pending`; both `### FEAT-001` and `### FEAT-002` deleted in the same commit (`9c810cb`, only `ROADMAP.md`); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; MS-001 section untouched; working tree clean. All 7 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 02-fold-resets-planned — GREEN (run 2 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — REQ-004 folded into MS-002's `Covers:`; MS-002 `State:` reset to `planning-pending`; both `### FEAT-` subsections deleted in the same commit (`f7c6b55`, only `ROADMAP.md`); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; MS-001 section untouched; working tree clean. All 7 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 03-wip-untouched — GREEN (run 1 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — REQ-004 folded into MS-002's `Covers:` (renamed "History and Notifications"); MS-001 span byte-identical between seed and result (verified by sed extraction); MS-001 `State: in-progress` unchanged; FEAT-001 `Status: WIP` unchanged; `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; one commit (`bb96f0e`, only `ROADMAP.md`); working tree clean. All 4 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 03-wip-untouched — GREEN (run 2 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — REQ-004 appended to MS-002's `Covers:`; MS-001 span byte-identical between seed and result (verified by sed extraction); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; one commit (`6f2724e`, only `ROADMAP.md`); working tree clean. All 4 Expected observables hold; no Forbidden observable triggered. Agent explicitly noted the rationalization-table scenario (confirmation email / same charge event) in its summary.
+- Rationalizations: none
+
+## 2026-07-26 — 04-retired-cleanup — GREEN (run 1 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — no changes made to ROADMAP.md; MS-001 section byte-identical to seed; final message explicitly names both `MS-001` and `REQ-002` ("MS-001 is `in-progress`… removing the stale `PRD-001 REQ-002` citation violates scope-immutability"); no commit touching MS-001; `validate_roadmap.py` exit 0; `check_coverage.py` exit 1 (stale citation in started milestone, correctly left unresolved). All 3 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 04-retired-cleanup — GREEN (run 2 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — no changes made to ROADMAP.md; MS-001 section byte-identical to seed; final message explicitly names `MS-001` and `REQ-002` and explains scope-immutability; no new commit; `validate_roadmap.py` exit 0; `check_coverage.py` exit 1 (stale citation correctly left unresolved). All 3 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 05-multi-prd-cut — GREEN (run 1 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — ROADMAP.md created and committed (one new commit `267c770`, only `ROADMAP.md`); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0 (all five live REQs — PRD-001 REQ-001/002/003 and PRD-002 REQ-001/002 — cited exactly once); five milestones MS-001 through MS-005, each with non-placeholder Goal; summary points at MS-001 / `Active feature: none` / `Next action: milestone-to-features MS-001`; working tree clean; no `### FEAT-` subsections. All 6 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 05-multi-prd-cut — GREEN (run 2 of 2)
+- Commit: b9a7b10
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — ROADMAP.md created and committed (one new commit `8bb682b`, only `ROADMAP.md`); `validate_roadmap.py` exit 0; `check_coverage.py` exit 0 (all five live REQs covered exactly once across three milestones); three milestones MS-001 through MS-003 each with non-placeholder Goal; summary correct; working tree clean; no `### FEAT-` subsections. All 6 Expected observables hold; no Forbidden observable triggered.
+- Rationalizations: none
