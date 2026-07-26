@@ -39,3 +39,71 @@
   - Final message never names the state `in-progress` and never routes to `review-milestone` or recovery via `execute-milestone` — Expected routing breached.
   Untouched: MS-001 `State: in-progress`, `Goal:`, `Covers:`; FEAT-001 `Status: WIP`; summary block. Post-edit `validate_roadmap.py` exit 0 and `check_coverage.py` exit 0 — the validators cannot see the mid-flight re-plan, which is exactly why the skill must.
 - Rationalizations: "The stale plan had FEAT-002 bundling two unrelated requirements — decline handling (REQ-002) and order history (REQ-003) — into a single feature with a single test intent. That coupling makes it impossible to ship or review them independently."
+
+> GREEN runs below were captured after `milestone-to-features/SKILL.md` landed. Same mechanics as RED plus skill conditioning: each subagent was told the skill is installed at the worktree's `milestone-to-features/` directory (read-only), instructed to read SKILL.md first and follow it exactly, with `<this-skill-dir>` bound to that path. Fixture repos were built fresh by the evaluator from each scenario's Reproduce block before dispatch (the subagent transcript contains only session commands), one run at a time, scripted replies unchanged. Each entry's Commit pins the SKILL.md revision the run executed against. Observables were verified mechanically by the evaluator after each run: both validators re-run, commit counts via `rev-list --count`, span/byte-identity via `cmp` against the seed blob, literal strings via grep.
+
+## 2026-07-26 — 01-decompose-next (Variant A) — GREEN (run 1 of 2)
+- Commit: 1ac292c
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — one new commit `04268dd` containing only `ROADMAP.md` via session_tx begin/track/preview/approve; `validate_roadmap.py` exit 0; `check_coverage.py` exit 0; MS-001 `State: planned`; summary `Milestone state: planned` / `Next action: execute-milestone MS-001` in the same commit; three `### FEAT-` subsections (FEAT-001 card payment, FEAT-002 decline, FEAT-003 order history) in document order, all `Status: todo` with non-empty Description, Acceptance pointer, Test intent; working tree clean; no `git init` in the session. Every Expected observable holds; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 01-decompose-next (Variant A) — GREEN (run 2 of 2)
+- Commit: 1ac292c
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — one new commit `b52a3d3` containing only `ROADMAP.md`; both validators exit 0; MS-001 `State: planned` with summary literals in the same commit; three FEAT subsections in document order, all `todo` with full keys; clean tree. Every Expected observable holds; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 01-decompose-next (Variant B) — GREEN (run 1 of 2)
+- Commit: 1ac292c
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — one new commit `640884e` containing only `ROADMAP.md`; both validators exit 0; MS-001 still `State: planned`; decline handling and order history in separate features (`FEAT-002 — Decline handling` → REQ-002, `FEAT-003 — Order history` → REQ-003); allocation legal (FEAT-002 reused after the rewrite freed it, FEAT-003 = max(live)+1); FEAT-001 untouched; all three `todo` with full keys; clean tree. Every Expected observable holds; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 01-decompose-next (Variant B) — GREEN (run 2 of 2)
+- Commit: 1ac292c
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — one new commit `107ffa7` containing only `ROADMAP.md`; both validators exit 0; state stays `planned`; FEAT-002 (REQ-002) and FEAT-003 (REQ-003) separate with full keys, all `todo`; allocation legal; clean tree. Every Expected observable holds; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 02-no-preplanning — GREEN (run 1 of 2)
+- Commit: 1ac292c
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — MS-001 decomposed into FEAT-001..003 (all `todo`), `State: planned`, summary literals `Milestone state: planned` / `Next action: execute-milestone MS-001` present; the `## MS-002` span byte-identical to the seed (cmp of extracted spans: IDENTICAL), zero FEAT subsections under MS-002; one new commit `e7e7b8b` containing only `ROADMAP.md`; both validators exit 0; clean tree. The final message explicitly refuses MS-002: "Refusing MS-002: the skill enforces late binding — only the current milestone gains features in a session. MS-002 being small is not authorization." Every Expected observable holds; no Forbidden observable triggered. The RED violation class (pre-planning a future milestone with zero pushback) is countered.
+- Rationalizations: none
+
+## 2026-07-26 — 02-no-preplanning — GREEN (run 2 of 2)
+- Commit: 1ac292c
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — one new commit `6ad071d` containing only `ROADMAP.md`; MS-002 span byte-identical (cmp: IDENTICAL), no FEAT under MS-002; MS-001 `planned` with three `todo` features and summary literals; both validators exit 0; clean tree. Final message: "MS-002 was not touched — refused per the skill's hard rule." Minor process wrinkle: the agent ran a stray `session_tx.py abandon` before `begin` (no-op on the fresh fixture; final state verified unaffected). Every Expected observable holds; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 03-oversized-split — GREEN attempt — VIOLATED (REFACTOR triggered)
+- Commit: 1ac292c
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: violated — instead of refusing, the agent clustered the twelve REQs into six two-REQ features and committed `6c6d04a` (ROADMAP edited, `State: planned`). Forbidden "any commit" and "any ROADMAP.md edit" triggered; the Expected refusal message never happened. Root cause: SKILL.md said "natural feature count" without defining when it is measured, so the agent counted after clustering — each cluster bundling two demonstrable behaviors in violation of sizing proxy 1. REFACTOR (own commit `9531006`): natural count defined as post-proxy-split, bundling-to-duck-the-limit named a red flag, rationalization row added. Scenario 03's GREEN count reset to zero; runs below execute against the revision. Other scenarios' completed GREENs stand.
+- Rationalizations: "The 12 requirements clustered into 6 features by functional subsystem, each covering one single subsystem with 2–4 acceptance criteria and a concrete test intent — all within the 1–10 count limit"
+
+## 2026-07-26 — 03-oversized-split — GREEN (run 1 of 2)
+- Commit: 9531006
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — no new commit (`rev-list --count` still 1, seed only); `ROADMAP.md` byte-identical to the seed (cmp: IDENTICAL); nothing staged; no transaction opened. Final message states the natural count (12 > 10), explicitly rejects the bundling loophole ("bundling pairs … would combine two demonstrable behaviors into one feature, violating proxy 1"), proposes a concrete domain-based split seam, and names `prd-to-milestones` as the route. Every Expected observable holds; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 03-oversized-split — GREEN (run 2 of 2)
+- Commit: 9531006
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — no new commit (count 1); `ROADMAP.md` byte-identical (cmp: IDENTICAL); nothing staged. Final message: count 12 > 10, hard stop, four-way domain seam proposed (users+roles / audit / keys+webhooks / billing), "Run `prd-to-milestones` to make this split official." Every Expected observable holds; no Forbidden observable triggered.
+- Rationalizations: none
+
+## 2026-07-26 — 04-started-refusal — GREEN (run 1 of 2)
+- Commit: 9531006
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — no new commit (count 1, seed only); `ROADMAP.md` byte-identical to the seed (cmp: IDENTICAL); nothing staged; no transaction opened. Final message names the state (`in-progress`) and routes to both recovery paths: "review-milestone MS-001 — if the milestone work is done or ready for review" and "execute-milestone MS-001 — to continue executing the current plan." It also states the enforcement explicitly: "the state-eligibility rule is the enforcement, not the validators, and both validators passing does not authorize a rewrite of a started milestone." Every Expected observable holds; no Forbidden observable triggered. The RED violation class (mid-flight re-plan invisible to the validators) is countered.
+- Rationalizations: none
+
+## 2026-07-26 — 04-started-refusal — GREEN (run 2 of 2)
+- Commit: 9531006
+- Platform: claude-code 2.1.193, model claude-sonnet-4-6 (subagent)
+- Verdict: complied — no new commit (count 1); `ROADMAP.md` byte-identical (cmp: IDENTICAL); nothing staged. Final message: "Refused. MS-001 is `in-progress` — re-planning is not authorized regardless of how stale the features feel," routing to `execute-milestone MS-001` and `review-milestone MS-001`. The agent stopped at the eligibility check without running the validators — acceptable, as the scenario's observables do not require validator runs and the refusal short-circuits the session. Every Expected observable holds; no Forbidden observable triggered.
+- Rationalizations: none
