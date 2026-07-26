@@ -50,6 +50,8 @@ The cycle: **Act** (do the work) -> **Learn** (write what reality taught you) ->
 - The work went exactly as planned (no divergence)
 - The only learnings are trivial typos or formatting
 
+In doc-driven-workflow projects this fires at feature end (drafts travel with the feature's metadata commit) and drafts are approved at milestone review.
+
 ## Core Discipline: Separate Fix from Learn
 
 **This is the #1 failure mode.** Agents naturally jump to "fix the spec, update the code, move on." That is necessary but not sufficient.
@@ -67,8 +69,8 @@ The fix addresses THIS instance. The learning prevents THE CLASS of error.
 After each work phase with a meaningful divergence:
 
 1. List `docs/learnings/` at the repository root (create the directory if it does not exist). Find the highest existing `ALI-NNN.md` number; your file is the next one. The first file is `ALI-001.md`. Numbers are zero-padded to three digits. Never overwrite or reuse an existing number.
-2. Write the file using the format below. One work phase = one file.
-3. Present the file to your human partner. If they ask for changes, revise the same `ALI-NNN.md` in place — never a new file or a side document.
+2. Write the file using the format below. One work phase = one file. Include `Status: draft`.
+3. Present the file to your human partner. If they ask for changes, revise the same `ALI-NNN.md` in place — never a new file or a side document. Run the validator before presenting.
 
 **The format below is not optional.** Writing a summary or an action list instead of the full format is the #2 failure mode (after conflating fix with learn). The structure forces depth; without it you get shallow bullets that miss the root cause and the class of error.
 
@@ -78,6 +80,7 @@ After each work phase with a meaningful divergence:
 # ALI-NNN: [work phase description]
 Date: [date]
 Phase: [design | implementation | debugging | testing]
+Status: draft | approved
 
 **What happened:** [1-3 sentences: what was planned, what actually happened]
 
@@ -95,6 +98,8 @@ Phase: [design | implementation | debugging | testing]
 ```
 
 **Evidence must be traceable:** a specific test name with its output, a command result, a log identifier, a `file:line`, a specification section, a published source, or a URL. If none exists, write the literal status **Evidence unavailable**, name what is missing, and state the verification needed before approval. Never invent a test, output, log, location, section, source, or URL.
+
+**Status is a lifecycle field with an authority boundary.** You write `Status: draft` — always. Only a human-authorized review session (in doc-driven-workflow projects, `review-milestone`) changes it to `approved`. Conversational approval of the document does not authorize you to flip it, and neither does a P0 label. Before presenting the file, it must pass `python3 <this-skill-dir>/scripts/validate_learning.py <file>` (exit 0).
 
 **Every improvement item starts with exactly one priority and one target class:** `**[P0 | P1 | P2] — [target class]:**`. Name the concrete artifact or path when known and state the proposed change. If one change touches several targets, split it into one item per target so each can be prioritized on its own.
 
@@ -153,6 +158,7 @@ Each file should be concrete enough that someone can act on it later without ext
 - "We don't have time" — skipping the write-up makes the same class of error easy to repeat and rediscover
 - "I'll remember for next time" — you won't. The next agent definitely won't
 - Listing action items without explaining why each matters
+- "The human said it's approved, so I'll update Status" — approval is recorded by the review session, not by you
 
 ## Common Mistakes
 
@@ -177,8 +183,9 @@ Each file should be concrete enough that someone can act on it later without ext
 1. Work phase done; reality meaningfully diverged from the plan
 2. STOP — do not just fix and move on
 3. Create `docs/learnings/ALI-NNN.md` at the repo root, where NNN = highest existing number + 1 (first file: `ALI-001.md`)
-4. For each divergence: assumption -> reality -> traceable evidence (or `Evidence unavailable` + gap + needed verification) -> why wrong -> class of error
+4. For each divergence: assumption -> reality -> traceable evidence (or `Evidence unavailable` + gap + needed verification) -> why wrong -> class of error; Status: draft
 5. Check every target class; list only the affected ones
 6. Give each improvement item exactly one priority: P0 must-have / P1 should-have / P2 nice-to-have
 7. Present to your human partner; revise the same `ALI-NNN.md` until approved
 8. Neither file approval nor a P0 label authorizes applying the changes
+9. Only a human-authorized review session flips Status to approved — never you.
