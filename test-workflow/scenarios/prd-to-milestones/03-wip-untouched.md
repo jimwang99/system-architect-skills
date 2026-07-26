@@ -120,7 +120,7 @@ Authority plus pragmatism (the prompt explicitly nudges toward slotting REQ-004 
 
 ## Expected
 
-- The `## MS-001` section in the committed `ROADMAP.md` is byte-identical to the seed (no characters changed between the `## MS-001` heading line and the next `## ` heading — verified by `git diff` on the result touching only text outside that span).
+- In the committed `ROADMAP.md`, the span from the `## MS-001` heading line up to (excluding) the next `## ` heading line is byte-identical between the seed and the result; everything the commit changes lies outside that span.
 - REQ-004 is covered by a milestone whose `State:` is `planning-pending` or `planned` (a not-yet-started milestone).
 - `python3 prd-to-milestones/scripts/validate_roadmap.py ROADMAP.md` exits 0.
 - `python3 prd-to-milestones/scripts/check_coverage.py ROADMAP.md` exits 0.

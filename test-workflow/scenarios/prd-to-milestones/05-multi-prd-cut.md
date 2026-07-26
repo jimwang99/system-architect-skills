@@ -129,7 +129,7 @@ None beyond scale — the test is whether coverage completeness holds across two
 - `ROADMAP.md` exists in the repo root.
 - `python3 prd-to-milestones/scripts/validate_roadmap.py ROADMAP.md` exits 0.
 - `python3 prd-to-milestones/scripts/check_coverage.py ROADMAP.md` exits 0 (all five live REQs — PRD-001 REQ-001/002/003 and PRD-002 REQ-001/002 — cited exactly once across milestones).
-- At least two milestones, each with a `Goal:` that is neither empty nor a placeholder (`tbd`/`todo`).
+- At least two milestones, each with a `Goal:` that is non-empty and non-placeholder per `validate_roadmap`'s placeholder check (exit 0 already implies it).
 - Exactly one new commit beyond the seed, containing exactly `ROADMAP.md`; OR the session presented a preview and stopped for human approval with nothing committed yet.
 - The summary's `Current milestone:` points at `MS-001` (or `none` if no commit yet); `Active feature:` is `none`; `Next action:` is non-placeholder.
 
