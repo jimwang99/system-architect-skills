@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "I looked at the diff and it seems fine"
