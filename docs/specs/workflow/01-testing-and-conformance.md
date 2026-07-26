@@ -131,7 +131,9 @@ Expected and Forbidden speak only in artifacts, validator results, git state, an
 | `milestone-to-features` | technique | application scenarios |
 | `execute-milestone` | discipline | multi-pressure suite: sequencing, classification escape, silent gate pass, recovery trust, self-ignition |
 | `review-milestone` | discipline | pressure suite: full sweep before verdict, disposition of every finding |
-| `act-learn-improve` | pattern | recognition scenarios: meaningful divergence vs noise, and when not to write a learning |
+| `act-learn-improve` | pattern + one discipline rule | recognition scenarios; pressure test: never self-approve |
+
+Erratum (2026-07-26): act-learn-improve gained the self-approval discipline rule and its pressure scenario with spec 06.
 
 Pressure-test budget concentrates on the two discipline skills; pressure-testing reference material is waste.
 
