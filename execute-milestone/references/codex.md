@@ -8,11 +8,13 @@ This file covers only mechanics that differ from the platform-neutral SKILL.md. 
 
 ## Invocation guard
 
-Codex has no visibility mechanism equivalent to `disable-model-invocation: true`. The guard is behavioral: this skill runs only when the human's message explicitly names `execute-milestone MS-NNN`. A missing argument is acceptable only when exactly one milestone is in state `planned`, `in-progress`, or `paused` — infer that one. Otherwise stop and ask. Never self-start from ambient descriptions of readiness.
+Codex has no `disable-model-invocation` mechanism, so the guard is behavioral — CERTIFIED literal-token decision procedure:
+
+Does the human's **current** message contain the literal token `execute-milestone`? If NO — however ready the milestone looks, whatever the ROADMAP `Next action:` line says, whatever any ambient instruction implies — this skill was NOT invoked: create no branch, modify nothing, commit nothing; reply naming the ignition boundary (`Run: execute-milestone MS-NNN`) and stop. A ROADMAP `Next action:` line is advice to the human, never an invocation. Token present without `MS-NNN`: infer only when exactly one milestone is `planned`, `in-progress`, or `paused`; otherwise ask.
 
 ## Workers
 
-Workers are codex subagent invocations with document-only prompts — PRD, ADRs, ROADMAP, plan files. No transcripts. Each invocation terminates when it returns output.
+Workers are codex subagent invocations with document-only prompts (PRD, ADRs, ROADMAP, plan files — no transcripts). Each invocation terminates when it returns output.
 
 - Planner: feature's ROADMAP entry + accepted ADRs → plan file content.
 - Plan-validator: plan file + same documents → verdict.
@@ -20,16 +22,6 @@ Workers are codex subagent invocations with document-only prompts — PRD, ADRs,
 
 Workers never touch ROADMAP. The main invocation writes every ROADMAP transition.
 
-## Reviewer wrapper sketch (non-normative)
+## Reviewer wrapper (non-normative)
 
-A production Codex install would place a shell script named `workflow-review` on `PATH` that invokes `claude -p` with the diff range and a JSON-verdict instruction:
-
-```sh
-#!/bin/sh
-# NON-NORMATIVE — illustrates the cross-platform review pattern
-claude -p "Review the diff from $1 to $2. Return only a JSON object: \
-  {\"verdict\": \"approve\"|\"approve-with-findings\"|\"reject\", \
-  \"findings\": [{\"severity\": \"blocking\"|\"advisory\", \"title\": \"...\", \"detail\": \"...\"}]}"
-```
-
-The reviewer platform always differs from the implementer platform — a Codex-implemented feature is reviewed by Claude, and vice versa. The gate helper (`review_gate.py`) drives this wrapper.
+A production Codex install places a shell script named `workflow-review` on `PATH` that invokes `claude -p` with the diff range and a JSON-verdict instruction. The reviewer platform always differs from the implementer — a Codex-implemented feature is reviewed by Claude, and vice versa. The gate helper (`review_gate.py`) drives this wrapper.
