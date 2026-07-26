@@ -33,6 +33,8 @@ Owned elsewhere: milestone acceptance, merge, and `remediating` (spec 08); ALI g
 
 Erratum (2026-07-26, final review): the plan file commits in its own commit at planning time (before implementation — consistent with Decision 11's gate order and the certified scenario 01 behavior); the metadata commit carries the Evidence block, the review JSON, and any ALI draft. Decision 6's original completion sentence is superseded on that point.
 
+Erratum (2026-07-26, spec 08): execute-milestone's transition list also owns remediating → review-ready — remediation execution ends exactly like normal execution, returning the milestone to review-ready for the rerun review pass.
+
 ## Verification
 
 Deterministic lane — `test-workflow/tests/test_review_gate.py` with stub `workflow-review` scripts in `test-workflow/fixtures/review-stubs/` placed on `PATH` per test (spec 01's five outcomes): `success` (approve, exit 0 → gate 0), `findings` (blocking finding → gate 1; advisory-only approve-with-findings → gate 0), `timeout` (sleeps past `WORKFLOW_REVIEW_TIMEOUT=1` twice → gate 3; sleeps once then succeeds → gate 0, retry proven), `auth-failure` (exit 41 twice → gate 3; once then success → gate 0), `malformed` (non-JSON stdout twice → gate 3). Plus usage exit 2 and JSON echo assertions.
