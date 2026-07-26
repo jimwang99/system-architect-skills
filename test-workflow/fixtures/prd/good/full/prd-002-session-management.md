@@ -22,7 +22,7 @@ Session renewal is measurable per release.
 
 ## Requirements
 
-### R-01 — Issue session token
+### REQ-001 — Issue session token
 
 - Statement: The API issues a signed token on successful login.
 - Rationale: keeps ops simple
@@ -30,7 +30,7 @@ Session renewal is measurable per release.
   - A valid login returns a token with a configurable TTL.
   - The token is signed with the deployment key.
 
-### R-02 — Refresh session token
+### REQ-002 — Refresh session token
 
 - Statement: A valid token can be exchanged for a fresh token before expiry.
 - Acceptance:

@@ -22,9 +22,9 @@ Checkout conversion is measurable per release.
 
 ## Requirements
 
-- Retired: R-01
+- Retired: REQ-001
 
-### R-01 — Pay by card
+### REQ-001 — Pay by card
 
 - Statement: A signed-in user pays the cart total by card.
 - Acceptance:

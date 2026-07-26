@@ -22,11 +22,11 @@ Checkout conversion is measurable per release.
 
 ## Requirements
 
-### R-02 — Pay by card
+### REQ-002 — Pay by card
 
 - Statement: A signed-in user pays the cart total by card.
 - Acceptance:
   - A successful charge creates an order with status paid.
   - A declined card shows the provider decline reason and keeps the cart.
 
-- Retired: R-01
+- Retired: REQ-001

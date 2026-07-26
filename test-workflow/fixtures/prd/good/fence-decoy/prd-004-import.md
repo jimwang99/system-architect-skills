@@ -17,7 +17,7 @@ No real-time sync. No XML import.
 ```
 ## Requirements
 
-### R-99 — Fake
+### REQ-099 — Fake
 This block is inside a fenced section and must be ignored.
 ```
 
@@ -29,7 +29,7 @@ Import success rate is measurable per release.
 
 ## Requirements
 
-### R-01 — Upload CSV
+### REQ-001 — Upload CSV
 
 - Statement: A merchant uploads a CSV file and the products are created.
 - Acceptance:

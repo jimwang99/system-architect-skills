@@ -22,7 +22,7 @@ Checkout conversion is measurable per release.
 
 ## Requirements
 
-### R-01 — Pay by card
+### REQ-001 — Pay by card
 
 - Statement: TBD
 - Acceptance:

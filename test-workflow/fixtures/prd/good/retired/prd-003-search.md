@@ -22,16 +22,16 @@ Search CTR is measurable per release.
 
 ## Requirements
 
-- Retired: R-01, R-03
+- Retired: REQ-001, REQ-003
 
-### R-02 — Keyword search
+### REQ-002 — Keyword search
 
 - Statement: A user can search products by keyword and see matching results.
 - Acceptance:
   - A query returns products whose title or description contains the keyword.
   - An empty result set shows a zero-results message.
 
-### R-04 — Search analytics
+### REQ-004 — Search analytics
 
 - Statement: Each search query is logged for analytics.
 - Acceptance:

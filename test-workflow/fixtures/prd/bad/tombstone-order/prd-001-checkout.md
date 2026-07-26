@@ -22,16 +22,16 @@ Checkout conversion is measurable per release.
 
 ## Requirements
 
-- Retired: R-03, R-02
+- Retired: REQ-003, REQ-002
 
-### R-01 — Pay by card
+### REQ-001 — Pay by card
 
 - Statement: A signed-in user pays the cart total by card.
 - Acceptance:
   - A successful charge creates an order with status paid.
   - A declined card shows the provider decline reason and keeps the cart.
 
-### R-04 — Cancel order
+### REQ-004 — Cancel order
 
 - Statement: A signed-in user cancels a pending order.
 - Acceptance:

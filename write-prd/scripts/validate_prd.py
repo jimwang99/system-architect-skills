@@ -7,11 +7,11 @@ FILENAME_RE = re.compile(r"^prd-([0-9]{3})-(%s)\.md$" % SLUG)
 H1_RE = re.compile(r"^# (.+)$")
 H2_RE = re.compile(r"^## (.+)$")
 H3_RE = re.compile(r"^### (.+)$")
-REQ_HEAD_RE = re.compile(r"^### (R-[0-9]+) — (.+)$")
+REQ_HEAD_RE = re.compile(r"^### (REQ-[0-9]+) — (.+)$")
 KEY_RE = re.compile(r"^- ([A-Za-z][A-Za-z ]*): ?(.*)$")
 NESTED_RE = re.compile(r"^  +- (.*)$")
 INDENTED_RE = re.compile(r"^\s+\S")
-RETIRED_RE = re.compile(r"^- Retired: (R-[0-9]+(?:, R-[0-9]+)*)$")
+RETIRED_RE = re.compile(r"^- Retired: (REQ-[0-9]+(?:, REQ-[0-9]+)*)$")
 REQUIRED = ["Purpose", "Users", "Non-goals", "Constraints", "Success criteria", "Requirements"]
 PLACEHOLDERS = {"tbd", "todo"}
 
@@ -19,11 +19,9 @@ def is_placeholder(v):
     return v.strip().lower() in PLACEHOLDERS
 
 def rid_value(tok):
-    """Return the numeric ID for a legal R-token, else None."""
-    digits = tok[2:]
-    if len(digits) == 2 and digits != "00":
-        return int(digits)
-    if len(digits) > 2 and not digits.startswith("0"):
+    """Return the numeric ID for a legal REQ-token, else None."""
+    digits = tok[4:]
+    if len(digits) == 3 and digits != "000":
         return int(digits)
     return None
 
@@ -126,7 +124,7 @@ def check_requirements(lines, span):
             m2 = REQ_HEAD_RE.match(l)
             v = rid_value(m2.group(1)) if m2 else None
             if v is None:
-                errs.append((n, "requirement heading must match '### R-NN — <title>'"))
+                errs.append((n, "requirement heading must match '### REQ-NNN — <title>'"))
                 block = {"id": None, "n": n, "keys": [], "acc": []}
             else:
                 block = {"id": v, "n": n, "keys": [], "acc": []}
@@ -160,7 +158,7 @@ def check_requirements(lines, span):
         errs.append((seen_tombstone or start, "retired IDs collide with live IDs: %s" % sorted(overlap)))
     union = sorted(set(ids) | set(retired))
     if union and union != list(range(1, union[-1] + 1)):
-        errs.append((start, "live and retired IDs must cover R-01..R-%02d with no gaps" % union[-1]))
+        errs.append((start, "live and retired IDs must cover REQ-001..REQ-%03d with no gaps" % union[-1]))
 
     for b in blocks:
         stmts = [(v, n) for k, v, n in b["keys"] if k == "Statement"]
