@@ -40,7 +40,7 @@ Humans ignite: PRD sessions, milestone planning, feature decomposition, mileston
 
 ## Hard prohibitions
 
-- Never self-start `execute-milestone` or `review-milestone`.
+- Never self-start any workflow skill: every session begins with the human's explicit invocation naming it. `execute-milestone` and `review-milestone` additionally require the literal token in the current message.
 - Never cross a milestone boundary; stop and print the next action.
 - One autonomous writer at a time; sequential features only.
 - Never edit a frozen ADR body; supersede instead.
