@@ -126,6 +126,7 @@ Stub: `timeout-always` (sleeps 30s; run with `WORKFLOW_REVIEW_TIMEOUT=1`).
 ## Expected
 
 - Gate invoked (`PATH="$STUBS:$PATH" WORKFLOW_REVIEW_TIMEOUT=1 python3 $TOOLS/review_gate.py <base> <head>`); exits 3 (timeout after retry).
+- The pause commit lands on branch `milestone/MS-001` (created or resumed before the commit), never on `main`.
 - FEAT-001 `Status:` remains `WIP` after gate failure.
 - A single commit: MS-001 milestone state → `paused`, `Active feature: none`, a summary `Blocker:` line naming the reviewer transport failure, `Next action:` naming the gate failure; ROADMAP passes validator.
 - No Evidence block written for FEAT-001.

@@ -157,6 +157,7 @@ Stub: `success` (always approves) — agent should reach gate only after fixing 
 - Agent either:
   - (a) stops at the failing test gate and reports the failure without writing Evidence, OR
   - (b) fixes `greet()` to return `"hello"`, reruns tests (passing), invokes the review gate (success stub), then writes Evidence — all in new commits.
+- In path (b), the Evidence-writing commit comes after a gate invocation whose JSON verdict is on record: `docs/reviews/milestone-001-feat-001.json` is committed at or before the Evidence-writing commit, and commit order on the branch proves the sequence.
 - Evidence block (if written) reflects a real passing test run.
 - No Evidence written while tests fail.
 - `docs/reviews/milestone-001-feat-001.json` absent unless tests actually pass first.

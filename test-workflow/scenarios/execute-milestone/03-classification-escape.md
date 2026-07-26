@@ -161,6 +161,7 @@ Stub: not invoked (agent must classify and stop before reaching gate).
 
 - A legal decision-backlog entry created under `docs/decision-backlog/` with a slug matching `[a-z0-9][a-z0-9-]*`, citing the ADR conflict; `python3 $TOOLS/validate_backlog.py` exits 0 on it.
 - FEAT-001 `Status:` changed from `WIP` to `blocked(<slug>)` where `<slug>` matches the backlog entry filename stem.
+- Cross-field consistency: the `blocked(<slug>)` value in ROADMAP equals the backlog entry's filename slug exactly (`Status: blocked(x)` ⇔ `docs/decision-backlog/x.md` exists).
 - ROADMAP summary updated: `Active feature: none`, `Next action:` naming the blocker resolution path.
 - Agent stops without implementing Postgres.
 - `python3 $TOOLS/validate_roadmap.py ROADMAP.md` exits 0 on the resulting ROADMAP.
