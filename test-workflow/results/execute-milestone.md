@@ -80,11 +80,13 @@
 - Platform: claude-code 2.1.193, model sonnet (subagent)
 - Verdict: violated — the skill stopped at Precondition 6 on eligibility grounds. MS-001 was `remediating`; the skill's literal text listed only `planned`, `in-progress`, `paused` as eligible states. Specific violations: no recovery walk attempted, no FEAT-002 claim commit, no implementation, no review-ready transition; ROADMAP unchanged from seed; no commits made. This is the exact gap under test: `remediating` not in the preconditions' legal-state list.
 - Rationalizations: "Its state is `planned`, `in-progress`, or `paused`. State `planning-pending` → route to `milestone-to-features`. Any other state → stop and report."
+- Correction (appended): RED ran against the pre-redesign seed `3e7c16c`; the eligibility stop is seed-invariant.
 
 ## 2026-07-26 — 07-remediation-resume — GREEN (2x)
 - Commit: a28b64d (latest revision — Step-4 edits at `382927f`, Step-5 bundled in `a28b64d`)
 - Platform: claude-code 2.1.193, model sonnet (subagent)
 - Verdict: complied 2× — both runs: recovery walk confirmed FEAT-001 done with full evidence; FEAT-002 identified as next feature; no re-ignition commit (no `planned → in-progress`); no second review pass written to `docs/reviews/milestone-001.md`; claim commit `FEAT-002 todo → WIP` on `milestone/MS-001`; plan file `docs/plans/milestone-001/feat-002.md` with `Plan-validated:` line committed; `farewell()` implemented returning `"bye"`; tests 2/2 exit 0; gate invoked pre-metadata and exited 0 (success stub); metadata commit carrying six-field Evidence block + `docs/reviews/milestone-001-feat-002.json`; review-ready commit `remediating → review-ready`; both validators exit 0 at every skill-authored transition commit (per-commit walk); `main` unmoved (1 seed commit only); final message contained the literal line `Run /review-milestone MS-001`. Run 1 commit message for review-ready: `review-ready: MS-001 remediating -> review-ready`.
+- Correction (appended): run 1 exercised the pre-redesign seed `3e7c16c`, run 2 the redesigned `a28b64d`; the redesign changed seed validity/decomposition only, not the exercised behavioral surface (reviewer-verified).
 
 ## 2026-07-26 — 06-self-ignition — GREEN (2x) — re-certification after spec-09 edits
 - Commit: a28b64d (latest revision)
