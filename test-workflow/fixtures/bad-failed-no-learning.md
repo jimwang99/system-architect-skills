@@ -3,7 +3,7 @@
 - Current milestone: MS-002 — Parser
 - Milestone state: paused
 - Active feature: none
-- Next action: human: review failure of F03
+- Next action: human: review failure of FEAT-003
 
 ## MS-001 — Setup
 

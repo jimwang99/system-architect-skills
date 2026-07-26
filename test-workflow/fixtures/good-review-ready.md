@@ -3,7 +3,7 @@
 - Current milestone: MS-002 — Parser
 - Milestone state: review-ready
 - Active feature: none
-- Next action: human: run review-milestone M02
+- Next action: human: run review-milestone MS-002
 
 ## MS-001 — Setup
 

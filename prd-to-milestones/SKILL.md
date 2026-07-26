@@ -7,32 +7,34 @@ description: Use when planning milestones from one or more PRDs for the first ti
 
 ## Overview
 
-Each milestone is one demoable capability increment, sized for half-a-day to a few days of autonomous execution. Never size by feature count; that check belongs to milestone-to-features. Deferral is a late milestone in document order, never an icebox construct.
+Each milestone is one demoable capability increment, sized for half-a-day to a few days of autonomous execution. Never size by feature count (that belongs to milestone-to-features). Deferral is a later milestone in document order, never an icebox.
 
-Scripts in `<this-skill-dir>/scripts/`: `validate_roadmap.py`, `check_coverage.py`, `session_tx.py` (symlink to the shared transaction), and `validate_prd.py` (symlink to write-prd's validator).
+Scripts in `<this-skill-dir>/scripts/`: `validate_roadmap.py`, `check_coverage.py`, `session_tx.py` (shared-transaction symlink). PRD validation: `<this-skill-dir>/../write-prd/scripts/validate_prd.py`.
 
 ## Session sequence
 
 1. **Check preconditions — in order; stop at the first failure.**
    - `git rev-parse --show-toplevel` — if it fails: stop; this skill never runs `git init`; tell the human to create the repository.
-   - `python3 <this-skill-dir>/../write-prd/scripts/validate_prd.py` over every `docs/prd/prd-NNN-<slug>.md` — if none pass or none exist: stop and point the human to write-prd.
+   - `python3 <this-skill-dir>/../write-prd/scripts/validate_prd.py` over every `docs/prd/prd-NNN-<slug>.md` — if none exist or none pass: stop; point the human to write-prd.
    - If `ROADMAP.md` exists: `python3 <this-skill-dir>/scripts/validate_roadmap.py ROADMAP.md` — if exit non-zero: abort with the full report; repairing a broken ROADMAP is its own task.
 
-2. **Enumerate drift.** `python3 <this-skill-dir>/scripts/check_coverage.py ROADMAP.md` (skip if no ROADMAP). Collect every uncovered live REQ and every stale citation.
+2. **Enumerate drift.** `python3 <this-skill-dir>/scripts/check_coverage.py ROADMAP.md` (skip if no ROADMAP). Collect uncovered live REQs and stale citations.
 
 3. **Propose before writing — present the complete cut, then converge.**
-   - For each proposed milestone: title, one-sentence Goal (the demoable increment), the `Covers:` list, and one line of sizing rationale.
-   - The human adjusts conversationally. Do not write anything to disk until the proposal is agreed.
+   - For each proposed milestone: title, one-sentence Goal, the `Covers:` list, one line of sizing rationale.
+   - Human adjusts conversationally. Write nothing to disk until agreed.
 
 4. **Open the transaction and write.**
    - `python3 <this-skill-dir>/scripts/session_tx.py begin`
-   - `python3 <this-skill-dir>/scripts/session_tx.py track ROADMAP.md` (plus any backlog entries or ADR drafts)
+   - `python3 <this-skill-dir>/scripts/session_tx.py track ROADMAP.md` (plus any backlog entries or ADR drafts — ADR drafts: via write-adr, `status: proposed`, never numbered or accepted here)
    - Write `ROADMAP.md` using the template below; fill placeholders, keep the `## Current Workflow Status` block verbatim.
 
-5. **Gate, preview, wait, approve.**
-   - `python3 <this-skill-dir>/scripts/validate_roadmap.py ROADMAP.md` — exit non-zero: fix and retry; never present a failing artifact.
-   - `python3 <this-skill-dir>/scripts/check_coverage.py ROADMAP.md` — exit non-zero: fix and retry.
-   - `python3 <this-skill-dir>/scripts/session_tx.py preview`, then wait for the human.
+5. **Gate, preview, wait, approve.** All gate steps: exit non-zero → fix and retry; never present a failing artifact.
+   - `python3 <this-skill-dir>/scripts/validate_roadmap.py ROADMAP.md`
+   - `python3 <this-skill-dir>/scripts/check_coverage.py ROADMAP.md`
+   - `python3 <this-skill-dir>/../write-prd/scripts/validate_backlog.py` over every manifest backlog entry
+   - `python3 <this-skill-dir>/../write-adr/scripts/validate_adr.py` over every manifest ADR draft
+   - `python3 <this-skill-dir>/scripts/session_tx.py preview`; pause for human review.
    - Approved → `session_tx.py approve -m "<msg>"`. Withheld → leave uncommitted, never abandon. Explicit abandon → `session_tx.py abandon`.
 
 ## ROADMAP template
@@ -54,9 +56,9 @@ Every ROADMAP starts with this block verbatim (fill placeholders; never omit any
 - Covers: PRD-001 REQ-001
 ```
 
-Milestone heading form: `## MS-NNN — <title>` (three-digit ID, em dash `—`, space on both sides). Feature heading form: `### FEAT-NNN — <title>`. Any other heading form (`M-01`, `MS-1`, `## MS-01`) is rejected by the validator.
+Milestone heading: `## MS-NNN — <title>` (three-digit ID, em dash `—`, space both sides). Feature heading: `### FEAT-NNN — <title>`. Any other form (`M-01`, `MS-1`, `## MS-01`) is rejected by the validator.
 
-The `## Current Workflow Status` section must be the first `##` section and must contain exactly these four keys: `Current milestone`, `Milestone state`, `Active feature`, `Next action`. `Next action` must not be empty or a placeholder.
+The `## Current Workflow Status` section must be the first `##` section with exactly these four keys: `Current milestone`, `Milestone state`, `Active feature`, `Next action`. `Next action` must not be empty or a placeholder.
 
 ## Rules
 
@@ -68,6 +70,7 @@ The `## Current Workflow Status` section must be the first `##` section and must
 | Deferral | A REQ that cannot fit early goes into a later milestone in document order, not an icebox |
 | Fold-in resets state | Adding scope to a `planned` milestone resets it to `planning-pending` and deletes all its `### FEAT-` subsections in the same transaction |
 | Started milestones are scope-immutable | Milestones in `in-progress`, `paused`, `review-ready`, `remediating`, or `accepted` state are **never edited by this skill** — not their `State:`, `Goal:`, `Covers:`, nor any FEAT content |
+| Retired REQ in not-yet-started milestone | Citations of retired REQs are removed from `planning-pending`/`planned` milestones in the same transaction as the REQ retirement |
 | Stale citation in a started milestone | Report it to the human; leave the milestone section byte-identical; do not remove the citation or "fix" check_coverage by touching the started milestone |
 | This skill writes only `planning-pending` | In two situations only: milestone creation and the fold-in reset; all other state transitions belong to other skills |
 | Scaffold summary | Points at MS-001 with `Next action: milestone-to-features MS-001` |
@@ -75,7 +78,7 @@ The `## Current Workflow Status` section must be the first `##` section and must
 
 ## Rationalization table
 
-Every row quotes the exact rationalization a skill-less agent produced when it violated a rule. Stop and re-read the rule any time you find yourself reasoning in these patterns.
+Every row quotes the exact rationalization a skill-less agent produced when it violated a rule. Stop and re-read the rule if you find yourself reasoning in these patterns.
 
 | Rationalization (verbatim RED) | Reality |
 |---|---|

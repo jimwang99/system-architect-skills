@@ -3,7 +3,7 @@
 - Current milestone: MS-002 — Parser
 - Milestone state: in-progress
 - Active feature: FEAT-009 — WIP
-- Next action: execute-milestone M02
+- Next action: execute-milestone MS-002
 
 ## MS-001 — Setup
 
