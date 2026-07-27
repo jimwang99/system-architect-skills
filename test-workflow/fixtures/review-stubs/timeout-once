@@ -1,8 +1,0 @@
-#!/bin/sh
-c=$(cat "$STUB_STATE/calls" 2>/dev/null || echo 0)
-echo $((c+1)) > "$STUB_STATE/calls"
-if [ "$c" = "0" ]; then
-    sleep 30
-else
-    echo '{"verdict": "approve", "findings": []}'
-fi

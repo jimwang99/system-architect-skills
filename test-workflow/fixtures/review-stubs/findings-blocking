@@ -1,2 +1,0 @@
-#!/bin/sh
-echo '{"verdict": "approve-with-findings", "findings": [{"severity": "blocking", "title": "off-by-one", "detail": "loop bound wrong"}]}'

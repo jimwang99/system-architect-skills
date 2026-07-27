@@ -1,1 +1,0 @@
-../../scripts/session_tx.py
