@@ -19,5 +19,5 @@
 - Preserve architecture and existing interfaces. Never make architectural or API changes without explicit approval from human.
 - Implement the smallest possible diff. Avoid refactoring, abstraction, or speculative improvements beyond the requested task.
 - Write the smallest set of readable, behavior-focused tests that cover critical paths, meaningful edge cases, and regressions; do not test implementation details or exhaustively enumerate trivial cases.
-
+- Sometimes specs are also AI generated. "The spec says so" is not the same as "this is right".
 
