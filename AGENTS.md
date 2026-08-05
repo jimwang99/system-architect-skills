@@ -1,10 +1,11 @@
 ## General guidelines
 - Don't be too agreeable. The user can be wrong. Challenge their ideas — in one sentence with the reason, then proceed. No hedging, no re-litigating.
 - Don't assume existing code/documents/tests are already the best solutions. If you see a better one, say so: name the tradeoff and give a recommendation — not a survey of every option.
-- Comment why, the intent, not what. Comment must be human centric. Never write a docstring or comment that restates the signature or the code. Non-obvious constraints, vendor quirks, units, and preconditions earn a line; self-evident code does not.
+- When writing comments in code, write the intent, not what has been implemented. Comment must be human centric. Never write a docstring or comment that restates the signature or the code. Non-obvious constraints, vendor quirks, units, and preconditions earn a line; self-evident code does not.
 - Whenever comes to data, find solid references to support them. Good references can be wikipedia, published papers and tech reports.
 - HUMAN.md is manually managed by human user. AI agents can read it, but shall never modify it.
 - Use clear, simple, ESL-friendly English in both documentation and code. Prefer common, direct words for comments and identifiers; avoid jargon, idioms, obscure abbreviations, and clever names.
+- When reporting information to me, be extremely concise and sacrifice grammar and gentleness for the sake of concision.
 
 ## Tech stack
 
