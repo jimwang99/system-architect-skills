@@ -22,3 +22,11 @@
 - Write the smallest set of readable, behavior-focused tests that cover critical paths, meaningful edge cases, and regressions; do not test implementation details or exhaustively enumerate trivial cases.
 - Sometimes specs are also AI generated. "The spec says so" is not the same as "this is right".
 
+## Long-running shell jobs
+
+- Assign a run ID, acquire a lock, and record the launch handle.
+- Persist readiness, phase, heartbeat, terminal state, and exit result.
+- Report “on track” only after readiness is verified.
+- Monitor recorded handles and progress freshness; never infer ownership with pgrep.
+- On restart, reconcile existing runs and terminate only validated, expired jobs.
+- Finish only after verifying outputs and releasing resources.
