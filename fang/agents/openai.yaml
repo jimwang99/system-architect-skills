@@ -1,0 +1,4 @@
+interface:
+  display_name: "FANG"
+  short_description: "Grill users to align on the real problem"
+  default_prompt: "Use $fang to interview me until we agree on the real problem, then write and review the FANG brief."
