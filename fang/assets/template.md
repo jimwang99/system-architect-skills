@@ -34,6 +34,6 @@
 
 ## Open questions
 
-[Optional section: omit when no material unknowns remain. Order by priority.]
+[Optional section: omit when no material unknowns remain. Order by priority. IDs are stable: never renumber or reuse a `Q<n>` after a question is resolved or dropped.]
 
-- [High / Medium / Low] [Question] — [evidence or input that could resolve it] — [Open / Accepted unknown]
+- **Q1** [High / Medium / Low] [Question] — [evidence or input that could resolve it] — [Open / Accepted unknown]

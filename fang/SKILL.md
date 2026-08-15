@@ -41,7 +41,7 @@ Run the grilling interview directly inside FANG. Do not defer it to a separate t
 4. Identify the high-level agreement the FANG must enable. If it remains inferred, label it as an assumption.
 5. Phrase the problem without embedding a preferred solution. If the source contains a proposed solution, recover the underlying problem and record the proposal only as a labeled solution hypothesis when necessary for context. Do not elaborate on or evaluate it.
 6. Make goals outcome-oriented and pair each with an observable success signal. State explicit non-goals.
-7. Rank open questions by their potential to change the problem boundary or agreement.
+7. Rank open questions by their potential to change the problem boundary or agreement. Give each one a stable ID `Q<n>` so the user can answer by number. Never renumber or reuse an ID after a question is resolved or dropped.
 
 ## 4. Review and realign
 
