@@ -9,10 +9,11 @@
 
 ## Tech stack
 
-- When creating documentation use Markdown format; when creating block diagrams or flow chart, use ASCII art format with a list of explanations with natural language.
+- When creating documentation, use Markdown format.
 - In Markdown files, never hard-wrap prose. One paragraph = one line; let the renderer wrap. (Exception: tables, code blocks.)
-- Use `uv` to manage Python virtual environment
-- Use `loguru` instead of raw print or logging in Python source code
+- When creating block diagrams or flow chart, use Mermaid format with a list of explanations in natural language.
+- Use `uv` to manage Python virtual environment.
+- Use `loguru` instead of raw print or logging in Python source code.
 
 ## Prevent over-engineering
 
