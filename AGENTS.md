@@ -10,7 +10,7 @@
 ## Tech stack
 
 - When creating documentation, use Markdown format.
-- In Markdown files, never hard-wrap prose. One paragraph = one line; let the renderer wrap. (Exception: tables, code blocks.)
+- In Markdown files, never hard-wrap prose. One paragraph = one line; let the renderer wrap (Exception: tables, code blocks); use `\$` for dollar sign to stay compatible with renderer that supports latex that use `$` to quote equations.
 - When creating block diagrams or flow chart, use Mermaid format with a list of explanations in natural language.
 - Use `uv` to manage Python virtual environment.
 - Use `loguru` instead of raw print or logging in Python source code.
