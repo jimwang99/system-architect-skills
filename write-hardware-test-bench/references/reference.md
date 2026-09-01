@@ -1,6 +1,6 @@
 # SystemC + Verilator Testbench Quick Reference
 
-Versions assumed: SystemC 3.0.x (IEEE 1666-2023), Verilator 5.x.
+Versions assumed: SystemC 3.0.x (IEEE 1666-2023), Verilator 5.x, and CMake 3.19 or newer for the CMake flow.
 
 ## Section 1: SystemC Basics
 
@@ -19,7 +19,7 @@ Versions assumed: SystemC 3.0.x (IEEE 1666-2023), Verilator 5.x.
 | Simple constructor | `SC_CTOR(MyTb) { ... }` | Declares ctor taking `sc_module_name`. Supports `SC_THREAD`/`SC_METHOD` registration inside. |
 | Custom constructor | plain C++ ctor taking `sc_module_name` + extra params | In SystemC 3.0 (IEEE 1666-2023) `SC_HAS_PROCESS` is deprecated and unnecessary — process macros work in any ctor. Only legacy SystemC 2.3 requires `SC_HAS_PROCESS(MyTb);` |
 | Sequential thread | `SC_THREAD(run);` | Runs once, uses `wait()` to advance time, must call `sc_stop()` when done |
-| Thread sensitivity | `sensitive << clk.posedge_event();` | Place immediately after `SC_THREAD(run);` |
+| Thread sensitivity | `sensitive << clk.pos();` | Place immediately after `SC_THREAD(run);`; event finders are safe before port binding |
 | Combinational method | `SC_METHOD(check);` | Re-triggers on sensitivity list, **no** `wait()` allowed |
 | Method sensitivity | `sensitive << sig_a << sig_b;` | Place immediately after `SC_METHOD(check);` |
 | Clock | `sc_clock clk{"clk", 10, SC_NS};` | Name, period, unit. 50% duty cycle by default |
@@ -49,7 +49,9 @@ Versions assumed: SystemC 3.0.x (IEEE 1666-2023), Verilator 5.x.
 ```cpp
 #include "Vtop.h"             // Generated header — name matches top-level module
 #include "verilated.h"
+#if VM_TRACE_FST
 #include "verilated_fst_sc.h" // For FST tracing in SystemC
+#endif
 
 auto dut = std::make_unique<Vtop>("dut");
 ```
@@ -89,7 +91,7 @@ dut->final();  // MUST call before destruction — flushes coverage, releases re
 ### Command-Line Plusargs
 
 ```cpp
-int main(int argc, char** argv) {
+int sc_main(int argc, char** argv) {
     Verilated::commandArgs(argc, argv);  // enables +verilator+... plusargs
     // ...
 }
@@ -97,9 +99,10 @@ int main(int argc, char** argv) {
 
 ### FST Trace Setup (preferred over VCD)
 
-In SystemC flow, use `VerilatedFstSc` which auto-dumps during `sc_start()`:
+When built with `--trace-fst`, use `VerilatedFstSc`, which auto-dumps during `sc_start()`:
 
 ```cpp
+#if VM_TRACE_FST
 Verilated::traceEverOn(true);  // MUST call before creating trace object
 
 // ... instantiate DUT, bind ports ...
@@ -115,6 +118,7 @@ tfp->open("trace.fst");
 
 // At end:
 tfp->close();
+#endif
 ```
 
 For non-SystemC (pure C++) testbenches, use `VerilatedFstC` with manual `tfp->dump(sim_time)` calls.
@@ -122,12 +126,14 @@ For non-SystemC (pure C++) testbenches, use `VerilatedFstC` with manual `tfp->du
 ### Coverage
 
 ```cpp
+#if VM_COVERAGE
 #include "verilated_cov.h"  // required — coveragep() returns incomplete type otherwise
 
 // At end of simulation, AFTER dut->final() (final() flushes the counters).
 // Use one explicit path in both the writer and annotation command:
 dut->final();
 Verilated::threadContextp()->coveragep()->write("build/coverage.dat");
+#endif
 ```
 
 Enable with `verilator --coverage` (or the `COVERAGE` option of CMake `verilate()`). View with `verilator_coverage --annotate <outdir> --annotate-min 1 build/coverage.dat` — default `--annotate-min` is 10, which marks points hit fewer than 10 times as uncovered (`%` prefix). Run annotation from the directory containing the RTL sources: source paths in coverage.dat resolve relative to cwd. The example CMake file defines `TB_OUTPUT_DIR` as its binary directory so the writer and command agree even when the executable is launched from the source directory.
@@ -140,22 +146,34 @@ Enable with `verilator --coverage` (or the `COVERAGE` option of CMake `verilate(
 set(CMAKE_CXX_STANDARD 17)   # SystemC 3.x hard-requires C++17; builds fail without it
 find_package(verilator REQUIRED HINTS $ENV{VERILATOR_ROOT})
 add_executable(tb_<block> tb_<block>.cpp)
+option(TB_ENABLE_TRACE_FST "Build FST tracing support" OFF)
+option(TB_ENABLE_COVERAGE "Build coverage instrumentation" OFF)
+set(TB_VERILATE_FEATURES SYSTEMC)
+if(TB_ENABLE_TRACE_FST)
+    list(APPEND TB_VERILATE_FEATURES TRACE_FST)
+endif()
+if(TB_ENABLE_COVERAGE)
+    list(APPEND TB_VERILATE_FEATURES COVERAGE)
+endif()
 verilate(tb_<block> SOURCES <block>.sv TOP_MODULE <block>
-         SYSTEMC TRACE_FST COVERAGE VERILATOR_ARGS -Wall)
+         ${TB_VERILATE_FEATURES} VERILATOR_ARGS --assert -Wall)
 verilator_link_systemc(tb_<block>)
 ```
 
 - `SYSTEMC` selects `--sc` output mode — `--sc` and `--cc` are mutually exclusive
+- `--assert` keeps RTL assertions enabled across the supported Verilator 5.x range
+- Configure with `-DTB_ENABLE_TRACE_FST=ON` or `-DTB_ENABLE_COVERAGE=ON` only when those artifacts are needed
 - `verilator_link_systemc()` finds SystemC via `SYSTEMC_INCLUDE`/`SYSTEMC_LIBDIR`/`SYSTEMC_ROOT` env vars, falling back to the default prefix (e.g. `/opt/homebrew`, `/usr/local`)
 
 **Raw Verilator CLI fallback (no CMake):**
 
 ```bash
-verilator --sc --exe --trace-fst --coverage -Wall -CFLAGS "-std=c++17" \
+verilator --sc --exe --assert -Wall -CFLAGS "-std=c++17" \
     <block>.sv tb_<block>.cpp -o tb_<block>
 make -C obj_dir -f V<block>.mk
 ```
 
+- Add `--trace-fst` or `--coverage` only when the source guards and requested run need that artifact
 - `-CFLAGS -I` paths are relative to `obj_dir/`, not the project root (e.g. `-CFLAGS "-I../verif/common"` for `verif/common/tb_log.h`)
 - Export `SYSTEMC_INCLUDE`/`SYSTEMC_LIBDIR` if SystemC is not in the default prefix
 

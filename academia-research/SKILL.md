@@ -1,291 +1,107 @@
 ---
 name: academia-research
-description: Use when user wants to research an academic topic, survey papers, or explore a research field using only Claude Code's built-in search and synthesis. Triggers on "research X", "survey papers on Y".
+description: Research an academic topic or compare a body of publications using primary sources. Use for literature reviews, research-landscape maps, paper comparisons, and evidence-based state-of-the-art questions; not for extracting or summarizing one supplied paper.
 ---
 
-# Independent Research
+# Academic Research
 
-## Overview
+## Outcome
 
-A five-phase workflow for academic research using only Claude Code's native capabilities: explore the field via web search, optionally clarify scope, conduct deep parallel research via subagents, synthesize into ONE structured report opening with a full-scope TL;DR, then enter interactive Q&A.
+Match the work to the request:
 
-**Core principles:**
-- Do NOT skip phases. Each phase produces artifacts the next phase depends on.
-- Produce exactly ONE output file: `[topic].md`, opening with a full-scope TL;DR
-- Prioritize arxiv papers, tech reports, and official publications over social media discussions
-- Prioritize recent materials — start searches with the current year and work backwards
-- Minimize clarifying questions (0-2 max) — the report covers technical and business angles by default
+- For a focused literature question, inspect the decisive sources and answer in the requested format.
+- For a field survey or literature review, produce a coherent Markdown report whose important claims are traceable to inspected sources.
 
-## Process Flow
+The user's scope, format, and output location take priority. If format and location are unspecified, answer a focused question in chat; for a survey, write one `[topic].md` report in the working directory and create no auxiliary files.
 
-```dot
-digraph research {
-    rankdir=TB;
-    "EXPLORE" [shape=box, label="Phase 1: EXPLORE\nSearch & follow references"];
-    "too_many" [shape=diamond, label=">100 or <10\npapers?"];
-    "subdomain" [shape=diamond, label="Field too\nbroad?"];
-    "CLARIFY" [shape=box, label="Phase 2: CLARIFY\nInteractive Q&A with user"];
-    "RESEARCH" [shape=box, label="Phase 3: RESEARCH\nParallel subagents per sub-topic"];
-    "REPORT" [shape=box, label="Phase 4: REPORT\nSynthesize into structured report"];
-    "QA" [shape=doublecircle, label="Phase 5: Q&A\nInteractive session"];
+## 1. Define Scope
 
-    "EXPLORE" -> "too_many";
-    "too_many" -> "EXPLORE" [label="yes: ask user\nto adjust scope"];
-    "too_many" -> "subdomain" [label="no: 5-100 papers"];
-    "subdomain" -> "CLARIFY" [label="no"];
-    "subdomain" -> "CLARIFY" [label="yes: propose\nsub-domains first"];
-    "CLARIFY" -> "RESEARCH";
-    "RESEARCH" -> "REPORT";
-    "REPORT" -> "QA";
-}
-```
+Turn the request into explicit research questions and boundaries. For a focused comparison of named works, use the requested comparison axes, verify the latest canonical versions and correction or retraction status, and skip review protocol and broad discovery unless the answer needs more context. For a survey or current-state question, record an exact search cutoff date.
 
-## Phase 1: EXPLORE
+State reasonable assumptions. Ask one concise question only when unresolved ambiguity would materially change source selection or the answer; a large field or a small evidence base alone is not a reason to stop.
 
-**Goal:** Map the research landscape. Find key papers, identify themes, understand scope.
+For a survey, use `narrative review` by default. Use `systematic review` or `scoping review` only when the work follows a reproducible protocol with named databases, queries, search dates, inclusion and exclusion criteria, and a documented screening process.
 
-### Search Strategy
+For a broad survey, define representative coverage before searching. If the user names several areas, treat them as required coverage and plan the split internally.
 
-1. **Initial search:** Use WebSearch to find papers and blog posts:
-   - Academic (HIGHEST priority): arxiv.org preprints, top venues (NeurIPS, ICML, ICLR, CVPR, ACL, EMNLP, ISCA, MICRO, ASPLOS, SIGCOMM, OSDI, SOSP, etc.)
-   - Technical reports & whitepapers (HIGH priority): Official tech reports from labs and companies
-   - Industry blogs (MEDIUM priority): Google AI Blog, Meta AI, OpenAI Blog, Anthropic Research, Apple ML Research, Qualcomm AI Research, Microsoft Research, NVIDIA Technical Blog, DeepMind
-   - **DEPRIORITIZE:** Reddit threads, Hacker News comments, Medium posts, Twitter/X threads — use these only to discover paper references, never as primary sources
-   - **ALWAYS prefer the most recent materials** — sort and prioritize by recency. For a given topic, start searches with the current year and work backwards.
-   - Use WebFetch to read paper abstracts and identify key references
+Scope is complete when the research questions and boundaries are clear; for a survey, the coverage limits, review type, and cutoff date must also be clear.
 
-2. **Iterative reference following (3 levels deep):**
-   - Level 1: Papers found from initial search
-   - Level 2: Key references cited by Level 1 papers
-   - Level 3: Key references cited by Level 2 papers
-   - **Prioritize:** Recent papers (last 2-3 years), top-tier venues, high-citation works, seminal/foundational papers
+## 2. Build the Evidence Base
 
-3. **Paper count guardrails:**
-   - If **>100 papers** found: STOP. Present findings to user and ask how to narrow scope (suggest sub-domains, time range, specific angles)
-   - If **<10 papers** found: STOP. Present findings and ask user to broaden scope or suggest adjacent search terms
-   - Target: **15-60 papers** for a well-scoped survey
+For a focused question, start with the named or decisive original sources and expand only to resolve a discrepancy or support a broader claim.
 
-4. **Sub-domain detection:** If the field naturally splits into 3+ distinct sub-areas, propose a breakdown to the user before proceeding. Let them choose which sub-domains to include.
+For a survey, choose sources and search systems appropriate to the field. Use scholarly indexes for discovery, then inspect canonical publisher pages, venue proceedings, repositories, standards, datasets, and original studies. Build query families from domain terms, synonyms, acronyms, methods, outcomes, and exclusions.
 
-### Explore Output
+Seed discovery with relevant reviews and known anchor papers. Follow important references backward and citations forward. Search for related work, independent replications, negative or conflicting results, critiques, corrections, and retractions.
 
-Present to the user:
-- **Field overview:** 2-3 sentence summary of the landscape
-- **Key themes:** List of identified sub-areas/themes
-- **Paper count:** How many papers found at each level
-- **Top papers:** 5-10 most important papers with one-line descriptions
-- **Suggested scope:** Your recommendation for what to focus on
+Rank sources by relevance and evidence quality. Stay within the user's date and source boundaries; use older foundational work only as clearly marked context when needed. Include the strongest current evidence, and use newest-first searches only to scan the research frontier. Prefer the final peer-reviewed publication, deduplicate its preprint, and label work that remains a preprint.
 
-## Phase 2: CLARIFY
+Use secondary sources for orientation or synthesis and trace concrete methods and results to the original work. Treat institutional or vendor material as evidence of what that organization reports. Use informal discussion only to discover stronger sources.
 
-**Goal:** Quickly confirm scope. This phase should be MINIMAL — the single report covers technical and business angles by default, which eliminates most scope questions.
+For a broad survey, track each research question and theme in a coverage matrix. Source counts guide workload, not quality or stopping. Stop when every matrix item has supporting or conflicting evidence, or an explicit evidence gap, and one final independent search or citation pass changes neither the included evidence nor the conclusions.
 
-**Default assumptions (skip asking about these):**
-- Time range: Last 3 years, plus seminal/foundational work
-- Depth: Breadth (survey) AND depth (technical + business sections) in one report
-- Angles: Technical details AND business landscape are always covered
+## 3. Verify Claims
 
-**Only ask if genuinely ambiguous:**
-1. **Sub-domain focus:** If the field has 5+ distinct sub-areas, ask which ones matter most (max 1 question)
-2. **Known context:** If it would significantly change the research direction (max 1 question)
+Keep an evidence record for every source that may drive a conclusion or comparison:
 
-**Default: 0-2 questions.** If the topic is reasonably clear from Phase 1, skip directly to Phase 3. Do NOT ask about scope, depth vs breadth, or angles — those are covered by the report structure.
+- Exact title, authors or organization, year, venue and publication status, DOI or stable canonical URL.
+- Claim supported and its location in the source, such as a section, page, table, figure, or appendix.
+- Study design, data, evaluation conditions, main result, stated limitations, and independent replication status when relevant.
 
-## Phase 3: RESEARCH
+Inspect the full text and any available relevant supplement before reporting technical or quantitative detail. If only an abstract is accessible, label the source `abstract-only` and report only what the abstract supports. Search snippets are discovery aids, not evidence.
 
-**Goal:** Conduct deep, parallel research across all sub-topics using subagents.
+Cite each material factual claim near the claim. For every number, capture the dataset and version, split, metric and units, evaluation protocol, model or system version, sample size and uncertainty when reported, relevant hardware or compute conditions, and source location. Mark missing conditions as `not reported` or `not applicable`; do not estimate them.
 
-### Research Strategy
+Compare results only when their conditions are compatible. Otherwise present them separately and explain the mismatch. Use `state of the art` only for a named task and protocol at the stated cutoff date, and distinguish author-reported results from independent reproduction.
 
-```dot
-digraph research_dispatch {
-    rankdir=TB;
-    "scope" [shape=box, label="Finalized scope\nfrom CLARIFY"];
-    "split" [shape=box, label="Split into\n3-6 sub-topics"];
-    "dispatch" [shape=box, label="Dispatch parallel\nAgent per sub-topic"];
-    "agent1" [shape=box, label="Agent 1:\nSub-topic A"];
-    "agent2" [shape=box, label="Agent 2:\nSub-topic B"];
-    "agentN" [shape=box, label="Agent N:\nSub-topic N"];
-    "collect" [shape=box, label="Collect all\nagent results"];
+## 4. Scale with Delegation
 
-    "scope" -> "split";
-    "split" -> "dispatch";
-    "dispatch" -> "agent1";
-    "dispatch" -> "agent2";
-    "dispatch" -> "agentN";
-    "agent1" -> "collect";
-    "agent2" -> "collect";
-    "agentN" -> "collect";
-}
-```
+Use parallel agents when a broad scope has independent branches. Give each agent its boundaries, known sources, and the evidence-record fields above. Require exact source links and support locations, not prose alone.
 
-1. **Split scope into sub-topics** (3-6) based on EXPLORE and CLARIFY findings. Each sub-topic should be independently researchable.
+Treat delegated findings as leads. The synthesizing agent reopens every source behind a key conclusion, quantitative claim, or comparison row. Agreement between agents is not source verification.
 
-2. **Dispatch parallel agents** using the Agent tool (subagent_type: `general-purpose`). Launch all agents in a single message for maximum parallelism.
+For a focused question, work directly unless delegation adds clear value.
 
-3. **Agent prompt template** — each agent receives:
+## 5. Synthesize
 
-```
-Research the following sub-topic thoroughly using WebSearch and WebFetch.
+Organize the answer around the research questions, methods, or competing explanations rather than paper-by-paper summaries. Put conflicting evidence beside the claim it challenges. Separate sourced findings from your inference, and label conclusion strength as `convergent`, `single-study`, `preliminary`, `disputed`, or `no direct evidence` when that distinction helps.
 
-## Sub-topic: [name]
-[1-2 sentence description of what to investigate]
+Use comparison tables only for aligned evidence. Include technical implementation, reproducibility, policy, clinical, or business analysis only when requested or material to the research question. Time-stamp market, pricing, funding, deployment, and adoption claims.
 
-## Search Strategy
-- Search arxiv.org for academic papers (HIGHEST priority — always start here)
-- Search for official tech reports and whitepapers
-- Search tech blogs from major labs (Google AI, Meta AI, OpenAI, Anthropic, etc.)
-- Use WebFetch to read paper abstracts and key blog posts
-- Follow references: when a paper cites important related work, search for those too
-- **Prioritize recency:** Start with current year, then go backwards
-- **Deprioritize:** Reddit, HN, Medium, Twitter/X — only use to find paper links
-- Aim for 10-20 relevant sources per sub-topic
-
-## Already Known Papers (avoid redundant coverage)
-[List papers already found in Phase 1]
-
-## Return Format
-Return your findings as structured markdown:
-
-### [Sub-topic Name]
-
-#### Key Papers
-- [Title] (Authors, Year, Venue) — [1-2 sentence summary of contribution]
-
-#### Main Findings
-[3-5 paragraphs covering: core techniques, key results, quantitative benchmarks if available]
-
-#### Technical Details
-[Architecture specifics, algorithms, training recipes, hyperparameters,
-implementation frameworks, hardware requirements, ablation results]
-
-#### State of the Art
-[What is the current best approach? What numbers does it achieve?
-Include benchmark tables with specific numbers where available]
-
-#### Open Questions
-[What remains unsolved or debated in this sub-area?]
-
-#### Commercial/Industry Adoption
-[Who is using this in production? At what scale?
-Products, pricing, funding rounds, partnerships, market positioning]
-```
-
-4. **Quality check after collection:** If any sub-topic has fewer than 5 sources, do a focused follow-up search on that sub-topic before proceeding.
-
-### What Makes Good Sub-topic Splits
-
-| Good Split | Bad Split |
-|-----------|-----------|
-| By technique family (attention, convolution, diffusion) | By arbitrary paper grouping |
-| By application domain (NLP, vision, robotics) | By publication year |
-| By problem dimension (efficiency, accuracy, robustness) | By author affiliation |
-| By system layer (hardware, compiler, runtime) | By alphabetical order |
-
-## Phase 4: REPORT
-
-**Goal:** Synthesize all research agent results into ONE comprehensive report.
-
-### Synthesis Process
-
-1. **Read all agent results** from Phase 3
-2. **Deduplicate:** Identify papers/findings covered by multiple agents
-3. **Cross-validate:** Note where agents' findings agree vs. diverge
-4. **Fill gaps:** If agents missed aspects from the scope, do targeted follow-up searches
-5. **Write the report** using the structure below
-
-### Output File: `[topic].md`
-
-Two sections are **conditional**: include `Technical Deep Dive` and `Business & Market Landscape` only when Phase 3 surfaced substantial material for them. Omit rather than pad — a thin, forced section is worse than no section. All other sections are always present.
+For the default survey report, use this compact structure and omit conditional sections that add no supported value:
 
 ```markdown
-# [Topic Title]
+# [Topic]
 
 ## TL;DR
-[2-4 short paragraphs, NO tables. Must cover the FULL scope of the doc:
-what this field is about, the current state of the art, the 1-2 key
-technical insights, and a one-line commercial snapshot. A reader who
-stops here gets the whole picture.]
+[Direct answer, scope and cutoff, main evidence, confidence, and key limitation]
 
----
+## Scope and Method
+[Research questions, review type, searches, selection rules, and coverage limits]
 
-## Terminology & Background
-[Define key terms, resolve naming ambiguities, establish shared vocabulary]
+## Findings
+[Subsections organized by research question or theme]
 
-## Core Techniques / Architectures
-[Main approaches with comparison tables, categorized by type.
-Include: how each works, strengths, limitations, representative papers]
+## Comparison
+[Conditional: only aligned methods or results]
 
-## State of the Art
-[Recent results, benchmarks, key papers from last 1-2 years.
-Include quantitative comparisons in tables where possible:
-dataset, metric, result, hardware, training cost where available]
-
-## Technical Deep Dive
-[CONDITIONAL — include only if Phase 3 surfaced substantial technical
-material. Implementation details: frameworks, hardware requirements,
-training recipes, hyperparameters, optimization tricks. Ablation results:
-which components matter most. Reproducibility: code availability, known
-gotchas, tips for practitioners.]
-
-## Business & Market Landscape
-[CONDITIONAL — include only if Phase 3 surfaced substantial commercial
-material. Key players with comparison table. Products, deployments,
-pricing where known. Funding rounds, acquisitions, partnerships.
-Adoption barriers. Competitive dynamics: open vs proprietary, moats.]
-
-## Open Challenges & Future Directions
-[Current limitations, unsolved problems, active debates,
-emerging trends, promising but early-stage work]
-
-## Conclusion
-[3-5 key takeaways]
+## Evidence Limits and Open Questions
+[Conflicts, bias, missing evidence, and unresolved questions]
 
 ## References
-[All cited papers with: Title, Authors, Year, Venue, URL/arxiv link]
+[Every cited source; no uncited entries]
 ```
 
-### After Generating
+In a survey report, references must include exact title, authors or organization, year, venue or status, and DOI or stable canonical URL.
 
-1. Write the single file to the working directory
-2. Tell the user the report is ready and offer to enter Q&A mode
+## 6. Quality Gate
 
-## Phase 5: Q&A
+Apply the relevant checks to a focused answer and every check to a survey report. Finish only when:
 
-**Goal:** Interactive session where the user asks follow-up questions.
-
-- Answer drawing on the synthesized knowledge from the report
-- If a question requires information not in the report, search the web for additional sources
-- Be specific — cite papers, include numbers, reference specific sections of the report
-- If the user asks about something adjacent to the surveyed field, offer to start a new research cycle for that sub-topic
-
-## Common Mistakes
-
-| Mistake | Fix |
-|---------|-----|
-| Skipping CLARIFY and going straight to RESEARCH | Ask 0-2 clarifying questions if the topic has ambiguous sub-domains |
-| Dispatching agents without splitting into sub-topics | Sub-topic splits give agents focused scope and better results |
-| Running agents sequentially instead of in parallel | Launch ALL agents in a single message for speed |
-| Not sharing known papers with agents | Agents waste time re-finding Phase 1 papers |
-| Writing report without fixed structure | Always use the fixed structure; only the two CONDITIONAL sections may be omitted |
-| Forgetting TL;DR | TL;DR opens the doc and is the MOST important section — it must cover the full scope (field, SOTA, tech insights, commercial snapshot) |
-| Not deduplicating across agent results | Cross-reference all agent findings before writing |
-| Asking too many clarifying questions | 0-2 questions max; the report structure covers scope |
-| Splitting output into multiple files | Produce exactly ONE file: `[topic].md` |
-| Padding conditional sections with thin material | Omit Technical Deep Dive / Business & Market Landscape when research surfaced little |
-| Using Reddit/HN/Medium as primary sources | Only use these to discover paper links; cite arxiv/papers/tech reports |
-| Not prioritizing recent work | Always start searches with current year and work backwards |
-| Not following references iteratively in EXPLORE | Go 3 levels deep, don't stop at initial search results |
-| Doing all research in main context | Use agents — they protect context window and enable parallelism |
-
-## Red Flags — STOP and Re-read This Skill
-
-- You're writing the report in Phase 1 or 2 (that's Phase 4)
-- You asked 3+ clarifying questions (the report structure handles scope)
-- You wrote multiple output files instead of one
-- Your report doesn't open with a full-scope TL;DR
-- You're researching everything in the main thread instead of using agents
-- You didn't propose sub-domain breakdown for a broad field
-- You found >100 papers and kept going without asking the user
-- You're answering Q&A questions by guessing instead of citing sources
-- You dispatched only 1 agent instead of splitting into parallel sub-topics
+- Every research question is answered or marked as an evidence gap.
+- Every material claim is cited near the claim, and every cited source was inspected to the depth the claim requires.
+- Bibliographic metadata, publication status, source links, and support locations are verified for conclusion-driving evidence.
+- Numerical comparisons use compatible conditions or state why comparison is unsafe.
+- Foundational context, current evidence, and material counterevidence are represented where relevant and within the stated boundaries.
+- For a survey, the method, cutoff date, uncertainty, inference, and coverage limits are explicit.
+- The report contains no invented sources, uncited reference entries, or unsupported claims.

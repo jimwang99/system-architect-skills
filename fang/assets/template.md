@@ -1,39 +1,42 @@
-# FANG: [Working title]
+# Problem Statement: [Working title]
 
-**Status:** [Draft / Aligned]
+**Status:** [🟡 Draft / 🟢 Aligned]
 
-## Framing
+## 🎯 Framing
 
-[For whom, what problem occurs, in what context, with what consequence, and why it matters now. Do not embed a preferred solution. Cite each material factual claim with its evidence ID.]
+> **Problem:** [Who faces what condition, in what context, and with what consequence. One sentence. Cite evidence IDs.]
 
-**Original proposal (unevaluated solution hypothesis):** [Only when the source contained a proposed solution: record it as context, without elaboration or evaluation. Otherwise delete this line.]
+- **Decision needed:** [Agreement this brief must enable.]
+- **Why now:** [Trigger or urgency. Delete when not material.]
+- **Original proposal:** [Optional, unevaluated, one line. Delete when absent.]
 
-## Assumptions
+## ⚠️ Assumptions
 
-- [Assumption] — [what changes if false] — confidence: [High / Medium / Low / Unknown]
+- **[High / Medium / Low / Unknown]:** [Assumption] — **If false:** [What changes.]
 
-[If no assumptions: write `None identified` only after explicit user confirmation; otherwise write `Not yet established` in a Draft and add an open question.]
+<!-- After confirmation, use one "None identified" bullet when empty. Otherwise use "Not yet established" and add an open question. -->
 
-## Non-goals
+## 🚫 Non-goals
 
 - [Explicitly excluded outcome, audience, system, or phase]
 
-[If no non-goals: write `None identified` only after explicit user confirmation; otherwise write `Not yet established` in a Draft and add an open question.]
+<!-- After confirmation, use one "None identified" bullet when empty. Otherwise use "Not yet established" and add an open question. -->
 
-## Goals
+## ✅ Goals
 
-- [At least one outcome is required for Aligned status] — success signal: [measure or observable condition]
+- **Outcome:** [Required for Aligned status]
+  - **Success:** [Measure or observable condition.]
 
-[If unresolved in a Draft: write `Not yet established` and add an open question.]
+<!-- In a Draft, use "Not yet established" and add an open question when unresolved. -->
 
-## Evidence and provenance
+## 🔎 Evidence and provenance
 
-| ID | Claim | Source or provenance | Status |
-| --- | --- | --- | --- |
-| E1 | [Material factual claim] | [Source, link, file, or user statement] | [Verified / Unverified / Conflicting] |
+- **E1** **[🟢 Supported / 🔵 User-reported / 🟡 Unverified / 🔴 Conflicting]** — [Concise material claim.]
+  - **Source or provenance:** [Source, link, file, or user statement.]
 
-## Open questions
+## ❓ Open Questions
 
-[Optional section: omit when no material unknowns remain. Order by priority. IDs are stable: never renumber or reuse a `Q<n>` after a question is resolved or dropped.]
+<!-- Omit this section when empty. Merge resolved answers into the body, then remove their questions. -->
 
-- **Q1** [High / Medium / Low] [Question] — [evidence or input that could resolve it] — [Open / Accepted unknown]
+- **Q1** **[High / Medium / Low] [Open / Accepted unknown]** — [Question]
+  - **Needs:** [Evidence or input that could resolve it.]

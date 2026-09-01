@@ -25,7 +25,7 @@ Copy and adapt the smallest applicable structure. Replace illustrative names and
   - [Requirement Mapping](#requirement-mapping)
 - [Test Plan Tables](#test-plan-tables)
 - [Assertion and Coverage Examples](#assertion-and-coverage-examples)
-- [ASCII Diagram Archetypes](#ascii-diagram-archetypes)
+- [Mermaid Diagram Archetypes](#mermaid-diagram-archetypes)
 
 ## Document Outlines
 
@@ -237,32 +237,32 @@ Describe illegal combinations directly below the table when a single row cannot 
 ### Functional and Timing Tests
 
 ```markdown
-| ID | Maps To | Description | Stimulus | Expected Observation |
-|----|---------|-------------|----------|----------------------|
-| T-01 | FR-01 | Single accepted write | Assert wr_valid_i with payload A while ready | One stored A; occupancy increases once |
-| T-02 | FR-02 | Write attempt while full | Hold wr_valid_i high at full occupancy | wr_ready_o=0; no write transfer |
-| T-03 | TR-01 | Measure write-to-read latency | Write A into an empty block | A is readable exactly 1 cycle later |
-| T-04 | TR-02, FR-03 | Sustained simultaneous traffic | Drive valid and ready continuously away from boundaries | One read and one write complete per cycle |
+| ID | Maps To | Description | Stimulus | Expected Observation | Timing | Completion |
+|----|---------|-------------|----------|----------------------|--------|------------|
+| T-01 | FR-01 | Single accepted write | Assert wr_valid_i with payload A while ready | One stored A; occupancy increases once | Acceptance edge through next state | One accepted write and matching occupancy check |
+| T-02 | FR-02 | Write attempt while full | Hold wr_valid_i high at full occupancy | wr_ready_o=0; no write transfer | Entire bounded full interval | No acceptance before the interval ends |
+| T-03 | TR-01 | Measure write-to-read latency | Write A into an empty block | A is readable exactly 1 cycle later | Edge N through cycle N+1 | Expected valid and payload observed at N+1 |
+| T-04 | TR-02, FR-03 | Sustained simultaneous traffic | Drive valid and ready continuously away from boundaries | One read and one write complete per cycle | Configured traffic window | Every window edge accepts both channels |
 ```
 
 ### FSM Transition Tests
 
 ```markdown
-| ID | Maps To | Stimulus | Expected Observation |
-|----|---------|----------|----------------------|
-| T-10 | FSM-CTRL-01 | Present and accept a request in Idle | State becomes Run; request captured |
-| T-11 | FSM-CTRL-02 | Assert done in Run | State becomes Idle; completion published |
-| T-12 | FSM-CTRL-03 | Assert flush_i in Run with done also high | Flush wins; state becomes Idle; operation discarded |
+| ID | Maps To | Stimulus | Expected Observation | Timing | Completion |
+|----|---------|----------|----------------------|--------|------------|
+| T-10 | FSM-CTRL-01 | Present and accept a request in Idle | State becomes Run; request captured | Acceptance edge through next state | Run state and captured request observed |
+| T-11 | FSM-CTRL-02 | Assert done in Run | State becomes Idle; completion published | Done edge through next state | Idle state and completion observed |
+| T-12 | FSM-CTRL-03 | Assert flush_i in Run with done also high | Flush wins; state becomes Idle; operation discarded | Simultaneous-event edge through recovery | Idle state with no completion observed |
 ```
 
 ### Corner and Parameter Tests
 
 ```markdown
-| ID | Maps To | Description | Stimulus | Expected Observation |
-|----|---------|-------------|----------|----------------------|
-| T-20 | FR-01, TR-04 | Reset during activity | Assert reset with stored data | State becomes reset state; first later transfer obeys TR-04 |
-| T-21 | FR-02 | Full-boundary simultaneous events | Attempt read and write while full | Result matches the selected FR-02 boundary behavior |
-| T-22 | FR-01 | Minimum legal depth | Elaborate with Depth=2 and wrap pointers | Ordering and occupancy remain correct |
+| ID | Maps To | Description | Stimulus | Expected Observation | Timing | Completion |
+|----|---------|-------------|----------|----------------------|--------|------------|
+| T-20 | FR-01, TR-04 | Reset during activity | Assert reset with stored data | State becomes reset state; first later transfer obeys TR-04 | Reset edge through recovery interval | Reset outputs and first legal transfer observed |
+| T-21 | FR-02 | Full-boundary simultaneous events | Attempt read and write while full | Result matches the selected FR-02 boundary behavior | Boundary edge through next state | Both channel outcomes and occupancy checked |
+| T-22 | FR-01 | Minimum legal depth | Elaborate with Depth=2 and wrap pointers | Ordering and occupancy remain correct | More than one pointer wrap | All accepted items checked in order with no pending result |
 ```
 
 Every illustrative test row carries its mapping in the same row; a separate traceability table is unnecessary.
@@ -287,22 +287,21 @@ These examples check behavior across time rather than restating combinational as
 - `CVR_PTR_WRAP`: observe each pointer wrap at the configured depth
 ```
 
-## ASCII Diagram Archetypes
+## Mermaid Diagram Archetypes
 
 ### Block Diagram
 
-```text
-              +-----------------------------------------+
- wr_valid_i ->|                                         |<- rd_ready_i
- wr_ready_o <-|  wr_ptr_q --> mem[Depth] <-- rd_ptr_q   |-> rd_valid_o
- wr_data_i -->|                  |                      |-> rd_data_o
-              |               count_q                   |-> full_o, empty_o
-              +-----------------------------------------+
-                              sync_fifo
+```mermaid
+flowchart LR
+    producer[Producer] -->|wr_valid_i + wr_data_i| fifo[sync_fifo]
+    fifo -->|wr_ready_o| producer
+    consumer[Consumer] -->|rd_ready_i| fifo
+    fifo -->|rd_valid_o + rd_data_o| consumer
+    fifo -->|full_o + empty_o| status[Status]
 ```
 
-- `mem[Depth]` stores accepted write payloads and supplies the oldest entry.
-- `count_q` supplies occupancy state to the status and handshake logic.
+- `sync_fifo` owns storage, pointers, occupancy, and both channel contracts.
+- Arrows show producer and consumer signal direction; internal storage remains in the microarchitecture table.
 
 ### Waveform Table
 
@@ -321,12 +320,13 @@ rd_data_o    :  -    -    A    B
 
 ### Pipeline Diagram
 
-```text
- +----------------+  s0_s1_q  +----------------+  s1_s2_q  +----------------+
- | S0: Capture    | =========>| S1: Compute    | =========>| S2: Output     |
- +----------------+            +----------------+            +----------------+
-          ^                            ^                            |
-          +------------ stall / flush control --------------------+
+```mermaid
+flowchart LR
+    s0[S0: Capture] -->|s0_s1_q| s1[S1: Compute]
+    s1 -->|s1_s2_q| s2[S2: Output]
+    control[Stall / flush control] -.-> s0
+    control -.-> s1
+    control -.-> s2
 ```
 
 - Named inter-stage registers match the pipeline table.
@@ -334,13 +334,10 @@ rd_data_o    :  -    -    A    B
 
 ### FSM Sketch
 
-```text
-                 FSM-CTRL-01
-        +--------------------------+
-        |                          v
-     +------+                  +------+
-     | Idle |<-----------------| Run  |
-     +------+  FSM-CTRL-02/03  +------+
+```mermaid
+stateDiagram-v2
+    Idle --> Run: FSM-CTRL-01
+    Run --> Idle: FSM-CTRL-02 / FSM-CTRL-03
 ```
 
 - Transition conditions and priority remain in the authoritative transition table.

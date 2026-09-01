@@ -6,33 +6,43 @@ A set of skills for silicon system architects, from architecture to RTL in softw
 
 ### Research & knowledge extraction
 
-- **[academia-research](academia-research/SKILL.md)** — Research an academic topic or survey a research field using only Claude Code's built-in web search. Explores the field, optionally clarifies scope with you, fans out parallel subagents per sub-topic, and synthesizes everything into one structured report with a TL;DR, followed by interactive Q&A.
-- **[extract-architecture-knowledge-from-source](extract-architecture-knowledge-from-source/SKILL.md)** — Mine a reference codebase into a buildable spec: a doc set from which a fresh session with no repo access can reimplement the design, possibly in another language or stack. Enforces traceability (`file:line` citations), ASCII block diagrams, quantitative behavior as tables, and a separation of the essential design from repo-specific choices.
-- **[extract-architecture-knowledge-from-paper](extract-architecture-knowledge-from-paper/SKILL.md)** — Same goal, but the reference is an academic paper instead of code. Treats the paper as lossy: builds a claims ledger from a page-by-page read, closes gaps via artifact code, cross-papers, or your decisions (never silent invention), and verifies quantitative claims with executable models (SimPy, escalating to SystemC) before the docs count as done.
+- **[academia-research](academia-research/SKILL.md)** — Answer a focused academic question or compare a body of work from primary sources. Produces a concise Markdown report with claim-level citations, comparable quantitative evidence, limits, and open questions.
+- **[extract-architecture-knowledge-from-source](extract-architecture-knowledge-from-source/SKILL.md)** — Turn a reference codebase into standalone documentation for reimplementation without later source access. Records source identity, traceable evidence, behavior, interfaces, algorithms, and verified gaps.
+- **[extract-architecture-knowledge-from-paper](extract-architecture-knowledge-from-paper/SKILL.md)** — Turn a paper and its accessible artifacts into standalone, implementation-ready architecture documentation. Separates stated facts, supported inferences, missing details, and user decisions.
+
+### Problem framing
+
+- **[fang](fang/SKILL.md)** — Turn an idea into an agreed problem brief before solution work. Drafts from available evidence, asks one material question at a time, and requires full-document confirmation before alignment.
 
 ### Specification
 
-- **[write-hardware-spec](write-hardware-spec/SKILL.md)** — Write the single source of truth for an RTL block before any implementation: interfaces, protocols, timing, reset, FSM/pipeline behavior, and a traceable test plan (T-xx IDs). Gated workflow with brainstorming up front and review gates before handing off to RTL and testbench implementation.
+- **[write-hardware-spec](write-hardware-spec/SKILL.md)** — Create, update, review, or freeze the architecture and microarchitecture contract for an RTL block. Covers interfaces, protocols, timing, reset, state, pipelines, traceable verification, and explicit review gates.
 
 ### Implementation
 
-- **[write-hardware-rtl](write-hardware-rtl/SKILL.md)** — Write synthesizable SystemVerilog in lowRISC style for Verilator simulation. Every module gets runtime-configurable logging (plusargs-based verbosity), assertions at its boundaries, and coverage points — because AI agents debug with text, not waveforms.
-- **[write-hardware-test-bench](write-hardware-test-bench/SKILL.md)** — Write SystemC testbenches that drive Verilator-compiled RTL. Covers structure (separate Driver/Monitor/ResetGen/Scoreboard modules), ready/valid and multi-channel protocol handling, and a verified working template with build script.
+- **[write-hardware-rtl](write-hardware-rtl/SKILL.md)** — Write or review synthesizable SystemVerilog for Verilator simulation. Preserves repository conventions and emphasizes exact widths, reset and protocol safety, useful observability, and project-native verification.
+- **[write-hardware-test-bench](write-hardware-test-bench/SKILL.md)** — Write SystemC testbenches for Verilator `--sc` models. Scales the harness to the design and covers protocol-derived timing, scoreboards, negative windows, completion, diagnostics, and project integration.
 
 ### Debug
 
-- **[debug-hardware-with-logging](debug-hardware-with-logging/SKILL.md)** — Debug RTL simulation failures without a waveform viewer. Instead of hand-tracing logic or guessing fixes from code reading, add structured logging at the signals in question, rerun the simulation, and read what actually happened — narrowing from assertion hits to the failing time window to the root cause.
+- **[debug-hardware-with-logging](debug-hardware-with-logging/SKILL.md)** — Diagnose RTL simulation failures without a waveform viewer. Reproduces the failure, adds selective text evidence, finds the first bad event, tests a concrete hypothesis, and reports the root cause without silently implementing a fix.
 
 ## How they fit together
 
-```
-academia-research ──┐
-extract-from-paper ─┼──> write-hardware-spec ──> write-hardware-rtl ──────┐
-extract-from-source ┘            │                                        ├──> debug-hardware-with-logging
-                                 └─────────────> write-hardware-test-bench┘
+```mermaid
+flowchart LR
+    Fang[fang] --> Spec[write-hardware-spec]
+    Research[academia-research] --> Spec
+    Paper[extract from paper] --> Spec
+    Source[extract from source] --> Spec
+    Spec --> RTL[write-hardware-rtl]
+    Spec --> TB[write-hardware-test-bench]
+    RTL --> Debug[debug-hardware-with-logging]
+    TB --> Debug
 ```
 
 - Research and extraction skills produce the design knowledge and reference docs.
-- The spec skill freezes behavior and the test plan before implementation starts.
+- FANG confirms the problem before solution work when framing is still unclear.
+- The spec skill defines and reviews behavior and verification intent before implementation starts.
 - RTL and testbench skills implement the spec with the logging/assertion conventions the debug skill relies on.
 - The debug skill closes the loop when simulation fails.

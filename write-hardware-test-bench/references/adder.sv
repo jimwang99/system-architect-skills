@@ -13,5 +13,6 @@ module adder (
   assign sum = a + b;
 
   // Functional cover point: both inputs at maximum (exercised by test plan).
-  cp_max_inputs: cover property (@(posedge clk) a == 4'hF && b == 4'hF);
+  cp_max_inputs: cover property (@(posedge clk) disable iff (!rst_n)
+                                 a == 4'hF && b == 4'hF);
 endmodule

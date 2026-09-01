@@ -1,92 +1,69 @@
 ---
 name: debug-hardware-with-logging
-description: Use when debugging RTL simulation failures, assertion violations, scoreboard mismatches, or unexpected hardware behavior in Verilator + SystemC testbenches and no waveform viewer is available — before reading code or proposing fixes
+description: Diagnose Verilator RTL simulation failures with structured logging when waveforms are unavailable or insufficient. Use for assertion failures, scoreboard mismatches, hangs, and unexpected cycle behavior in SystemC testbenches.
 ---
 
 # Debug Hardware with Logging
 
-## Overview
+## Outcome
 
-Systematic workflow for debugging RTL simulated with Verilator + SystemC testbenches. No waveform viewer is available — **structured text logging is the primary debug tool.**
+Find the first causal divergence and explain it with reproducible simulation evidence. Inspect code to form hypotheses, but validate each hypothesis by rerunning the simulator. Implement a fix only when the user requests one.
 
-**Core principle:** the simulator already computed the answer. Never hand-trace RTL logic or propose a fix from code reading — add logging at the signals you care about, rerun, and read the output. The simulator shows what *actually* happens, not what you *think* happens.
+Preserve the original failing test, seed, configuration, and command. A minimized reproducer is additional evidence only when it still shows the same failure.
 
-## Workflow (follow in order)
+## 1. Reproduce
 
-### 1. Reproduce with logging enabled
+Use the target repository's build and test commands. Record the simulator version, exact command, seed, parameters, relevant environment, and first failure message. Keep standalone runs bounded with the testbench watchdog or repository timeout.
 
-```bash
-verilator --sc --exe --trace-fst --coverage -Wall design.sv tb.cpp -o Vdesign
-make -C obj_dir -f Vdesign.mk
-./obj_dir/Vdesign +LOG_MODULE=4 +verbosity=DEBUG 2>&1 | tee sim.log
-```
+Run the smallest existing test that shows the failure. Capture its exit status and log in the repository's normal output location. Enable assertions explicitly when the project supports them.
 
-RTL logging uses `+LOG_<MODULE>=<level>` plusargs, levels 0–4 — conventions in the write-hardware-rtl skill. SystemC verbosity uses the testbench's `+verbosity=<LEVEL>` plusarg (`LOW`/`MEDIUM`/`HIGH`/`FULL`/`DEBUG`, max is `DEBUG`) — see the write-hardware-test-bench skill; there is no built-in `--sc_verbosity` flag. **Start at maximum verbosity**; filter with grep later.
+If the failure is intermittent, rerun recorded seeds and keep the earliest reliable reproducer. If reproduction fails, report what was tried and which missing condition prevents diagnosis.
 
-Can't reproduce? Simplify the stimulus until you can, then continue.
+This step is complete when the failure is reproducible or the reproduction blocker is explicit.
 
-### 2. Check assertions first
+## 2. Find the First Bad Event
+
+Search the log for failures and their context:
 
 ```bash
-grep -E '%Error|%Fatal|ASSERT|MISMATCH' sim.log
+rg -n '%Error|%Fatal|ASSERT|MISMATCH|TIMEOUT|FAIL' <simulation-log>
 ```
 
-Verilator prints `%Error:`/`%Fatal:` at runtime; literal `$error`/`$fatal` source syntax does not appear in the simulation log. Assertions sit at module boundaries and FSM transitions and report `$time` + module — they often pinpoint the exact cycle and signal. No assertion fired but the scoreboard mismatches? The bug is likely in the data path between assertion points.
+Start at the first failure, then inspect earlier accepted transactions, state transitions, resets, stalls, and monitor decisions that could cause it. Later mismatches may be cascade effects.
 
-### 3. Narrow the time window, add targeted logging
+Use existing verbosity controls selectively. Raise the RTL `+LOG_<MODULE>=<level>` or SystemC `+verbosity=<LEVEL>` only for relevant blocks and time windows. Global maximum verbosity often hides the useful sequence in noise.
 
-```bash
-grep -n 'MISMATCH' sim.log | head -1     # first failure
-grep -E '^\[14[0-9]{4}' sim.log          # adapt to your failure time (here: 140000–149999)
-```
+Read the specification, test, and relevant RTL or testbench code to form a concrete hypothesis. Treat missing assertions, unhit coverage, and suspicious code as leads rather than proof.
 
-If existing logging is insufficient, add temporary statements at the exact signals you need and rerun — do not hand-trace:
+## 3. Add One Focused Probe
 
-```systemverilog
-// Temporary debug — remove after fix
-`ifndef SYNTHESIS
-if (log_level >= 4)
-  $display("[%0t] %m: DEBUG a=%0d b=%0d state=%s", $time, a, b, state_q.name());
-`endif
-```
+When existing logs are insufficient, add temporary simulation-only logging through the project's logging layer. Log events from clocked processes, not every combinational evaluation.
 
-```cpp
-// Temporary debug in a TB block — remove after fix
-TB_LOG_MEDIUM(fmt::format("{} sum_o={:#x}", sc_time_stamp().to_string(), sum_o.read()).c_str());
-```
+Each probe should identify:
 
-Root cause still unclear? Add more logging and rerun. Loop here — never fall back to mental tracing.
+- Simulation time, module or testbench component, and test or transaction ID.
+- The event being tested, such as acceptance, stall, transition, reset, or comparison.
+- The smallest relevant pre-state, inputs, decision, and next-state or output.
 
-### 4. Fix and verify
+Instrument both sides of a suspected boundary when ownership is unclear: driver acceptance, DUT interface, state update, output handshake, and monitor comparison. Rerun the same reproducer and keep only evidence that confirms or rejects the current hypothesis.
 
-1. Fix the RTL or testbench
-2. Lint: `verilator --lint-only -Wall <file.sv>`
-3. Rerun the failing test with logging to confirm
-4. Run full regression; check coverage unchanged or improved
-5. Remove temporary debug statements
+Repeat the probe-and-rerun loop until one mechanism explains the first bad event. Avoid changing functional behavior while collecting evidence.
 
-## Still stuck
+## 4. Conclude or Fix
 
-- **Coverage:** `verilator_coverage --annotate coverage_annotated --annotate-min 1 coverage.dat`, then `grep -rn '^%' coverage_annotated/` — with a minimum of 1, uncovered lines are prefixed with `%`. An uncovered path that should execute in the failing test means the stimulus never reaches that state — suspect the testbench driver, not the RTL.
-- **FST trace (last resort):** the trace exists only if the testbench enabled it (`Verilated::traceEverOn` + `model->trace()` — see the write-hardware-test-bench skill). Convert with `fst2vcd dump.fst > dump.vcd` (GTKWave package) and inspect the VCD text, or ask the user to open the `.fst` in a waveform viewer.
+For diagnosis, report:
 
-## Common Bug Patterns
+- Root cause and the violated specification or testbench contract.
+- First bad cycle or event, with the log evidence that proves causality.
+- Responsible source location and why later failures follow.
+- Confidence and the remaining alternative when evidence is incomplete.
 
-| Symptom | Likely Cause | What to Check |
-|---------|-------------|---------------|
-| Scoreboard mismatch on specific bits | Shift register or mux logic error | Log shift register contents each cycle |
-| Works for some data values only | Data-dependent path (e.g. zero-fill) | Test with 0x00, 0xFF, 0xAA, 0x55 |
-| Output delayed by N cycles | Pipeline depth mismatch vs scoreboard | Log timestamps in driver and monitor |
-| Assertion fires after reset deasserts | Reset sequencing issue | Reset timing in testbench vs RTL |
-| Intermittent failures | Sampling edge mismatch / race | Clock edge consistency (posedge everywhere) |
-| Signal stuck at 0 or 1 | Undriven signal or wrong port binding | `--lint-only` warnings, SC port binding |
+If the user requested a fix, make the smallest behavior-preserving patch that addresses the proved cause. Remove temporary probes before final verification unless the logging has lasting diagnostic value.
 
-## Red Flags — STOP
+Verify the original reproducer, the focused regression for the affected contract, and the relevant project regression. Explain material coverage changes; coverage need not remain numerically unchanged.
 
-Catch yourself doing any of these? Stop, return to Step 1:
+## Fallback Evidence
 
-- Building a truth table or trace table by hand from RTL code
-- "I can already see the bug from the code" — before running the simulation
-- Skipping assertion checks because "I know what the bug is"
-- Proposing a fix without running the simulator
-- Reading RTL before reproducing the failure with logging
+Use coverage to test a reachability hypothesis, not to infer causality by itself. Use FST or VCD only when event logs cannot expose the necessary relationship; inspect the text conversion or ask the user to view the waveform when no viewer is available to the agent.
+
+Finish only when the conclusion is supported by a rerun, temporary instrumentation is removed or intentionally retained, and verification results match the requested diagnosis-or-fix scope.

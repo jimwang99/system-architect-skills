@@ -96,13 +96,13 @@ Status outputs are level signals with no handshake. `count_o` is meaningful duri
 | TR-03 | Write-data combinational path | Forbidden | No `wr_data_i` to `rd_data_o` path; data first enters `mem` at a write edge |
 | TR-04 | Read-data combinational path | Allowed | `mem[rd_ptr_q]` to `rd_data_o` while non-empty |
 | TR-05 | Handshake/status combinational paths | Forbidden except reset gating | No `wr_valid_i`, `wr_data_i`, or `rd_ready_i` path to `wr_ready_o`, `rd_valid_o`, `full_o`, `empty_o`, or `count_o`; `rst_ni` may gate handshake outputs |
-| TR-06 | Reset recovery | 1 cycle | First transfer is permitted in the first complete cycle after synchronous reset deassertion |
+| TR-06 | First post-reset transfer | Edge N | Edge N is the first rising edge at which rst_ni is sampled high after reset |
 
 ## Reset-Visible Behavior
 
 Reset asserts asynchronously when `rst_ni` goes low and initializes the registered pointers and occupancy immediately. Reset deassertion is externally synchronized to a rising edge of `clk_i`.
 
-While `rst_ni=0`, handshake outputs are gated inactive, status reports empty occupancy, and no transfer is recognized. During the first complete cycle after deassertion, the FIFO is empty and may accept a write; this is the recovery interval in TR-06. Reset discards every previously stored entry. The memory array is not reset, but its contents remain architecturally invisible until overwritten and made valid by a later write.
+While `rst_ni=0`, handshake outputs are gated inactive, status reports empty occupancy, and no transfer is recognized. The environment makes `rst_ni` high and stable before edge N; edge N is the first edge that may accept a transfer under TR-06. Reset discards every previously stored entry. The memory array is not reset, but its contents remain architecturally invisible until overwritten and made valid by a later write.
 
 ## Non-Goals
 
@@ -115,21 +115,19 @@ While `rst_ni=0`, handshake outputs are gated inactive, status reports empty occ
 
 ## Block Diagram
 
-```text
-              +------------------------------------------------+
- wr_valid_i ->|                                                |<- rd_ready_i
- wr_ready_o <-|  wr_ptr_q --> mem[Depth] <-- rd_ptr_q          |-> rd_valid_o
- wr_data_i -->|                    |                           |-> rd_data_o
-              |                 count_q                         |-> full_o
- rst_ni ----->|  reset gate -----+-----------------------------|-> empty_o
-              |                                                |-> count_o
-              +------------------------------------------------+
-                                sync_fifo
+```mermaid
+flowchart LR
+    producer[Producer] -->|wr_valid_i + wr_data_i| fifo[sync_fifo]
+    fifo -->|wr_ready_o| producer
+    consumer[Consumer] -->|rd_ready_i| fifo
+    fifo -->|rd_valid_o + rd_data_o| consumer
+    reset[rst_ni] --> fifo
+    fifo -->|full_o + empty_o + count_o| status[Status]
 ```
 
-- `mem[Depth]` stores payloads at `wr_ptr_q` and supplies `mem[rd_ptr_q]` combinationally.
-- `count_q` is the sole occupancy state and supplies full, empty, and count status.
-- `rst_ni` resets pointers/count and gates the handshake outputs inactive during reset.
+- `sync_fifo` owns storage, read/write positions, occupancy, and both channel contracts.
+- The producer and consumer arrows show the direction of the valid/ready payload channels.
+- `rst_ni` resets control state and gates transfers; status reports current occupancy.
 
 ## Interface Timing
 
@@ -272,34 +270,34 @@ Handshake outputs are gated by `rst_ni`, so no transfer occurs while reset is as
 
 ### Functional and Timing Tests
 
-| ID | Maps To | Description | Stimulus | Expected Observation |
-|----|---------|-------------|----------|----------------------|
-| T-01 | FR-01 | Single write | Present A while empty and not in reset | One write transfer; count becomes one; A stored once |
-| T-02 | FR-02, FR-08 | Ordered reads | Write A, B, C, then enable reads | Read transfers return A, B, C exactly once in order |
-| T-03 | FR-03 | Fill to full | Accept exactly Depth writes without reads | full_o=1, wr_ready_o=0, count_o=Depth |
-| T-04 | FR-04 | Drain to empty | Read every stored entry | empty_o=1, rd_valid_o=0, count_o=0 |
-| T-05 | FR-05 | Simultaneous attempt while full | At full, assert wr_valid_i and rd_ready_i | Read transfers; write stalls; pending write may transfer next cycle |
-| T-06 | FR-06 | Simultaneous attempt while empty | At empty, assert wr_valid_i and rd_ready_i | Write transfers; no read transfer; payload appears next cycle |
-| T-07 | FR-07 | Occupancy accounting | Random legal reads/writes including simultaneous transfers | count_o equals scoreboard occupancy after every edge |
-| T-08 | FR-08 | Ordering across pointer wrap | Write/read more than 3*Depth tagged payloads | All read tags remain in accepted-write order |
-| T-09 | FR-09 | Reset-visible outputs | Assert reset from non-empty state | Handshakes inactive; status empty; prior entries discarded |
-| T-10 | FR-10 | Legal parameter sweep | Elaborate DataWidth={1,32}, Depth={2,4,16} | Every legal configuration passes mapped functional tests |
-| T-11 | FR-11 | Read stall stability | Hold rd_ready_i low for several cycles while non-empty | rd_valid_o stays high and rd_data_o stays unchanged |
-| T-20 | TR-01 | Measure empty write latency | Write A at edge N while empty | A is valid/readable during cycle N+1, not cycle N |
-| T-21 | TR-02, FR-07 | Sustained simultaneous throughput | Keep both channels active away from boundaries | One write and one read transfer at every edge; count holds |
-| T-22 | TR-03, TR-04 | Datapath structure check | Lint/netlist path inspection | No wr_data_i-to-rd_data_o path; documented mem-read path exists |
-| T-23 | TR-05 | Handshake/status independence | Toggle wr_valid_i, wr_data_i, rd_ready_i within stable count state | Ready/valid/status do not change from those inputs |
-| T-24 | TR-06, FR-09 | Reset recovery | Deassert reset synchronously and present a write | Write transfers in the first complete post-reset cycle |
+| ID | Maps To | Description | Stimulus | Expected Observation | Timing | Completion |
+|----|---------|-------------|----------|----------------------|--------|------------|
+| T-01 | FR-01 | Single write | Present A while empty and not in reset | One write transfer; count becomes one; A stored once | Acceptance edge through the next state | One accepted write and count=1 |
+| T-02 | FR-02, FR-08 | Ordered reads | Write A, B, C, then enable reads | Read transfers return A, B, C exactly once in order | Check every accepted read edge | Three expected payloads checked; queue empty |
+| T-03 | FR-03 | Fill to full | Accept exactly Depth writes without reads | full_o=1, wr_ready_o=0, count_o=Depth | After the Depth-th accepted write | Full state and occupancy checked |
+| T-04 | FR-04 | Drain to empty | Read every stored entry | empty_o=1, rd_valid_o=0, count_o=0 | After the final accepted read | Empty state and occupancy checked |
+| T-05 | FR-05 | Simultaneous attempt while full | At full, assert wr_valid_i and rd_ready_i | Read transfers; write stalls; pending write may transfer next cycle | Boundary edge through the following edge | Read result, stalled write, and occupancy checked |
+| T-06 | FR-06 | Simultaneous attempt while empty | At empty, assert wr_valid_i and rd_ready_i | Write transfers; no read transfer; payload appears next cycle | Boundary edge through the next cycle | Write accepted, same-edge read absent, later payload checked |
+| T-07 | FR-07 | Occupancy accounting | Random legal reads/writes including simultaneous transfers | count_o equals scoreboard occupancy after every edge | After every event edge | Scoreboard empty and count matched throughout |
+| T-08 | FR-08 | Ordering across pointer wrap | Write/read more than 3*Depth tagged payloads | All read tags remain in accepted-write order | At every read over more than three wraps | All accepted tags checked in order |
+| T-09 | FR-09 | Reset-visible outputs | Assert reset from non-empty state | Handshakes inactive; status empty; prior entries discarded | Reset assertion through the first release edge | Reset outputs and discarded state checked |
+| T-10 | FR-10 | Legal parameter sweep | Elaborate DataWidth={1,32}, Depth={2,4,16} | Every legal configuration passes mapped functional tests | One complete run per configuration | All legal configurations elaborate and pass |
+| T-11 | FR-11 | Read stall stability | Hold rd_ready_i low for several cycles while non-empty | rd_valid_o stays high and rd_data_o stays unchanged | Entire configured stall window through transfer | Stable payload and eventual transfer checked |
+| T-20 | TR-01 | Measure empty write latency | Write A at edge N while empty | A is valid/readable during cycle N+1, not cycle N | Edge N through cycle N+1 | Absence at N and expected payload at N+1 checked |
+| T-21 | TR-02, FR-07 | Sustained simultaneous throughput | Keep both channels active away from boundaries | One write and one read transfer at every edge; count holds | Every edge in the traffic window | One read and write per edge; count constant |
+| T-22 | TR-03, TR-04 | Datapath structure check | Lint/netlist path inspection | No wr_data_i-to-rd_data_o path; documented mem-read path exists | Elaboration and path inspection | Forbidden and allowed paths recorded |
+| T-23 | TR-05 | Handshake/status independence | Toggle wr_valid_i, wr_data_i, rd_ready_i within stable count state | Ready/valid/status do not change from those inputs | Every stable-occupancy cycle | Status invariant checked for every input toggle |
+| T-24 | TR-06, FR-09 | Reset recovery | Make rst_ni high and stable before edge N while presenting a write | Write transfers at edge N, the first edge that samples reset high | First edge that samples reset high | Write accepted at edge N |
 
 ### Corner and Parameter Tests
 
-| ID | Maps To | Description | Stimulus | Expected Observation |
-|----|---------|-------------|----------|----------------------|
-| T-30 | FR-05, FR-07 | Repeated full-boundary turnover | Repeatedly read from full then complete the pending write | No overflow; count sequence is Depth, Depth-1, Depth |
-| T-31 | FR-06, TR-01 | Empty-boundary write/read request | Repeated write/read attempts from empty | No cut-through; each payload becomes readable 1 cycle later |
-| T-32 | FR-01, FR-02, FR-07, FR-08 | Minimum depth and wrap | Use Depth=2 for many fill/drain cycles | Correct count, no corruption, FIFO order preserved |
-| T-33 | FR-09, TR-06 | Reset during read stall | Stall a valid payload, then assert/deassert reset | Valid drops during reset; old payload never transfers; clean recovery |
-| T-34 | FR-10 | Illegal configurations | Elaborate DataWidth=0, Depth=1, and Depth=3 separately | Each configuration fails elaboration with a parameter error |
+| ID | Maps To | Description | Stimulus | Expected Observation | Timing | Completion |
+|----|---------|-------------|----------|----------------------|--------|------------|
+| T-30 | FR-05, FR-07 | Repeated full-boundary turnover | Repeatedly read from full then complete the pending write | No overflow; count sequence is Depth, Depth-1, Depth | Repeated two-edge turnover windows | Expected count sequence checked on every iteration |
+| T-31 | FR-06, TR-01 | Empty-boundary write/read request | Repeated write/read attempts from empty | No cut-through; each payload becomes readable 1 cycle later | Empty edge through the next cycle | Same-edge absence and later payload checked |
+| T-32 | FR-01, FR-02, FR-07, FR-08 | Minimum depth and wrap | Use Depth=2 for many fill/drain cycles | Correct count, no corruption, FIFO order preserved | Across multiple pointer wraps | All data, count, and order checks pass |
+| T-33 | FR-09, TR-06 | Reset during read stall | Stall a valid payload, then assert/deassert reset | Valid drops during reset; old payload never transfers; clean recovery | Reset assertion through recovery | Old payload absent and new activity passes |
+| T-34 | FR-10 | Illegal configurations | Elaborate DataWidth=0, Depth=1, and Depth=3 separately | Each configuration fails elaboration with a parameter error | At each elaboration attempt | Every illegal configuration fails with a parameter error |
 
 ### Assertions
 

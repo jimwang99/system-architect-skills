@@ -1,56 +1,74 @@
 ---
 name: extract-architecture-knowledge-from-paper
-description: Use when asked to extract, distill, or mine design/architecture knowledge from an academic paper or publication (usually a PDF) into reusable documentation — "extract how X works from this paper", reproducing or implementing a published architecture, or when the primary reference for a design is a paper rather than a codebase.
+description: Create a standalone, implementation-ready architecture specification when one academic paper is the primary design reference. Use for reimplementation documentation from a publication; not for paper summaries, literature surveys, or direct implementation.
 ---
 
 # Extract Architecture Knowledge from Paper
 
-## Overview
+## Outcome
 
-Same goal as `extract-architecture-knowledge-from-source`: produce a buildable spec from which a fresh session with no access to the reference can implement the design. But a paper is a *lossy* reference — ideas are abstract, engineering details are omitted as "obvious", and load-bearing information hides in figures. **Core principle: a paper is lossy compression of a design; extraction is decompression with provenance, never silent invention.**
+Decompress a lossy publication into a self-contained design specification without silently inventing omitted engineering details. A fresh engineer or agent should be able to implement the in-scope design using the output while seeing which details are stated, derived, conflicting, or unknown. The deliverable is documentation, not implementation code.
 
-**REQUIRED BACKGROUND:** `extract-architecture-knowledge-from-source`. Its Phase 1 spec (acceptance test, scope, baseline-vs-extensions, code tiers), Phase 2 ground rules, and Phase 3 doc verification apply unchanged. This skill adds what a paper reference demands on top.
+The user's scope, format, and output path take priority. Keep downloaded papers, repositories, and temporary models outside the deliverable unless the user requests them.
 
-## Phase 1 — Deep-read the paper, highest effort
+## 1. Fix Scope and Source Identity
 
-- Read the PDF **page by page, every page** — never work from abstract + intro + conclusion. Figures, tables, captions, and footnotes are primary sources, not decoration.
-- **Every architecture figure gets transcribed**: read it visually (the Read tool renders PDF pages for vision), enumerate blocks, arrows, labels, and bus widths, then redraw as ASCII art with an explanation list. Reconcile the figure against body text — a text/figure mismatch is a finding to record, not noise to skip.
-- Tables and equations transcribe exactly; never paraphrase numbers from memory.
-- Output of this phase is a **claims ledger**: one row per architectural or quantitative claim — claim, source (§ / Fig. / Table / Eq.), status ∈ {stated, derived, ambiguous, missing}. The ledger drives every later phase; a claim not in the ledger does not exist.
+Record the exact paper title, authors, version or publication, retrieval date, and DOI or stable URL when available. For a supplied file without stable identity, record its filename and content hash. Define the requested subsystem, implementation target, acceptance test, and explicit exclusions.
 
-## Phase 2 — Close gaps; never assume
+Ask one concise question only when an unresolved boundary or user-owned design choice would materially change the extraction. Otherwise state the assumption and preserve uncertainty.
 
-Work the ambiguous/missing rows through three channels, in order of authority:
+Scope is complete when every requested behavior and constraint has a destination in the document or an explicit exclusion.
 
-1. **Artifact code.** Check for a linked repo (footnotes, artifact-evaluation badge, project page; search GitHub/Zenodo by paper title and author names). If found, download and analyze it — dispatch into `extract-architecture-knowledge-from-source` for that part. Code outranks prose for interfaces, widths, encodings, and corner cases.
-2. **Cross-papers.** Fetch cited predecessors, follow-ups that cite this paper, and surveys covering the area. Cross-check mechanisms and numbers. A disagreement between papers is recorded with both citations, never silently resolved.
-3. **Human.** Remaining ambiguous/missing rows go to the user as a decision table: claim, candidate interpretations, implication of each. Do not pick one yourself — ask, wait, record who decided.
+## 2. Build the Claims Ledger
 
-Every claim in the final docs carries a provenance tag: `paper-stated` / `artifact-code` / `cross-paper` / `model-verified` / `human-decided`. A claim with no tag does not ship.
+Inspect the complete supplied or accessible paper, including appendices and supplementary material. Record any inaccessible cited supplement. Deep-read every implementation-bearing section and every relevant figure, table, equation, caption, and footnote.
 
-## Phase 3 — Verify by executable model
+For each implementation-critical or quantitative claim, record:
 
-Quantitative and behavioral claims (throughput, latency, occupancy, hit rate, scheduling/arbitration behavior) must be checked by simulation before their doc counts as done:
+- Claim and exact location: section, page, figure, table, equation, appendix, or `not stated`.
+- Origin: paper, artifact, related publication, derivation, measurement, or user decision.
+- Status: stated, derived with assumptions, conflicting, ambiguous, or missing.
+- Validation method and result, kept separate from origin; use `not performed` when verification is outside scope or unavailable.
 
-- **Default: SimPy.** Processes + queues + resources cover throughput, contention, occupancy, and latency-distribution claims with minimal code.
-- **Escalate to SystemC** only when the claim depends on cycle-level pipelining, bit-accurate datapaths, or interface handshakes that SimPy's abstraction cannot express.
-- Run the model on the paper's own configuration and compare against the paper's reported numbers. Match → tag the claim `model-verified`. Mismatch → an unstated assumption exists; go back to Phase 2 to find it. Never tune the model until numbers agree without recording the assumption that made them agree.
-- Keep the models in the doc set — they are part of the deliverable (golden reference for the eventual implementation).
+Transcribe exact numbers, units, widths, formulas, and configurations from the source. Reconcile figures with prose and equations. A mismatch is a ledger item, not a detail to smooth over.
 
-## Phase 4 — Write the docs
+## 3. Close Material Gaps
 
-All ground rules from the source-based skill apply (mechanism before artifact, ASCII block diagrams, quantitative behavior as tables, selective loading, essential-vs-incidental), with two substitutions:
+Use only the evidence channels needed by the requested scope:
 
-- **Traceability targets:** paper claims cite § / Fig. / Table / Eq.; artifact claims cite `file:line`; verified numbers cite the model script + run.
-- **Pitfalls section additionally covers omissions:** what the paper left unstated (reset, initialization, flow control, error paths, corner cases) and how each omission was resolved — with its provenance tag.
+1. **Linked artifact:** identify its exact revision and configuration. For a substantial code subtask, apply the source-extraction method when available. The artifact describes that revision; it does not silently override the paper.
+2. **Related publications:** inspect cited predecessors, follow-ups, corrections, or evaluations when they can resolve a material mechanism or quantitative conflict.
+3. **User decision:** ask when the remaining ambiguity changes correctness or requires a user-owned implementation choice. Record the decision as a decision, not as source provenance.
 
-## Red flags — stop, go back a phase
+Keep unresolved alternatives visible when evidence cannot choose among them. State which omissions block implementation and which permit local design freedom.
 
-| Thought | Reality |
-|---------|---------|
-| "The figure is just an illustration; the text covers it" | Figures carry dataflow and interfaces the text never states. Transcribe it. |
-| "This detail is obvious; any reasonable choice works" | That is an *ambiguous* ledger row. Ask the human. |
-| "The numbers are published; no need to model them" | Published ≠ reproducible from stated information. Modeling exposes unstated assumptions. |
-| "The artifact code is messy/outdated; skip it" | Messy code still outranks clean prose for interfaces and corner cases. |
-| "A follow-up paper describes it differently; the original wins" | Conflict is signal. Record both citations; resolve via model or human. |
-| "SimPy is toy-like; start in SystemC" | Escalate only on the stated conditions. SimPy first buys iteration speed. |
+At minimum, check for omitted interface semantics, widths and encodings, initialization and reset, flow control, arbitration, concurrency, error handling, corner cases, timing reference points, workload assumptions, and evaluation conditions when relevant.
+
+## 4. Verify Proportionally
+
+Match verification to the claim:
+
+- Re-derive equations and unit conversions for analytical claims.
+- Run existing artifact tests or reproduce published configurations when available and within scope.
+- Build a focused executable model only when the user explicitly authorizes code or model creation, the claim is modelable from available information, and the model materially reduces implementation risk.
+
+A model checks consistency under its recorded assumptions; it does not prove empirical performance or paper truth. Record inputs, configuration, randomness, expected result, actual result, and limitations. On mismatch, investigate artifact version, workload, model error, randomness, omitted assumptions, and source error without forcing agreement.
+
+## 5. Write the Specification
+
+Explain mechanisms before implementation artifacts. Preserve exact interfaces, dataflow, state, ordering, equations, timing, and corner behavior required by the acceptance test. Separate required behavior from one possible implementation.
+
+Use Mermaid for block diagrams and flow charts that materially clarify structure or sequence, followed by plain-language explanations. Use tables for repeated fields, state transitions, timing, and comparable quantitative results.
+
+Cite paper evidence by section, page, figure, table, or equation; artifact evidence by `path:line` at revision; verification evidence by model or test and recorded run. Put assumptions and unresolved omissions beside the affected mechanism.
+
+## 6. Completion Gate
+
+Finish only when:
+
+- Every critical ledger row is supported, derived with explicit assumptions, conflicting, or explicitly unknown.
+- Text, figures, equations, artifacts, and external evidence are reconciled or their disagreement is reported.
+- A reader can recover the in-scope interfaces, behavior, timing, state, corner cases, and verification intent.
+- Each material claim has separate origin, location, status, and validation.
+- Generated models or adaptations are included only when they are part of the requested deliverable.
+- The specification contains no silent invention or false claim of verification.

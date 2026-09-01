@@ -1,65 +1,71 @@
 ---
 name: fang
-description: Interview the user and create or revise a FANG brief for confirmed high-level agreement on a problem before solution work. Use only when the user invokes the skill, asks for a FANG brief, or explicitly requests problem framing without solutions.
+description: Create or revise a FANG problem-framing brief through a focused interview. Use when the user explicitly requests a FANG brief or problem framing without solution design.
 ---
 
 # FANG
 
-FANG (Framing, Assumptions, Non-goals, Goals) is the problem-framing brief this skill produces as input for later solution-phase tasks. Use grilling — a one-question-per-turn interview defined below — to discover what the user really wants, frame the problem, and realign until the user confirms shared understanding. Stop before solution exploration.
+FANG means Framing, Assumptions, Non-goals, and Goals. It records confirmed high-level agreement on the problem before solution work starts.
 
-## Keep the boundary
+## Boundary
 
-- Frame the problem only. Leave solutions, features, architecture, interfaces, technologies, implementation details, and execution plans out.
-- If the user requests solution work, push back briefly and continue only with problem framing. Recommend a separate task without this skill after alignment.
-- Constrain grilling to affected parties, observed conditions, impact, urgency, evidence, scope, goals, non-goals, risks, and agreement criteria.
-- Keep evidence, assumptions, and unknowns visibly separate.
-- Treat unsupported user-provided claims as unverified, even after the user confirms the framing.
-- Never invent citations, measurements, owners, deadlines, or confidence.
+Frame the problem only: affected parties, observed conditions, impact, urgency, evidence, scope, goals, non-goals, risks, and agreement criteria. Leave features, architecture, interfaces, technologies, implementation, and execution plans for a separate task.
 
-## 1. Establish available facts
+When the source begins with a proposed solution, recover the underlying problem. Retain the proposal only as a one-line, unevaluated solution hypothesis when its provenance matters.
 
-1. Read the user's idea and every source in scope.
-2. Look up facts available through the environment or tools before asking the user. Do not ask the user for discoverable facts.
-3. Give every material factual claim a stable evidence ID and record the claim, its source or provenance, and one status: `Verified`, `Unverified`, or `Conflicting`. Use `Verified` only when an available authoritative source supports the claim; use `Unverified` when it rests only on user input or lacks support; use `Conflicting` when sources disagree. Surface conflicts instead of silently choosing one source.
+Keep external facts, user reports, assumptions, conflicts, and unknowns distinct. The user is authoritative for their goals, preferences, and experience, but user confirmation does not verify an external factual claim.
 
-## 2. Grill for the real problem
+## 1. Establish Evidence
 
-Run the grilling interview directly inside FANG. Do not defer it to a separate task or skill.
+Read every source in scope. Verify discoverable facts only when they materially affect the problem boundary or agreement; avoid turning framing into an unrelated research project.
 
-1. Start with the highest-leverage unresolved problem-framing decision.
-2. Ask exactly one non-compound question about one decision per turn and wait for the user's answer.
-3. Give a recommended answer with each question, grounded in the available information.
-4. Walk dependent decisions one by one. The decisions belong to the user; do not resolve them on the user's behalf.
-5. If the user does not know an answer, ask whether to record it as an accepted unknown and identify what evidence could resolve it.
-6. Continue until the user explicitly confirms that the high-level problem framing reflects what they want. Do not draft the FANG before that confirmation.
+Give each material factual claim a stable `E<n>` ID and one status:
 
-## 3. Draft the FANG
+- `Supported`: an inspected authoritative source supports the claim.
+- `User-reported`: the user is the source for their intent, experience, or internal condition.
+- `Unverified`: available evidence does not establish the claim.
+- `Conflicting`: relevant sources disagree.
 
-1. Use [assets/template.md](assets/template.md) as the output structure.
-2. Remove instructional placeholders and keep every section; only `Open questions` is optional and may be omitted when no material unknowns remain. An `Aligned` FANG requires substantive `Framing` and at least one `Goal`. Write `None identified` for `Assumptions` or `Non-goals` only after the user explicitly confirms that absence. In a `Draft`, write `Not yet established` for an unresolved section and add the missing decision to `Open questions`.
-3. Cite every material factual claim with its evidence ID and populate `Evidence and provenance` with the claim, source or provenance, and verification status.
-4. Identify the high-level agreement the FANG must enable. If it remains inferred, label it as an assumption.
-5. Phrase the problem without embedding a preferred solution. If the source contains a proposed solution, recover the underlying problem and record the proposal only as a labeled solution hypothesis when necessary for context. Do not elaborate on or evaluate it.
-6. Make goals outcome-oriented and pair each with an observable success signal. State explicit non-goals.
-7. Rank open questions by their potential to change the problem boundary or agreement. Give each one a stable ID `Q<n>` so the user can answer by number. Never renumber or reuse an ID after a question is resolved or dropped.
+Record each claim as a bullet in the template: `E<n>`, status, and claim on the first line; source or provenance in a sub-bullet. Surface conflicts rather than choosing silently. Preserve assumptions and accepted unknowns as such.
 
-## 4. Review and realign
+## 2. Build a Provisional Brief
 
-1. Review the draft for problem-framing completeness, internal consistency, and factual support.
-2. If anything material is missing, contradictory, unsupported, or apparently incorrect, re-enter the grilling loop immediately.
-3. Present one review issue at a time using the grilling rules from step 2. Do not bundle review issues or decisions.
-4. Use available sources or tools to resolve factual questions before asking. When evidence and the user's belief conflict, show the conflict and ask the user how the framing should represent it.
-5. Update the draft after each answer, review it again, and continue until all material issues are resolved or explicitly accepted as unknowns.
-6. Ask the user to confirm the reviewed full document. Set the status to `Aligned` only after explicit confirmation. If the user stops earlier, keep `Draft` and preserve all unresolved open questions.
+Read [assets/template.md](assets/template.md) and draft the strongest provisional FANG supported by current context. Draft before interviewing so the user can react to a concrete framing.
 
-## 5. Deliver and stop
+Optimize for a one-minute first pass:
 
-- When working in a project or user-designated folder, write the brief to `docs/fang/FANG-<date>-<topic>.md`, where `<date>` is the creation date as `YYYY-MM-DD` and `<topic>` is a short kebab-case slug. Revise an existing brief in place; never create a new dated file for the same problem. When no folder is in scope, return the completed Markdown inline.
-- Write every heading, field, explanation, and artifact in English. Translate non-English source material while preserving meaning and retain proper names or identifiers when translation would make them inaccurate.
-- Suggest the next step as a separate task that takes the FANG as input, routed by the state of the framing:
-  - Default: use the `grill-with-docs` skill to discuss solutions.
-  - When a candidate solution needs evidence before commitment: use the `prototype` skill to investigate it first.
-  - When the topic is still too vague or broad for solution discussion: use the `research` skill to find references and synthesize a deep-dive, then return to `grill-with-docs`.
-- Do not execute the suggested next step automatically.
-- Do not hand off problem-framing grilling to a separate task; it is embedded in FANG. The `grill-with-docs` suggestion is for solution work only.
-- Stop after delivering the confirmed FANG or the explicitly unfinished draft.
+- Lead with one quoted problem sentence and the decision needed.
+- Default to three bullets or fewer per section and one short sentence per bullet.
+- Let `Evidence and provenance` and `Open Questions` exceed that limit only for material items.
+- Use bold labels and a few meaningful status or heading emojis as scan cues.
+- Delete repeated context, transitions, and explanation. Put supporting detail in linked sources.
+
+An `Aligned` brief needs substantive framing, an explicit agreement sought, at least one outcome goal with an observable success signal, and no unresolved material boundary decision. A `Draft` may use `Not yet established` and record the missing decision under `Open Questions`.
+
+Keep every required template section. Omit `Open Questions` when no unresolved or accepted-unknown question remains. Use one `None identified` bullet for assumptions or non-goals only after the user confirms that absence.
+
+## 3. Resolve Material Decisions
+
+If the provisional brief has a material unresolved decision, ask one non-compound question about the highest-impact decision and wait for the answer.
+
+Give a recommendation only when evidence supports a clear choice; otherwise state the current inference or concise alternatives without resolving the decision for the user. If the user does not know, offer to record an accepted unknown and name evidence that could resolve it.
+
+Assign each question a stable `Q<n>` ID. When resolved, merge the answer into the relevant body section and remove the question from `Open Questions`. Keep only unresolved and accepted-unknown questions there. Never renumber or reuse an ID during the working session.
+
+Update the provisional brief after each answer and repeat only while a decision could change the framing, scope, goals, non-goals, or agreement.
+
+## 4. Review and Confirm
+
+Review the full brief for problem-framing completeness, internal consistency, solution leakage, and factual support. Re-enter the one-question loop only for a material boundary issue, a contradiction, or an unsupported statement presented as fact.
+
+Present the complete reviewed brief and ask for explicit confirmation. Set `Status: Aligned` only after the user confirms the full document. If the user stops earlier or accepts unresolved material questions, deliver `Status: Draft`.
+
+## 5. Deliver and Stop
+
+The user's path and repository convention take priority. Otherwise write a project brief to `docs/fang/FANG-<YYYY-MM-DD>-<topic>.md`; revise an existing brief for the same problem in place. When no project folder is in scope, return the Markdown inline.
+
+Use the user's language; default to clear English when none is implied.
+
+After delivery, suggest one separate next-task capability that fits the result: solution exploration, research for an evidence gap, or a throwaway prototype for a risky hypothesis. Name a specific skill only when it is available. Do not start that task automatically.
+
+Finish when the delivered status matches the confirmation state, every material fact has an evidence status, every goal has a success signal, and every unresolved decision remains visible.

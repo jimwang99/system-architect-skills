@@ -13,9 +13,9 @@ Confirm these before semantic review:
 - `FR-xx`, `TR-xx`, `FSM-<NAME>-<NN>`, and `T-xx` definitions are unique.
 - Mechanical two-way traceability is complete.
 - No unresolved decision marker or placeholder remains.
-- Every diagram is ASCII and every referenced file exists.
+- Every block diagram and flow chart uses Mermaid with explanatory text, and every referenced file exists.
 
-If a precondition fails, stop the semantic review. Return a **blocking** mechanical finding with the command output and affected file/line. Do not bury deterministic failures among design opinions.
+If a precondition fails, return a **blocking** mechanical finding with the command output and affected file/line. Continue semantic review when the defect does not prevent reliable interpretation; otherwise state exactly what could not be reviewed.
 
 ## Architecture Review
 
@@ -106,7 +106,8 @@ For every channel:
 
 ### Tests and two-way traceability
 
-- Does every `FR-xx`, `TR-xx`, and `FSM-<NAME>-<NN>` have at least one meaningful `T-xx`?
+- Does every `FR-xx` and `TR-xx` have at least one meaningful `T-xx`?
+- Does every contracted `FSM-<NAME>-<NN>` have a meaningful test, independently falsifiable assertion, or coverage target?
 - Does every `T-xx` map back to a requirement or transition on its definition row?
 - Does each test specify stimulus, observations, timing, and completion criteria?
 - Do tests cover reset during operation, back-to-back activity, legal parameter boundaries, illegal combinations, simultaneous events, stalls, and flushes when applicable?
@@ -128,7 +129,7 @@ For every channel:
 
 ## Diagram Review
 
-- Do all diagrams use ASCII and remain readable at their chosen abstraction level?
+- Do all block diagrams and flow charts use Mermaid and remain readable at their chosen abstraction level?
 - Do arrow directions match real signal flow?
 - Do names match the interface, stage, FSM, storage, and equation tables?
 - Do waveform columns represent values sampled at the stated edge?
@@ -144,22 +145,15 @@ Issue: <specific defect or ambiguity>
 Why it matters: <observable failure, implementation risk, or verification gap>
 Evidence: <file:line and affected FR/TR/FSM/T IDs>
 Alternatives:
-1. <option> — Pros: <...>; Cons: <...>
-2. <option> — Pros: <...>; Cons: <...>
-3. <option when materially distinct> — Pros: <...>; Cons: <...>
+1. <option when the user owns a genuine trade-off> — Pros: <...>; Cons: <...>
+2. <second materially distinct option when needed> — Pros: <...>; Cons: <...>
 User decision required: yes | no
 ```
 
-Offer 2-3 materially distinct alternatives for every blocking or important concern. Do not disguise a preferred answer as the only viable option. End with open questions and any assumptions the reviewer could not validate.
+Give one recommendation and its trade-off for each finding. Add alternatives only when the user owns a genuine decision with materially different valid outcomes. End with open questions and any assumptions the reviewer could not validate.
 
 ## Review Exit Criteria
 
-The independent review is complete only when:
-
-- mechanical preconditions pass;
-- all blocking findings are resolved by the user;
-- important findings are resolved or explicitly accepted by the user;
-- architecture-affecting resolutions have passed another mechanical check and independent review; and
-- the main workflow presents the final result at the **User Approval** gate.
+The independent review is complete when the reviewer has reported mechanical status, every semantic area that could be evaluated, ranked findings with evidence and recommendations, open questions, and unvalidated assumptions. Resolution, revalidation, and approval belong to the main workflow.
 
 The reviewer never edits the specification or approves it on the user's behalf.

@@ -26,8 +26,12 @@
 #include "Vadder.h"
 
 #include "verilated.h"
+#if VM_COVERAGE
 #include "verilated_cov.h"     // VerilatedCovContext — required for coverage write
+#endif
+#if VM_TRACE_FST
 #include "verilated_fst_sc.h"  // FST tracing in the SystemC flow
+#endif
 
 #include <systemc>
 
@@ -40,8 +44,8 @@
 
 using namespace sc_core;
 
-// CMake defines this as its binary directory. The raw Verilator CLI fallback
-// leaves it as the current working directory.
+#if VM_TRACE_FST || VM_COVERAGE
+// Keep optional artifacts under the configured build directory.
 #ifndef TB_OUTPUT_DIR
 #define TB_OUTPUT_DIR "."
 #endif
@@ -49,6 +53,7 @@ using namespace sc_core;
 static std::string output_path(const char* filename) {
     return std::string{TB_OUTPUT_DIR} + "/" + filename;
 }
+#endif
 
 // ---------------------------------------------------------------------------
 // Logging macros — thin wrappers around SC_REPORT_INFO_VERB.
@@ -391,22 +396,25 @@ SC_MODULE(Testbench) {
 // Responsibilities:
 //   1. Initialize Verilator and SystemC runtime
 //   2. Instantiate the top-level Testbench
-//   3. Elaborate, then set up FST waveform tracing
+//   3. Set up FST tracing when the build enables it
 //   4. Run simulation
-//   5. Report results and clean up
+//   5. Write enabled artifacts, report results, and clean up
 // ---------------------------------------------------------------------------
 int sc_main(int argc, char* argv[]) {
     // Let Verilator parse its own plusargs (e.g. +verilator+rand+reset+2).
     Verilated::commandArgs(argc, argv);
 
-    // Enable tracing infrastructure before any model is constructed.
+#if VM_TRACE_FST
+    // Verilator requires this before model construction when tracing is built.
     Verilated::traceEverOn(true);
+#endif
 
     // Default SC_MEDIUM shows DRIVE/CHECK; override with +verbosity=<LEVEL>.
     sc_report_handler::set_verbosity_level(parse_verbosity(argc, argv));
 
     Testbench tb{"tb"};
 
+#if VM_TRACE_FST
     // --- Complete elaboration BEFORE trace setup ---
     // Verilator 5.x registers the model's SystemC processes during
     // elaboration; calling trace() earlier aborts with
@@ -418,17 +426,22 @@ int sc_main(int argc, char* argv[]) {
     tb.dut->trace(tfp.get(), 99);        // 99 levels of hierarchy
     const std::string trace_path = output_path("tb_adder.fst");
     tfp->open(trace_path.c_str());
+#endif
 
     // --- Run until the completion controller calls sc_stop() ---
     sc_start();
 
     // --- Post-simulation cleanup ---
     tb.dut->final();    // Runs RTL final blocks and flushes coverage counters
+#if VM_TRACE_FST
     tfp->close();       // Flush and close the waveform file
+#endif
 
+#if VM_COVERAGE
     // Write coverage data — AFTER final(), which flushes the counters.
     const std::string coverage_path = output_path("coverage.dat");
     Verilated::threadContextp()->coveragep()->write(coverage_path);
+#endif
 
     // Print a completion-aware summary and derive the exit code.
     return tb.report() ? 0 : 1;

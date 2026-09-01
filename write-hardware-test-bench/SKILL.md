@@ -1,119 +1,80 @@
 ---
 name: write-hardware-test-bench
-description: Use when writing SystemC testbench code for Verilator-simulated RTL, when generating C++ test harnesses for hardware modules, or when the user asks to create a testbench, test, or stimulus for a Verilog/SystemVerilog design.
+description: Write or review SystemC testbenches for RTL compiled with Verilator `--sc`. Use for block-level stimulus, monitors, scoreboards, and regressions; not for pure C++ `--cc` harnesses or synthesizable RTL.
 ---
 
-# SystemC Testbench Style Guide (Verilator)
+# Write a SystemC Testbench for Verilator
 
-A style-focused reference for writing readable, debuggable SystemC testbenches that drive Verilator-compiled RTL models. See `references/reference.md` for API details and `references/example-testbench.cpp` for the working template (with `references/adder.sv` DUT and `references/CMakeLists.txt` build script — verified to build and run green).
+## Outcome and Scope
 
-**Related skills:**
-- **REQUIRED BACKGROUND:** `write-hardware-spec` — produces the T-xx test plan this skill implements
-- `write-hardware-rtl` — RTL-side conventions (logging plusargs, assertions, cover properties)
-- `debug-hardware-with-logging` — use when simulation fails or scoreboard mismatches appear
+Produce the smallest testbench that proves the requested observable behavior and fails reliably on a mismatch, unexpected output, incomplete check, or timeout. A review request reports findings without editing.
 
-## Coding Style
+Read the user request, available specification or test plan, DUT ports, existing testbench infrastructure, and project build commands. Use existing `T-xx` IDs when present. A formal hardware-spec skill is not a prerequisite for a focused regression, but expected behavior, timing, and completion must be explicit before code is written.
 
-- **Base**: Google C++ Style Guide
-- **Language**: C++17; selective C++20 (e.g., `std::format` where available)
-- **Naming**: hardware abbreviations are fine: `clk`, `rst_n`, `addr`, `wdata`, `rdata`, `en`, `vld`, `rdy`
-- **Ownership**: `std::unique_ptr` for all Verilator models and trace objects -- never raw `new`/`delete`
+Use the repository's C++ standard, naming, build, logging, and artifact conventions. The supplied references assume SystemC 3.0.x, Verilator 5.x, and C++17; verify local versions before relying on a version-specific API.
 
-## File Organization
+## 1. Define the Test Contract
 
-| Item | Convention |
-|------|-----------|
-| Filename | `tb_<module>.cpp` |
-| Include order | 1. `V<Module>.h` (Verilator model) 2. `verilated.h`, `verilated_cov.h`, `verilated_fst_sc.h` 3. `<systemc>` 4. C++ stdlib 5. Project headers |
-| Namespace | `<systemc>` (no `.h`) keeps everything in `sc_core` — add `using namespace sc_core;` in the .cpp (never in a header) |
-| Header/source split | Only when reusing driver/monitor modules across testbenches |
+For each requested case, record:
 
-## Testbench Structure
+- Requirement or behavior under test.
+- Stimulus, protocol acceptance edge, and legal backpressure.
+- Expected observations and exact timing.
+- Completion condition and watchdog bound.
+- Negative expectation window when the required result is no output.
 
-- **Separate SC_MODULEs** for ResetGen, Driver, Monitor, and top-level Testbench -- never monolithic
-- **Clock**: `sc_clock clk{"clk", period, SC_NS}` in the top module
-- **Reset**: dedicated `SC_THREAD` in its own ResetGen module — asserts reset, waits N cycles, deasserts. Keeps multi-stage resets, mid-test reset injection, and per-domain resets out of stimulus code
-- **Driving**: change signals on posedge
-- **Sampling**: read signals on negedge (SystemC kernel handles evaluation automatically)
-- **Scoreboard**: `std::queue<expected_t>` for in-order responses; create an expectation when the DUT accepts a transaction, and pop it when the corresponding output handshake occurs
-- **Ready/valid protocols**: a drive is only an attempt — enqueue exactly once when `valid && ready` is sampled on the protocol edge, never once per stalled cycle
-- **Multi-channel protocols** (e.g., AXI4): one Driver and one Monitor per channel, plus a transaction-level scoreboard that correlates independently accepted channels and tracks response IDs/order
-- **Completion**: stop only after stimulus is complete and every expected response has been checked; fail on pending expectations, unexpected outputs, count mismatches, or watchdog timeout
+Ask only when an unresolved behavior would change pass or fail. The test contract is complete when every expected result can be computed independently of the RTL implementation.
 
-## Logging & Tracing (CRITICAL)
+## 2. Choose Proportionate Structure
 
-The agent cannot use a waveform viewer. Logging is the primary debug tool.
+A small deterministic smoke test may use one top-level module and a few processes. Separate reset, driver, monitor, reference model, scoreboard, and completion components when concurrency, reuse, multiple channels, or protocol complexity makes ownership clearer.
 
-**TB_LOG macro** — wrap SC_REPORT_INFO_VERB with automatic module name:
-```cpp
-#define TB_LOG(verbosity, msg) SC_REPORT_INFO_VERB(name(), msg, verbosity)
-```
-Note: `SC_REPORT_INFO_VERB` takes `const char*`. Format with `std::ostringstream` or `std::format`, then pass `.c_str()`.
+Keep stimulus generation separate from checking. For multi-channel or out-of-order protocols, track accepted transactions by the protocol's correlation key and enforce only legal ordering. A FIFO queue is sufficient only for strict in-order responses.
 
-**Verbosity levels** (full 6-level table with examples: `references/reference.md`):
+Use `std::unique_ptr` for Verilated models and trace objects. Split headers from sources only for components reused across testbenches.
 
-| Level | Use for |
-|-------|---------|
-| `SC_LOW` | Test phase boundaries, pass/fail, end-of-test summary |
-| `SC_MEDIUM` | Stimulus driven, expected-vs-actual checks |
-| `SC_HIGH` | Signal-level detail, FSM transitions |
-| `SC_DEBUG` | Every-cycle dumps, raw values |
+## 3. Drive and Observe at Contracted Events
 
-**Per-block runtime control**: `set_actions(<exact-report-type>, SC_INFO, SC_DO_NOTHING)` can silence a module; with the `TB_LOG` macro, the exact report type is the module's hierarchical `name()` (for example, `tb.driver`). It cannot enable messages above the global verbosity threshold because `SC_REPORT_INFO_VERB` applies that threshold first. Implement a per-module threshold in the logging wrapper if selective verbosity is required.
+Derive drive and sample points from the DUT protocol instead of applying one edge convention to every design. Establish synchronous inputs before the specified acceptance edge, then observe outputs after the DUT and SystemC delta cycles have settled. Avoid driver, DUT, and monitor races at the same edge.
 
-**Runtime verbosity**: SystemC has **no built-in command-line parsing** — parse a `+verbosity=<LEVEL>` plusarg yourself in `sc_main` and call `sc_report_handler::set_verbosity_level()` (see `parse_verbosity()` in the example).
+A driven valid/payload is an attempt, not an accepted transaction. Add an expectation exactly once when the protocol transfer event occurs. Hold or retry stalled inputs as the protocol requires without duplicating expectations.
 
-**Mandatory logging rules**:
-- EVERY output check: log expected vs actual at `SC_MEDIUM`
-- EVERY stimulus drive: log driven values at `SC_MEDIUM`
-- End-of-test summary (total checks, passes, failures) at `SC_LOW`
+On an output transfer, require a matching expectation before consuming it. For a forbidden-output test, register a bounded observation window and fail on any matching event; do not represent absence with a dummy queue item.
 
-## Verilator Integration
+The completion controller may stop only after stimulus is done and every required observation has completed. Fail on pending expectations, unexpected outputs, expected/check count mismatch, assertion failure, or watchdog timeout.
 
-| Action | Rule |
-|--------|------|
-| Evaluation | SystemC kernel handles it via `sc_start()` — never call `model->eval()` in `--sc` flow (manual `eval()` is `--cc`-only) |
-| Tracing | `Verilated::traceEverOn(true)` before model construction; `sc_start(SC_ZERO_TIME)` (elaboration) before `model->trace()`; `VerilatedFstSc` auto-dumps during `sc_start()` |
-| Cleanup | `model->final()` after `sc_start()` returns — runs RTL final blocks, flushes coverage counters |
-| Coverage dump | **After** `final()`: write to an explicit build/output path, e.g. `Verilated::threadContextp()->coveragep()->write("build/coverage.dat")`; requires `verilated_cov.h` |
+## 4. Make Failures Diagnosable
 
-> **Warning**: `VerilatedFstSc` privately inherits from `sc_trace_file`, so `sc_trace()` cannot trace custom SystemC signals into FST. Track testbench-only signals (like test phase) via console logging.
+Use the project's logging layer. Otherwise wrap `SC_REPORT_INFO_VERB` so logs identify the hierarchical component.
 
-## Building & Running
+At runtime-selectable verbosity, log:
 
-**CMake is the default build tool** — Verilator ships `find_package(verilator)` with a `verilate()` function that handles include paths, C++ standard, and SystemC linkage. Working template: `references/CMakeLists.txt`. CMake elements, SystemC discovery, and the raw Verilator CLI fallback: `references/reference.md`.
+- Test ID and phase boundaries.
+- Accepted stimulus and correlation ID.
+- Expected versus actual values for each check.
+- Unexpected outputs, timeouts, and final counts.
 
-The template defines `TB_OUTPUT_DIR` from `CMAKE_CURRENT_BINARY_DIR`, so FST and coverage artifacts are placed in `build/` regardless of the runtime working directory. Keep the filename passed to `coveragep()->write()` and the `verilator_coverage` command identical.
+Default logs should explain the first failure without dumping every cycle. Add signal-level or every-cycle logs only for focused debugging. Use `debug-hardware-with-logging` when a simulation failure needs iterative instrumentation.
 
-```bash
-cmake -B build && cmake --build build
-./build/tb_<block>                    # default verbosity (SC_MEDIUM)
-./build/tb_<block> +verbosity=HIGH    # custom plusarg — see Logging
+## 5. Integrate with Verilator
 
-# From the RTL source dir (annotation resolves paths relative to cwd):
-verilator_coverage --annotate coverage_annotated --annotate-min 1 build/coverage.dat
-```
+In `--sc` flow, let the SystemC kernel evaluate the model through `sc_start()`; do not call `eval()` manually.
 
-Check every RTL cover point was hit — misses mean the stimulus is not exercising the spec's functional requirements.
+Tracing is conditional. When using `VerilatedFstSc`, enable tracing before model construction, complete zero-time elaboration before registering the trace in Verilator versions that require it, and close the trace after simulation.
 
-## Mapping Spec Test Plan to Code
+Call the model's `final()` after simulation. When coverage is enabled, write coverage after `final()` to an explicit project output path and use the same path for annotation.
 
-The spec (from `write-hardware-spec`) produces a test plan with T-xx IDs. **Structure:** one `SC_THREAD` runs all tests sequentially, and each T-xx test is a helper function called in order. After stimulus completes, a bounded completion controller drains the scoreboard before calling `sc_stop()`.
+Use the repository's build first. When none exists, adapt [references/CMakeLists.txt](references/CMakeLists.txt); read [references/reference.md](references/reference.md) for `--sc` integration, tracing, coverage, and logging details. Use [references/example-testbench.cpp](references/example-testbench.cpp) as an example to adapt, not a mandatory architecture.
 
-**Rules:**
-- **Every T-xx test must log its ID** at `SC_MEDIUM` when it starts — this makes it trivial to find failures in the log
-- **Every T-xx test declares its expected behavior** — enqueue accepted transactions for normal outputs; for “no output” cases, register a bounded observation window that the Monitor checks independently
-- **Order tests from simple to complex** — basic operations first, corner cases last
-- **Corner-case tests (T-2x, T-3x)** may need custom Monitor logic (e.g., checking reset behavior) — add a flag or separate queue
-- **Never infer pass from `fail_count == 0` alone** — require stimulus completion, zero pending expectations, expected/check-count equality, zero unexpected outputs, and no timeout
+## 6. Verify
 
-## Common Mistakes
+Build and run through the project's normal commands. Run each focused case, then the relevant regression. Exercise required functional cover targets when coverage is in scope; explain unreachable or intentionally waived targets rather than treating every raw coverage counter as a requirement.
 
-| Symptom | Fix |
-|---------|-----|
-| `no template named 'sc_out'; did you mean 'sc_core::sc_out'?` | `<systemc>` keeps names in `sc_core` — `using namespace sc_core;` in the .cpp |
-| `SystemC requires a C++ standard version of at least C++17` | `set(CMAKE_CXX_STANDARD 17)` (CMake) or `-CFLAGS "-std=c++17"` (raw CLI) |
-| Runtime abort: `trace() is called before sc_core::sc_start()` | `sc_start(SC_ZERO_TIME);` before `model->trace()` |
-| `member access into incomplete type 'VerilatedCovContext'` | `#include "verilated_cov.h"` |
-| Coverage counts zero or undercounted | Write coverage **after** `model->final()`; annotate with `--annotate-min 1` (default 10 marks <10-hit points uncovered) |
-| `--sc_verbosity` flag has no effect | No such flag — SystemC parses no CLI args; implement a `+verbosity=` plusarg (see example) |
+Finish only when:
+
+- Every requested behavior or `T-xx` case has stimulus, expected observations, timing, and a completion result.
+- Expected values come from the specification or an independent reference model, not copied DUT logic.
+- Acceptance and checking occur exactly once per contracted event.
+- Negative expectations and global completion are bounded.
+- The executable returns failure for every scoreboard, count, unexpected-output, assertion, or timeout error.
+- Build and relevant tests pass, with artifacts written to known output paths.

@@ -1,286 +1,161 @@
 ---
 name: write-hardware-spec
-description: Use when creating, updating, reviewing, or finalizing architecture or microarchitecture specifications for RTL blocks before RTL or testbench implementation; covers interfaces, protocols, timing, reset, FSM and pipeline behavior, traceable tests, and review gates.
+description: Create, update, review, or freeze architecture and microarchitecture specifications for RTL blocks. Use before RTL or testbench implementation when interfaces, protocols, timing, reset, state, or verification intent need an explicit contract; not for writing implementation code.
 ---
 
-# Write Hardware Spec
+# Write Hardware Specification
 
-## Purpose
+## Outcome and Modes
 
-Create the single source of truth for what an RTL block does and how it is implemented. Freeze observable behavior, timing, state, reset, and verification intent before any RTL or testbench implementation begins.
+Create a single source of truth for observable behavior and agreed implementation decisions before RTL and verification diverge.
 
-Treat this file as the sole normative contract for the skill. References are non-normative aids; when a reference conflicts with this file, follow this file.
+Route by the user's request:
 
-## Required Skills
+- **Create or update:** edit the specification, preserve unrelated decisions and stable IDs, then validate it.
+- **Review:** inspect and report findings without editing unless the user separately asks for changes.
+- **Finalize or freeze:** validate, run independent semantic review, resolve material findings, and obtain explicit user approval.
+- **Handoff:** prepare RTL or testbench context only when the user explicitly requests implementation.
 
-- **REQUIRED BACKGROUND:** `superpowers:brainstorming`. Invoke it before drafting every new specification and before any update that changes externally visible behavior or a microarchitecture decision. If it is unavailable, stop and report the missing prerequisite.
-- **CONDITIONAL HANDOFF DEPENDENCY:** `write-hardware-rtl`. Require it only when dispatching RTL implementation from an approved specification.
-- **CONDITIONAL HANDOFF DEPENDENCY:** `write-hardware-test-bench`. Require it only when dispatching verification implementation from an approved specification.
+For an update, read the complete existing specification first. Preserve its valid layout, requirements, tests, IDs, and unrelated design decisions. Add IDs rather than renumbering them unless the user requests a migration.
 
-Do not replace a missing required skill with an improvised workflow.
+Externally visible behavior and architecture trade-offs belong to the user. Resolve discoverable facts from available evidence, state safe assumptions, and ask one focused question when an unresolved choice changes the contract. Never invent behavior to complete a document.
 
-## Workflow
+## 1. Choose the Document Boundary
 
-Follow every applicable gate in order:
-
-```text
-Load this contract and stage dependencies
-                 |
-                 v
-Inspect requirements or the existing specification
-                 |
-                 v
-Invoke superpowers:brainstorming
-                 |
-                 v
-Choose merged or architecture + microarchitecture format
-                 |
-                 v
-Draft the specification and test plan
-                 |
-                 v
-Run definition-of-done and mechanical checks
-                 |
-                 v
-Dispatch an independent review subagent
-                 |
-                 v
-Resolve blocking decisions with the user
-                 |
-                 v
-Obtain explicit user approval of the frozen specification
-                 |
-                 v
-Dispatch parallel RTL and testbench handoffs
-```
-
-For an update, read the complete existing specification first. Preserve unrelated requirements, tests, IDs, and design decisions. Add new IDs rather than renumbering existing IDs unless the user explicitly requests a renumbering migration.
-
-## Stop Conditions
-
-Stop the affected workflow branch and ask the user when:
-
-- an externally visible behavior, corner case, or timing choice is ambiguous;
-- the existing specification required for an update is unavailable;
-- a required dependency for the current stage is unavailable;
-- parameter legality or an interface protocol cannot be determined;
-- mechanical validation fails;
-- requirement-to-test traceability is incomplete;
-- an independent reviewer reports an unresolved blocking concern; or
-- the final specification has not received explicit user approval.
-
-Never invent externally visible behavior to complete a document. Record unresolved decisions as questions during brainstorming; do not leave placeholders in a draft presented as complete.
-
-## Output Format Selection
-
-Use exactly one of these layouts:
+The user's path and repository convention take priority. For a new block with no convention, use:
 
 ```text
-spec/<block>_spec.md   # merged architecture + microarchitecture
-spec/<block>_arch.md   # architecture for a complex block
-spec/<block>_uarch.md  # microarchitecture + test plan for a complex block
+spec/<block>_spec.md   # merged architecture and microarchitecture
+spec/<block>_arch.md   # observable architecture
+spec/<block>_uarch.md  # implementation decisions and test plan
 ```
 
-- **REQUIRED — split format:** Use separate architecture and microarchitecture documents for a pipelined block, a design with multiple FSMs, multiple independently reviewable sub-blocks, or a design whose implementation detail would obscure the observable contract.
-- **CONDITIONAL — merged format:** Use one merged document only for a single non-pipelined block with at most one control FSM and no independently reviewable sub-blocks.
-- **REQUIRED — update format:** Preserve the existing valid split/merged layout unless the change makes it violate these criteria. If the format must change, explain the migration before editing.
+Use a merged document when the observable contract and implementation remain easy to review together. Split architecture from microarchitecture when pipeline, state, sub-block, or interface detail would obscure the external contract or the documents have different readers. Preserve an existing valid layout; propose a migration before changing file boundaries.
 
-In split format, define externally observable requirements only in the architecture document. Put the implementation refinement and shared test plan in the microarchitecture document; reference architecture IDs rather than redefining them.
+In split format, define externally observable requirements only in the architecture document. The microarchitecture references architecture IDs and must not redefine them. In merged format, place these sections under a REQUIRED `Implementation Detail` heading.
 
-## Normative Contract
+## 2. Architecture Contract
 
-Use explicit **REQUIRED**, **CONDITIONAL**, and **RECOMMENDED** language in the specification wherever compliance strength matters.
+The architecture defines what the block does. Include:
 
-### Architecture Contract
+1. **Purpose and scope:** operating context, ownership boundary, and non-goals.
+2. **Parameters:** type, default, meaning, legal range, derived status, dependent constraints, and illegal combinations.
+3. **Interfaces:** every port's direction, width, clock/reset domain, grouping, protocol role, and meaningful-valid condition.
+4. **Functional requirements:** independently testable `FR-xx` definitions for externally visible behavior, including ordering, conservation, boundary conditions, simultaneous events, backpressure, cancellation, errors, and recovery.
+5. **Timing requirements:** measurable `TR-xx` definitions for latency, throughput, path constraints, stalls, replay, flush, and reset recovery.
+6. **Reset-visible behavior:** interface values, transfer rules during reset, deassertion assumptions, discarded state, and first permitted post-reset transfer.
+7. **Block diagram:** a small Mermaid diagram followed by plain-language explanations.
 
-An architecture document defines observable behavior, not implementation. It is **REQUIRED** to contain:
+Keep internal registers, state encodings, pipeline registers, and private implementation structure out of the architecture document.
 
-1. **Purpose** — scope, problem solved, and operating context.
-2. **Parameters** — name, type, default, meaning, legal range, derived status, and illegal combinations.
-3. **Interfaces** — every port, direction, width, clock/reset domain, grouping, and protocol role. Use lowRISC suffixes (`_i`, `_o`, `_io`, `_ni`, `_no`) unless the project already mandates another convention.
-4. **Functional Requirements** — independently testable `FR-xx` definitions. Resolve simultaneous events, boundary behavior, ordering, cancellation, backpressure, and error behavior.
-5. **Timing Requirements** — measurable `TR-xx` definitions with cycle/rate/path reference points.
-6. **Reset-Visible Behavior** — interface behavior during reset and quantified recovery after reset.
-7. **Non-Goals** — explicit exclusions that do not contradict requirements or parameters.
-8. **Block Diagram** — a small ASCII diagram followed by explanatory bullets.
+## 3. Microarchitecture Contract
 
-Do not prescribe internal register names, state encodings, pipeline registers, or private implementation structure in an architecture document.
+The microarchitecture or merged implementation detail defines how the contract is met. Include:
 
-### Microarchitecture Contract
+1. **Block diagram and sub-blocks:** real signal flow, each unit's function, inputs, outputs, state, and ownership.
+2. **Internal signals and storage:** names, widths, kinds, owners, and purpose where needed for implementation.
+3. **Requirement mapping:** mechanism for every architecture `FR-xx` and `TR-xx`, without redefining them.
+4. **Timing risks:** expected critical combinational paths, constraints, and safe mitigation; label estimates that require synthesis confirmation.
+5. **Reset treatment:** reset value or an architectural-invisibility proof for every register, memory, and storage array.
+6. **Verification plan:** the traceable tests, assertions, and coverage described below.
 
-A microarchitecture document or merged document defines implementation decisions. It is **REQUIRED** to contain:
+When applicable:
 
-1. **Block Diagram** — sub-blocks, storage, and real signal flow.
-2. **Sub-Block Decomposition** — function, inputs, outputs, state, and behavior for each unit.
-3. **Internal Signals and Storage** — names, widths, kind, ownership, and purpose.
-4. **Critical Timing Paths** — source, destination, concern, and safe mitigation.
-5. **Reset Behavior** — reset value or explicit no-reset justification for every register and storage array.
-6. **Requirement Mapping** — show how each architecture `FR-xx` and `TR-xx` is implemented without redefining it.
-7. **Test Plan** — the shared, two-way traceable plan described below.
+- **Pipeline:** define each stage, inter-stage state, advance condition, stalls, bubbles, replay, flush, and backpressure propagation.
+- **FSM:** define states, transition conditions and priority, reset/flush behavior, outputs, and illegal-state handling. Give transitions stable `FSM-<NAME>-<NN>` IDs when they are part of the verification contract. Fix an encoding only when externally visible, safety-relevant, or intentionally constrained. Define recovery or assertion behavior for illegal state encodings.
+- **Datapath:** define operand widths and signedness, equations, intermediate widths, truncation, rounding, saturation, and overflow.
 
-In merged format, place these sections under a REQUIRED `Implementation Detail` heading.
+## 4. Protocol, Timing, and Reset Semantics
 
-Include these sections when applicable:
+For every channel, state the producer, consumer, sampling edge, transfer event, persistence, ordering, backpressure, and permitted combinational dependencies.
 
-- **CONDITIONAL — Pipeline Stages:** For every stage, specify function, inputs, outputs, inter-stage registers, advance condition, stall behavior, bubble/replay behavior, and flush behavior. Include an ASCII pipeline diagram.
-- **CONDITIONAL — FSM Definitions:** Define every state and encoding. Give every transition a stable `FSM-<NAME>-<NN>` ID, an unambiguous condition, priority when conditions overlap, and reset/flush behavior. Define recovery or assertion behavior for illegal state encodings. Treat the transition table as authoritative and add a small ASCII state sketch.
-- **CONDITIONAL — Datapath Equations:** State arithmetic width, signedness, truncation, saturation, rounding, and overflow behavior.
+For valid/ready:
 
-### Protocol Semantics
+- The producer may assert valid independently of ready.
+- Transfer occurs only when valid and ready are sampled high at the specified edge.
+- After valid is asserted without transfer, the producer holds valid and payload stable while stalled.
+- After transfer, the producer may present a new payload on the next cycle while valid remains high.
+- The specification lists permitted and forbidden combinational paths and prevents interface loops.
+- Flush, cancellation, reset, or retraction is an explicit requirement with priority and recovery behavior.
 
-For every interface channel, it is **REQUIRED** to state the protocol kind, producer, consumer, transfer event, ordering, backpressure, and stability rules.
+Define equally precise semantics for valid-only, request/acknowledge, credit, interrupt, memory-mapped, and other protocols. Avoid language that holds payload stable for every valid cycle because it forbids legal back-to-back transfers.
 
-For every valid/ready channel:
+Every timing requirement must give measurable reference points: clock edge, start event, end event, exact cycles or rate, behavior under stalls and recovery, and owned path or frequency constraints.
 
-- The producer may assert valid independently of ready. Valid must not wait for ready.
-- A transfer occurs only when valid and ready are both asserted at the specified sampling edge.
-- After valid is asserted without a transfer, the producer holds valid and its payload stable while stalled.
-- After a transfer, the producer may present a new payload on the next cycle even if valid remains asserted.
-- The specification states whether ready may depend combinationally on valid and lists every permitted or forbidden cross-interface combinational path.
-- Any exception that retracts valid or discards data, such as flush or cancellation, is an explicit functional requirement with priority and recovery behavior.
+For each state element, specify a reset value or prove that uninitialized contents cannot become architecturally visible before a valid overwrite. Define output validity during reset and the exact post-deassertion recovery interval.
 
-Do not write the ambiguous rule that payload remains stable for every cycle in which valid is high; it incorrectly forbids back-to-back transfers with different payloads.
+Specify capacity and status invariants at every boundary. The implementation may use current state, next state, look-ahead, or registered status only if the chosen method cannot accept beyond capacity, lose an event, or violate the timing contract.
 
-For valid-only, ready-only, request/acknowledge, credit, interrupt, and memory-mapped interfaces, state equally precise event, persistence, and response rules.
+## 5. Test Plan and Traceability
 
-### Timing and Reset
+Use stable IDs:
 
-Every timing requirement is **REQUIRED** to use a unique `TR-xx` ID and define measurable reference points. State, as applicable:
+| Item | ID |
+|------|----|
+| Functional requirement | `FR-xx` |
+| Timing requirement | `TR-xx` |
+| Contracted FSM transition | `FSM-<NAME>-<NN>` |
+| Test | `T-xx` |
 
-- clock and sampling edge;
-- latency start event, end event, and exact cycles;
-- sustained throughput in transfers or items per cycle;
-- behavior of latency under stalls, bubbles, replay, and flush;
-- allowed and forbidden combinational paths;
-- reset assertion style, reset deassertion assumptions, and recovery cycles; and
-- any frequency, setup, or integration constraint owned by the block.
+Each ID has exactly one definition. References to an ID do not redefine it.
 
-Use current registered state for combinational status outputs. When registering ready, valid, full, empty, or another state-derived status for the following cycle, derive its D input from the corresponding next-state value. Never register a one-cycle-stale current-state full indication if that permits an extra transfer with nowhere to store it.
+Require two-way traceability:
 
-Reset treatment is **REQUIRED** for every state element:
+- Every `FR-xx` and `TR-xx` maps to at least one `T-xx`.
+- Every `T-xx` maps on its definition row to one or more requirements.
+- Each contracted FSM transition maps to a test, independently falsifiable assertion, or coverage target.
+- Parameter boundaries and illegal combinations have a verification method when the tools can elaborate them.
 
-- Give each register an explicit reset value.
-- For every array or memory not reset, justify why unread/uninitialized contents cannot become architecturally visible.
-- Define output validity and handshake behavior during reset.
-- Quantify the first cycle in which each interface may transfer after reset deassertion.
+Each test states mapped IDs, stimulus, expected observations, timing, and completion criteria. Cover reset during operation, back-to-back activity, boundary values, simultaneous events, stalls, flushes, and error recovery when applicable.
 
-### Test Plan and Traceability
+Assertions must be temporal or independently falsifiable. Reject an assertion that merely restates the assignment that constructs the checked signal, has an impossible antecedent, duplicates another property, or constrains legal behavior. State environment assumptions separately from DUT guarantees.
 
-Use these stable ID grammars:
+Coverage targets requirements, state and transition reachability, boundaries, concurrency, stalls, and recovery. Coverage is evidence of stimulus, not a substitute for checking behavior.
 
-| Item | Definition ID | Definition Location |
-|------|---------------|---------------------|
-| Functional requirement | `FR-xx` | Functional Requirements |
-| Timing requirement | `TR-xx` | Timing Requirements |
-| FSM transition | `FSM-<NAME>-<NN>` | FSM Transitions |
-| Test | `T-xx` | Test Plan |
+## 6. Diagrams and Authority
 
-IDs are **REQUIRED** to be unique definitions. References to an ID do not redefine it.
+Use Mermaid for block diagrams and flow charts, followed by bullets that explain elements and direction. Keep each diagram focused and use real interface or internal names.
 
-Two-way traceability is **REQUIRED**:
+Use cycle-by-cycle tables for waveform timing, with one sampled cycle per column. Numbered requirements, tables, equations, and transition definitions are authoritative; diagrams explain them and must agree.
 
-- Every `FR-xx`, `TR-xx`, and `FSM-<NAME>-<NN>` maps to at least one `T-xx`.
-- Every `T-xx` maps on its definition row to at least one requirement or transition ID.
-- Every ID cited by a test has exactly one definition in the selected specification set; an ID-shaped token alone is not a valid mapping.
-- Every FSM transition has at least one mapped test.
-- Every parameter boundary and illegal combination has a mapped test when the testbench can elaborate it.
-- Corner tests cover reset during operation, back-to-back activity, boundary values, simultaneous events, stalls, and flushes when applicable.
+Every referenced local file exists.
 
-Each test definition states stimulus, expected observations, timing, and completion criteria. A test name alone is not a plan.
+## 7. Validate and Review
 
-Run the bundled mechanical validator before review:
+Run the bundled validator, resolving the script path from this skill directory:
 
-```text
-python3 scripts/validate_spec.py <spec-file-or-directory> [--format auto|merged|split]
+```bash
+uv run <skill-directory>/scripts/validate_spec.py <spec-file-or-spec-set> --format auto
 ```
 
-Treat a clean result as structural evidence only. It does not establish semantic hardware correctness.
+A clean result is structural evidence only; it does not establish semantic hardware correctness.
 
-### Assertions and Coverage
+Before freezing a new or substantively changed specification, dispatch an independent reviewer with every spec path and the absolute path to [references/review-checklist.md](references/review-checklist.md). The reviewer reads both completely and returns ranked findings without editing.
 
-Every listed assertion is **REQUIRED** to be temporal or independently falsifiable against the implementation. Prefer properties that check state transitions, stability under stall, legal ranges, ordering, conservation, and protocol obligations.
+Resolve blocking findings. Important findings are resolved or explicitly accepted by the user. When a finding has one clear correction, recommend it with the trade-off; present alternatives only for a genuine user-owned decision. Rerun validation and semantic review after a substantive architecture, microarchitecture, or verification-contract change.
 
-Reject:
+After review and revalidation, present the exact final spec paths and revision or content hashes, validation result, resolved decisions, and accepted findings. Then ask the user to approve that reviewed revision. An initial request to create or freeze a specification expresses intent, not approval of content that did not yet exist.
 
-- a direct restatement of the combinational assignment that constructs the checked signal;
-- a condition made impossible by the same handshake or gating expression in the assertion;
-- a property already implied entirely by another assertion; or
-- a property whose antecedent cannot occur under legal assumptions.
+Set the specification to frozen only after that post-review approval. Any later substantive contract change invalidates the approval.
 
-State interface assumptions separately from DUT assertions. Explain any assumption that constrains the environment.
+## 8. Conditional Handoff
 
-Coverage points are **REQUIRED** to target meaningful requirements, state/transition reachability, boundary states, concurrent events, stalls, and recovery sequences. Do not use coverage as a substitute for checking behavior.
+Handoff occurs only when the user requests implementation from a frozen specification:
 
-### Diagrams
+- Give RTL work the spec paths and target RTL path; require `write-hardware-rtl` when available.
+- Give testbench work the same spec, complete test plan, and target testbench path; require `write-hardware-test-bench` when available.
+- Keep the testbench derived from the specification rather than from RTL implementation choices.
 
-All diagrams are **REQUIRED** to use ASCII. Do not use Mermaid, Graphviz/dot, or image files.
+RTL and testbench work may run in parallel because both consume the same frozen contract. Missing handoff capability blocks that implementation branch, not specification delivery.
 
-- Use real interface and internal signal names.
-- Keep each diagram small; split dense diagrams by abstraction or sub-block.
-- Follow each diagram with bullets that explain elements and direction.
-- Use cycle-by-cycle waveform tables for interface timing, with one sampled cycle per column.
-- Treat tables, equations, and numbered requirements as authoritative; diagrams are explanatory.
+## Completion Gate
 
-## Definition of Done
+For create or update, finish when the applicable architecture, microarchitecture, protocol, timing, reset, traceability, assertion, coverage, and Mermaid requirements are complete; every referenced file exists; no unresolved placeholder is presented as decided; and the validator passes.
 
-Do not dispatch independent review until every applicable item passes:
-
-- [ ] Purpose and scope are unambiguous.
-- [ ] All parameters include legality, defaults, derived status, and illegal combinations.
-- [ ] Every port and protocol role is defined.
-- [ ] Every externally visible functional behavior has one `FR-xx` definition.
-- [ ] Every timing behavior has one quantified `TR-xx` definition.
-- [ ] Boundary and simultaneous-event behavior is resolved.
-- [ ] Split/merged format satisfies the objective selection rules.
-- [ ] Microarchitecture mechanisms cover every architecture requirement.
-- [ ] Every pipeline stage and FSM transition has complete stall/flush/reset behavior when applicable.
-- [ ] Every register and storage array has reset treatment.
-- [ ] Two-way test traceability is complete.
-- [ ] Assertions are temporal or independently falsifiable.
-- [ ] Coverage targets meaningful behavior.
-- [ ] ASCII diagrams agree with authoritative tables and equations.
-- [ ] Every referenced local file exists.
-- [ ] No unresolved decision markers or placeholders remain.
-- [ ] `scripts/validate_spec.py` passes.
-
-## Independent Review Gate
-
-After the definition of done passes, dispatch a separate review subagent. Self-review cannot substitute for this gate.
-
-Give the reviewer:
-
-1. every spec file path;
-2. the absolute path to `references/review-checklist.md` resolved from this skill directory;
-3. instructions to read the complete spec and checklist; and
-4. instructions to return ranked findings in the checklist format without editing the spec.
-
-The reviewer challenges semantic correctness, implementability, protocol behavior, timing, reset, traceability, assertions, and diagram consistency. Mechanical failures are returned immediately rather than buried among design opinions.
-
-For each blocking or important concern, present the issue, impact, and 2-3 alternatives with trade-offs to the user. The user decides externally visible behavior and architecture trade-offs. If a resolution changes architecture, rerun mechanical validation and independent review.
-
-## User Approval Gate
-
-After all blocking findings are resolved, present the final spec paths, the resolved decisions, remaining non-blocking suggestions, and validation result. Important findings are resolved or explicitly accepted by the user. Obtain explicit user approval before declaring the specification frozen.
-
-Any architecture-affecting edit after approval invalidates the frozen state and requires validation, independent review, and user approval again.
-
-## Implementation Handoff
-
-Do not write RTL or a testbench in this skill.
-
-After approval, require both sibling handoff skills and dispatch RTL and testbench work in parallel because both consume the frozen specification:
-
-1. **RTL handoff:** Provide spec paths, target `rtl/<block>.sv`, and require `write-hardware-rtl` before code is written.
-2. **Testbench handoff:** Provide spec paths, the complete test plan, target `tb/tb_<block>.cpp`, and require `write-hardware-test-bench` before code is written.
-
-The testbench is written against the specification, not the RTL. Integration, lint, build, and simulation follow the handoff skills after both implementations complete.
-
-If either handoff skill is unavailable, stop before implementation dispatch and identify the missing dependency.
+For review, finish with ranked, evidence-backed findings and no unrequested edits. For finalize or freeze, also require independent semantic review, resolved or accepted material findings, and explicit user approval.
 
 ## References
 
-- [references/templates.md](references/templates.md) — **RECOMMENDED** before drafting; copyable, non-normative structures.
-- [references/example-spec.md](references/example-spec.md) — **RECOMMENDED** when a complete merged-format example is useful.
-- [references/review-checklist.md](references/review-checklist.md) — **REQUIRED** for the independent review subagent.
-
-References illustrate this contract and must not introduce new requirements.
+- [references/templates.md](references/templates.md) — read when a copyable merged or split structure is useful.
+- [references/example-spec.md](references/example-spec.md) — read when a complete merged example is useful.
+- [references/review-checklist.md](references/review-checklist.md) — required for independent semantic review.

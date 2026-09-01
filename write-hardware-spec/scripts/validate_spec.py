@@ -11,6 +11,7 @@ from typing import Callable, Sequence
 
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+MERMAID_FENCE_RE = re.compile(r"^\s*```mermaid\s*$", re.IGNORECASE)
 FR_RE = re.compile(r"\bFR-\d{2,}\b")
 TR_RE = re.compile(r"\bTR-\d{2,}\b")
 FSM_RE = re.compile(r"\bFSM-[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*-\d{2,}\b")
@@ -22,7 +23,7 @@ MARKER_RE = re.compile(
     re.IGNORECASE,
 )
 FORBIDDEN_DIAGRAM_RES = (
-    re.compile(r"```\s*(?:mermaid|dot|graphviz)\b", re.IGNORECASE),
+    re.compile(r"```\s*(?:dot|graphviz)\b", re.IGNORECASE),
     re.compile(
         r'\b(?:strict\s+)?(?:di)?graph(?:\s+(?:[A-Za-z_]\w*|"[^"]+"))?\s*\{',
         re.IGNORECASE,
@@ -30,10 +31,18 @@ FORBIDDEN_DIAGRAM_RES = (
     re.compile(r"!\[[^]]*\]\s*(?:\([^)]*\)|\[[^]]*\])"),
     re.compile(r"<img\b", re.IGNORECASE),
 )
+DIAGRAM_HEADING_TERMS = (
+    "diagram",
+    "flow chart",
+    "flowchart",
+    "state sketch",
+    "fsm sketch",
+    "control flow",
+    "data flow",
+)
 VAGUE_TIMING_RE = re.compile(
     r"\b(?:low latency|high throughput|fast|quick)\b", re.IGNORECASE
 )
-COMPLEX_PIPELINE_RE = re.compile(r"\b\d+-stage\s+pipelin", re.IGNORECASE)
 
 MERGED_REQUIRED = (
     "purpose",
@@ -236,6 +245,8 @@ def _validate_ids(documents: Sequence[Document]) -> list[Diagnostic]:
     tests: dict[str, list[tuple[str, int]]] = {}
     test_mappings: dict[str, set[str]] = {}
     mapping_references: list[tuple[str, str, str, int]] = []
+    fsm_verification_mappings: set[str] = set()
+    fsm_verification_references: set[tuple[str, str, int]] = set()
     diagnostics: list[Diagnostic] = []
 
     for document in documents:
@@ -302,6 +313,18 @@ def _validate_ids(documents: Sequence[Document]) -> list[Diagnostic]:
                     )
                 )
 
+        verification_lines = _section_lines(
+            document,
+            lambda heading: "assertion" in heading.normalized
+            or "coverage" in heading.normalized,
+        )
+        for line_number, line in verification_lines:
+            for mapped_id in FSM_RE.findall(line):
+                fsm_verification_mappings.add(mapped_id)
+                fsm_verification_references.add(
+                    (mapped_id, str(document.path), line_number)
+                )
+
     for identifier, locations in definitions.items():
         if len(locations) > 1:
             for path, line in locations[1:]:
@@ -335,9 +358,34 @@ def _validate_ids(documents: Sequence[Document]) -> list[Diagnostic]:
                     f"{test_id} maps to undefined ID: {mapped_id}",
                 )
             )
+    for mapped_id, path, line in sorted(fsm_verification_references):
+        if mapped_id not in definitions:
+            diagnostics.append(
+                Diagnostic(
+                    path,
+                    line,
+                    "UNKNOWN_MAPPING",
+                    f"assertion or coverage item maps to undefined ID: {mapped_id}",
+                )
+            )
 
     covered = set().union(*test_mappings.values()) if test_mappings else set()
     for identifier, locations in definitions.items():
+        if identifier.startswith("FSM-"):
+            if (
+                identifier not in covered
+                and identifier not in fsm_verification_mappings
+            ):
+                path, line = locations[0]
+                diagnostics.append(
+                    Diagnostic(
+                        path,
+                        line,
+                        "UNCOVERED_TRANSITION",
+                        f"no test, assertion, or coverage target maps to {identifier}",
+                    )
+                )
+            continue
         if identifier not in covered:
             path, line = locations[0]
             diagnostics.append(
@@ -356,6 +404,19 @@ def _validate_hygiene(
 ) -> list[Diagnostic]:
     diagnostics: list[Diagnostic] = []
     for document in documents:
+        for heading in document.headings:
+            if not any(term in heading.normalized for term in DIAGRAM_HEADING_TERMS):
+                continue
+            section = document.lines[heading.line : heading.end_line]
+            if not any(MERMAID_FENCE_RE.match(line) for line in section):
+                diagnostics.append(
+                    Diagnostic(
+                        str(document.path),
+                        heading.line,
+                        "MISSING_MERMAID_DIAGRAM",
+                        "diagram section has no Mermaid diagram",
+                    )
+                )
         for line_number, line in enumerate(document.lines, start=1):
             if MARKER_RE.search(line):
                 diagnostics.append(
@@ -372,7 +433,7 @@ def _validate_hygiene(
                         str(document.path),
                         line_number,
                         "FORBIDDEN_DIAGRAM",
-                        "diagram is not ASCII",
+                        "block diagrams and flow charts must use Mermaid, not Graphviz or images",
                     )
                 )
 
@@ -395,23 +456,6 @@ def _validate_hygiene(
                     )
                 )
 
-        if selected_format == "merged":
-            has_pipeline_heading = any(
-                heading.normalized == "pipeline stages"
-                for heading in document.headings
-            )
-            has_pipeline_phrase = any(
-                COMPLEX_PIPELINE_RE.search(line) for line in document.lines
-            )
-            if has_pipeline_heading or has_pipeline_phrase:
-                diagnostics.append(
-                    Diagnostic(
-                        str(document.path),
-                        1,
-                        "COMPLEX_REQUIRES_SPLIT",
-                        "pipelined block requires architecture and microarchitecture documents",
-                    )
-                )
     return diagnostics
 
 

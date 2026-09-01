@@ -46,8 +46,9 @@ def merged_spec(*, purpose_suffix: str = "", test_mapping: str = "FR-01, TR-01")
         ## Non-Goals
         - No buffering.
         ## Block Diagram
-        ```text
-        input -> demo -> output
+        ```mermaid
+        flowchart LR
+            input --> demo --> output
         ```
         ## Implementation Detail
         The output is registered.
@@ -88,7 +89,7 @@ class ValidatorBehaviorTest(unittest.TestCase):
         )
         self.assertIn("UNRESOLVED_MARKER", {item.code for item in report.diagnostics})
 
-    def test_rejects_every_non_ascii_diagram_form(self):
+    def test_rejects_unsupported_diagram_forms(self):
         fixtures = {
             "Markdown image": "![diagram](flow.webp)",
             "reference-style image": "![diagram][flow]\n\n[flow]: flow.svg",
@@ -101,6 +102,98 @@ class ValidatorBehaviorTest(unittest.TestCase):
                 report = self.validate_text(merged_spec(purpose_suffix=diagram))
                 self.assertIn(
                     "FORBIDDEN_DIAGRAM", {item.code for item in report.diagnostics}
+                )
+
+    def test_accepts_mermaid_diagram(self):
+        report = self.validate_text(
+            merged_spec(
+                purpose_suffix="```mermaid\nflowchart LR\n  a --> b\n```"
+            )
+        )
+        self.assertNotIn(
+            "FORBIDDEN_DIAGRAM", {item.code for item in report.diagnostics}
+        )
+
+    def test_rejects_ascii_block_diagram(self):
+        text = merged_spec().replace(
+            "```mermaid\nflowchart LR\n    input --> demo --> output\n```",
+            "```text\ninput -> demo -> output\n```",
+        )
+        report = self.validate_text(text)
+        self.assertIn(
+            "MISSING_MERMAID_DIAGRAM",
+            {item.code for item in report.diagnostics},
+        )
+
+    def test_rejects_ascii_pipeline_diagram(self):
+        report = self.validate_text(
+            merged_spec(
+                purpose_suffix="## Pipeline Diagram\n```text\nS0 -> S1\n```"
+            )
+        )
+        self.assertIn(
+            "MISSING_MERMAID_DIAGRAM",
+            {item.code for item in report.diagnostics},
+        )
+
+    def test_rejects_ascii_common_flow_and_fsm_sections(self):
+        for heading in ("FSM Sketch", "Control Flow", "Data Flow"):
+            with self.subTest(heading=heading):
+                report = self.validate_text(
+                    merged_spec(
+                        purpose_suffix=f"## {heading}\n```text\nIdle -> Run\n```"
+                    )
+                )
+                self.assertIn(
+                    "MISSING_MERMAID_DIAGRAM",
+                    {item.code for item in report.diagnostics},
+                )
+
+    def test_allows_merged_pipeline(self):
+        report = self.validate_text(
+            merged_spec(purpose_suffix="## Pipeline Stages\nA two-stage pipeline.")
+        )
+        self.assertNotIn(
+            "COMPLEX_REQUIRES_SPLIT",
+            {item.code for item in report.diagnostics},
+        )
+
+    def test_rejects_unmapped_fsm_transition(self):
+        report = self.validate_text(
+            merged_spec(
+                purpose_suffix=(
+                    "## FSM Transitions\n"
+                    "| ID | From | To | Condition |\n"
+                    "|---|---|---|---|\n"
+                    "| FSM-CTRL-01 | Idle | Run | start_i |"
+                )
+            )
+        )
+        self.assertIn(
+            "UNCOVERED_TRANSITION",
+            {item.code for item in report.diagnostics},
+        )
+
+    def test_fsm_transition_may_map_to_assertion_or_coverage(self):
+        for heading, item in (
+            ("Assertions", "- ASSERT_START maps to FSM-CTRL-01."),
+            ("Coverage", "- CVR_START covers FSM-CTRL-01."),
+        ):
+            with self.subTest(heading=heading):
+                report = self.validate_text(
+                    merged_spec(
+                        purpose_suffix=(
+                            "## FSM Transitions\n"
+                            "| ID | From | To | Condition |\n"
+                            "|---|---|---|---|\n"
+                            "| FSM-CTRL-01 | Idle | Run | start_i |\n"
+                            f"### {heading}\n{item}"
+                        )
+                    )
+                )
+                self.assertNotIn(
+                    "UNCOVERED_TRANSITION",
+                    {item.code for item in report.diagnostics},
                 )
 
 

@@ -1,38 +1,74 @@
 ---
 name: extract-architecture-knowledge-from-source
-description: Use when asked to extract, distill, or mine design/architecture knowledge from a reference codebase into reusable documentation — "extract how X is implemented", or when porting an architecture to another language/stack and the source repo won't be available later.
+description: Create standalone, implementation-ready architecture documentation from a reference codebase for readers who will not have the source. Use when reusable reimplementation documentation is requested; not for codebase tours, API docs, or direct implementation.
 ---
 
-# Extract Architecture Knowledge
+# Extract Architecture Knowledge from Source
 
-## Overview
+## Outcome
 
-Turn a reference implementation into a prescriptive knowledge base: a doc set from which a fresh session (LLM or engineer) with no repo access can produce a working implementation. **Core principle: the output is a buildable spec, not a code tour.**
+Produce a self-contained specification from which a fresh engineer or agent can reimplement and verify the requested design without access to the reference repository. Explain the mechanism, contract, invariants, and trade-offs; source excerpts are evidence, not the deliverable.
 
-Not for contributor onboarding (write an architecture README) or library API reference (standard docs).
+The user's scope, format, target language, and output path take priority. Default to one Markdown document. Split the result only when distinct readers or implementation stages benefit from selective loading.
 
-## Phase 1 — Write the extraction spec first
+Keep the reference repository read-only. Put temporary analysis artifacts outside it and create additional models or code only when the user explicitly authorizes them.
 
-Before deep-reading code, write and (if interactive) get approval on a short spec fixing:
+## 1. Fix Scope and Source Identity
 
-- **Acceptance test** — the definition of done, measurable: "a fresh session given only these docs produces a working, verified implementation of X in <target language>."
-- **Scope** — explicit in/out lists. Core concept in; host/platform integration (buses, build system, framework glue) out or survey-only.
-- **Baseline vs extensions** — a canonical, simplified baseline presented first-class; repo-specific optimizations become named extensions, each with problem / technique / cost. Sorting rule: removing it breaks correctness of the core function → baseline; costs only performance, area, or generality → extension.
-- **Code depth tiers** — complete code sketches in the target language (not the repo's source language) for the small critical modules; annotated fragments for assembly/plumbing. Code illustrates the design and need not compile or run — but interfaces (ports, widths, field layouts, encodings) transcribe exactly from the repo source, never paraphrased from memory. Snippets-as-evidence alone fail the acceptance test.
-- **Code style source** — the user skills/guidelines covering the target language (e.g. `write-hardware-rtl` for SystemVerilog); all embedded example code follows them.
-- **Verification plan** — how quantitative claims (timing, capacity, complexity) get checked, against the repo's own tests/simulation or cited publications, before a doc counts as done.
+Record the repository identity, relevant configuration, requested subsystem, intended reader, and acceptance test. Use an exact commit or tag when available. For a dirty or unversioned tree, record the base revision when present, dirty-state summary, and a tree, content, or snapshot hash that identifies the inspected bytes.
 
-## Phase 2 — Extract, under these ground rules
+Define in-scope behavior and explicit exclusions. Ask one concise question only when a missing target, boundary, or externally visible choice would materially change the extraction.
 
-1. **Mechanism before artifact** — explain each idea in implementation-neutral terms (registers, queues, invariants); quote repo code afterward as a labeled exhibit.
-2. **Block diagrams as ASCII art** — every major structure gets one, with descriptive labels and an accompanying list of explanations. Break a complicated diagram into several focused ones (one concern each) rather than forcing everything into a single diagram.
-3. **Two-level traceability** — repo-derived claims cite `file:line`; performance/trade-off claims cite publications. A quantitative claim with no published source (e.g. a magic constant): cite the code and mark it "re-derive for your design".
-4. **Quantitative behavior as tables** — never prose: cycle-accurate tables, state walkthroughs, complexity bounds. Where a number encodes the reference's own pipeline/implementation choices, present the derivation (a formula in the reader's parameters), not the reference's constant.
-5. **Mine hard-won lessons** — code comments, TODOs, oddly-defensive code, and the repo's own tests feed mandatory Pitfalls sections and a verification doc (golden model, staged checks, corner cases from the repo's tests).
-6. **Selective loading** — each doc opens with what-it-covers plus prerequisites. README carries: index with load-when guidance per file, glossary, recommended implementation order. A reader must not need all files at once.
-7. **Essential vs incidental** — each doc ends with universal design rules vs repo-specific choices a reimplementer may change (with the trade-off stated).
+Classify mechanisms against the user's required behavior and constraints:
 
-## Phase 3 — Verify the docs themselves
+- **Essential:** removing it breaks a required function or constraint.
+- **Replaceable:** another mechanism may satisfy the same contract, with a stated trade-off.
+- **Incidental:** repository integration or optimization outside the requested scope.
 
-- Check every quantitative claim (timing tables, capacities, constants) against the repo's own tests/simulation output or the cited publication.
-- Final gate: re-read the doc set as the acceptance-test reader. Any "implement this" doc missing interfaces, timing, or corner cases fails.
+Scope is complete when every requested behavior and constraint has a destination in the planned document or an explicit exclusion.
+
+## 2. Build a Coverage Ledger
+
+Map each in-scope item to the source evidence needed to explain it:
+
+- Interfaces, data formats, parameters, configuration, and error behavior.
+- State, storage, invariants, algorithms, ordering, concurrency, and lifecycle.
+- Timing, capacity, throughput, resource, or complexity claims when material.
+- Tests, comments, issue history, and defensive code that expose corner cases or hard-won lessons.
+
+For every material claim, record:
+
+- Claim and exact source location as `path:line` at the recorded source identity.
+- Origin: source, test, benchmark, publication, derivation, measurement, or inference.
+- Status: supported, derived with assumptions, conflicting, or unresolved.
+- Validation performed and its result.
+
+File and line citations are traceability, not a substitute for enough explanation to reimplement the behavior.
+
+## 3. Extract the Design
+
+Explain each mechanism before showing any source exhibit. Preserve exact widths, encodings, layouts, event ordering, and boundary behavior when they are contractual. Separate the reference's choices from requirements a new implementation must preserve.
+
+Use Mermaid for a block diagram or flow chart only when it makes structure or sequence clearer, and follow it with plain-language explanations. Use tables for repeated fields, cycle behavior, state transitions, and like-for-like comparisons.
+
+Include target-language examples only when requested or when they materially remove ambiguity. Label exact source contracts separately from proposed target adaptations, and follow the target project's coding guidance.
+
+For a multi-file result, give each file a clear purpose and prerequisite, plus one index that says when to read it. Avoid a multi-file hierarchy when one document remains usable.
+
+## 4. Verify Proportionally
+
+Use the reference's existing tests, build, simulations, benchmarks, or golden models when they directly check a conclusion-driving claim. Run write-producing tools in a disposable copy or redirect their outputs outside the reference tree. If isolation is unavailable, keep the repository unchanged and record the verification gap.
+
+Record commands, configurations, inputs, expected results, actual results, and limitations. A test pass supports only the behavior it observes. Label claims that could not be verified rather than filling gaps with a plausible design.
+
+## 5. Completion Gate
+
+Finish only when:
+
+- Every coverage-ledger item is documented, excluded, conflicting, or explicitly unresolved.
+- A reader can recover interfaces, behavior, timing, state, corner cases, and verification intent required by the acceptance test.
+- Every material repository-derived claim cites the recorded source identity and location.
+- Derived and inferred claims state their assumptions; measured claims state their method.
+- Reference-specific choices are distinguishable from requirements the new implementation must preserve.
+- Diagrams, tables, prose, and examples agree.
+- The output contains no silent invention or dependency on unavailable source material.
