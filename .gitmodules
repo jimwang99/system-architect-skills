@@ -1,0 +1,3 @@
+[submodule "drunk-claude"]
+	path = drunk-claude
+	url = https://github.com/KorroAi/drunk-claude.git
