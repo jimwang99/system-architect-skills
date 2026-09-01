@@ -46,17 +46,17 @@ Keep every required template section. Omit `Open Questions` when no unresolved o
 
 ## 3. Resolve Material Decisions
 
-If the provisional brief has a material unresolved decision, ask one non-compound question about the highest-impact decision and wait for the answer.
+If the provisional brief has material unresolved decisions, ask all of them in one batch and wait for the answers. Keep each question non-compound and limited to one decision.
 
-Give a recommendation only when evidence supports a clear choice; otherwise state the current inference or concise alternatives without resolving the decision for the user. If the user does not know, offer to record an accepted unknown and name evidence that could resolve it.
+For each question, give two or three mutually exclusive options. Put the recommended option first, mark it `Recommended`, and give one short reason based on current evidence. When evidence is weak, label the choice as a working recommendation. Include an accepted-unknown option when it is a reasonable outcome and name evidence that could resolve it.
 
 Assign each question a stable `Q<n>` ID. When resolved, merge the answer into the relevant body section and remove the question from `Open Questions`. Keep only unresolved and accepted-unknown questions there. Never renumber or reuse an ID during the working session.
 
-Update the provisional brief after each answer and repeat only while a decision could change the framing, scope, goals, non-goals, or agreement.
+Update the provisional brief after each batch response. Ask another batch only when an answer exposes a new decision that could change the framing, scope, goals, non-goals, or agreement.
 
 ## 4. Review and Confirm
 
-Review the full brief for problem-framing completeness, internal consistency, solution leakage, and factual support. Re-enter the one-question loop only for a material boundary issue, a contradiction, or an unsupported statement presented as fact.
+Review the full brief for problem-framing completeness, internal consistency, solution leakage, and factual support. Ask another question batch only for a material boundary issue, a contradiction, or an unsupported statement presented as fact.
 
 Present the complete reviewed brief and ask for explicit confirmation. Set `Status: Aligned` only after the user confirms the full document. If the user stops earlier or accepts unresolved material questions, deliver `Status: Draft`.
 

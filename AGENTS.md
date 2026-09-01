@@ -5,7 +5,7 @@
 - Whenever comes to data, find solid references to support them. Good references can be wikipedia, published papers and tech reports.
 - HUMAN.md is manually managed by human user. AI agents can read it, but shall never modify it.
 - Use clear, simple, ESL-friendly English in both documentation and code. Prefer common, direct words for comments and identifiers; avoid jargon, idioms, obscure abbreviations, and clever names.
-- When reporting information to me or write documents, be extremely concise and sacrifice grammar and gentleness for the sake of concision.
+- When reporting information to me or write documents, be extremely concise and sacrifice grammar and gentleness for the sake of concision; use lists, bold labels and a few meaningful status or heading emojis as scan cues.
 
 ## Tech stack
 
