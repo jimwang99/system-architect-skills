@@ -1,6 +1,6 @@
 ---
 name: draw-waveform
-description: Create digital timing diagrams from WaveJSON, including valid-ready handshakes, protocol transactions, clock relationships, reset sequences, pipeline occupancy, latency, and cycle-by-cycle hardware behavior. Use when a user asks for a waveform, timing diagram, cycle view, sampling edge, stall, or handshake illustration. Do not use for block diagrams (uarch-diagram) or register bit layouts (register-map).
+description: Create digital timing diagrams from WaveJSON, including valid-ready handshakes, protocol transactions, clock relationships, reset sequences, pipeline occupancy, and latency. Use when a user asks for a waveform, timing diagram, cycle view, sampling edge, stall, or handshake illustration. For block diagrams use draw-uarch-diagram; for register bit layouts use draw-register-map.
 ---
 
 # Hardware timing diagrams
@@ -17,25 +17,23 @@ Read [references/wavejson.md](references/wavejson.md) for exact WaveJSON symbols
 
 ## Render
 
-Install WaveDrom in the current project only when the user authorizes dependency installation:
+The helper finds an existing renderer through `WAVEDROM_BIN`, the project `node_modules`, or a `wavedrom`/`wavedrom-cli` executable on PATH. When none exists, install WaveDrom in the current project only when the user authorizes dependency installation:
 
 ```bash
 npm install --save-dev wavedrom
 ```
 
-Render SVG with the checked-in helper:
+Render SVG with the helper from this skill directory:
 
 ```bash
-bash waveform/scripts/render.sh timing.json5 timing
+bash <skill-directory>/scripts/render.sh timing.json5 timing
 ```
 
 For a PNG review copy, install the native Cairo library, then run the helper in a uv-managed environment:
 
 ```bash
-uv run --with cairosvg bash waveform/scripts/render.sh timing.json5 timing --png
+uv run --with cairosvg bash <skill-directory>/scripts/render.sh timing.json5 timing --png
 ```
-
-The helper also accepts an existing `wavedrom-cli` installation. It never installs packages or writes into the user home directory.
 
 ## Review and deliver
 

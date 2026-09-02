@@ -1,6 +1,6 @@
 ---
 name: draw-register-map
-description: Document hardware registers and fixed bit layouts as bit-field SVG diagrams plus matching Markdown tables, including CSRs, MMIO registers, instruction encodings, descriptors, and packet headers. Use when a user asks for a register map, bit-field diagram, field positions, CSR documentation, instruction format, or header layout. Do not use for timing (waveform) or architecture block diagrams (uarch-diagram).
+description: Document hardware registers and fixed bit layouts as bit-field SVG diagrams plus matching Markdown tables, including CSRs, MMIO registers, instruction encodings, descriptors, and packet headers. Use when a user asks for a register map, bit-field diagram, field positions, CSR documentation, instruction format, or header layout. For timing use draw-waveform; for architecture block diagrams use draw-uarch-diagram.
 ---
 
 # Register maps and bit fields
@@ -17,21 +17,21 @@ Read [references/bitfield.md](references/bitfield.md) for the renderer schema, C
 
 ## Validate and render
 
-List every field exactly once. Reserved gaps are unnamed entries such as `{"bits": 5}`. For register fields, use explicit `access` and `reset` keys; use `attr` only for encodings and other generic formats. The helper rejects mixed modes, missing coverage, or a sum different from the declared width.
+Cover every bit exactly once. Reserved gaps are unnamed entries such as `{"bits": 5}`. For register fields, use explicit `access` and `reset` keys; use `attr` only for encodings and other generic formats. The helper rejects mixed `attr` and `access`/`reset` on one field and a field-width sum different from the declared width.
 
-Install the official package in the current project only when the user authorizes dependency installation:
+The helper finds an existing `bitfield` executable through `BIT_FIELD_BIN`, the project `node_modules`, or PATH. When none exists, install the official package in the current project only when the user authorizes dependency installation:
 
 ```bash
 npm install --save-dev bit-field
 ```
 
-Render SVG and the matching Markdown table in a uv-managed environment:
+Render SVG and the matching Markdown table with the helper from this skill directory:
 
 ```bash
-uv run --with loguru python register-map/scripts/render_reg.py DMA_CTRL.json --out DMA_CTRL
+uv run --with loguru python <skill-directory>/scripts/render_reg.py DMA_CTRL.json --out DMA_CTRL
 ```
 
-Add `--with cairosvg` and `--png` only for a raster review copy when the native Cairo library is installed. The helper never installs npm or Python packages and never writes into the user home directory.
+Add `--with cairosvg` and `--png` only for a raster review copy when the native Cairo library is installed.
 
 ## Review and deliver
 

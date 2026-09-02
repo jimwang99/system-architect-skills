@@ -1,6 +1,6 @@
 ---
 name: draw-uarch-diagram
-description: Create architecture and microarchitecture block diagrams as Python-authored SVG, especially pipelines, staged datapaths, control feedback, and left-to-right system flows. Use when a user asks for a hardware block diagram, pipeline figure, architecture overview, datapath picture, or data/control-flow diagram. Do not use for cycle timing (waveform) or register bit layouts (register-map).
+description: Create architecture and microarchitecture block diagrams as Python-authored SVG, especially pipelines, staged datapaths, control feedback, and left-to-right system flows. Use when a user asks for a hardware block diagram, pipeline figure, architecture overview, or data/control-flow diagram. For cycle timing use draw-waveform; for register bit layouts use draw-register-map.
 ---
 
 # Architecture diagrams
@@ -15,21 +15,21 @@ Read [references/abstraction.md](references/abstraction.md) when choosing the ab
 
 ## Build from Python
 
-Copy [examples/pipeline5.py](examples/pipeline5.py) and [scripts/uarch.py](scripts/uarch.py) beside the requested output, then adapt the example. Keep both Python files with the SVG so the figure remains portable and editable.
+Copy [scripts/uarch.py](scripts/uarch.py) and [examples/pipeline5.py](examples/pipeline5.py) from this skill directory to the output directory, rename the example after the figure, then adapt it. Keep both Python files with the SVG so the figure remains portable and editable.
 
 Use `Figure.pipeline()` with `frame.stage()` for pipeline stages and `Figure.columns()` with `frame.column()` for a left-to-right system flow. Add semantic blocks with `stage.mem()`, `stage.fifo()`, `stage.unit()`, `stage.mux()`, `stage.control()`, or `stage.io()`. Declare named ports, then connect them with `figure.wire()`, `figure.bus()`, or `figure.ctrl()`. Use `block.port("literal-name")` when punctuation or an existing block attribute prevents dotted port access.
 
 Use `.accent()` on one block for the subject. If the subject is a path, keep and label only the edges needed to explain it. Use `.stack(count)` for identical instances. Set `handshake=True` on a bus only when backpressure is relevant to the question.
 
-Do not put coordinates in ordinary figure code. Use `block.at(column, row)` or `edge.via((column, row), ...)` only when the automatic orthogonal layout obscures the answer. A forward edge that skips an occupied stage needs explicit `via()` waypoints. Within one stage, connect adjacent blocks through facing bottom/top ports or add explicit waypoints. These rules stop hidden wires through intermediate blocks. `Figure.lint()` reports every manual override as maintenance cost.
+Let the automatic orthogonal layout place blocks and route edges; use `block.at(column, row)` or `edge.via((column, row), ...)` only when the automatic result obscures the answer. Lint errors force two cases: a forward edge that skips an occupied stage needs explicit `via()` waypoints, and blocks within one stage connect through facing bottom/top ports or explicit waypoints. Both rules stop hidden wires through intermediate blocks. `Figure.lint()` reports every manual override as maintenance cost.
 
-Call `Figure.to_dict()` when reviewing semantic changes. Call only `Figure.render()` for output; it runs lint, layout, and SVG generation in order.
+Call only `Figure.render()` for output; it runs lint, layout, and SVG generation in order. Call `Figure.to_dict()` to inspect the semantic model when reviewing changes.
 
 ```bash
-uv run --with drawsvg --with loguru python uarch-diagram/examples/pipeline5.py --out /tmp/pipeline5
+uv run --with drawsvg --with loguru python <figure>.py --out <figure>
 ```
 
-Add `--with cairosvg` and `--png` only when a raster review copy is useful and the native Cairo library is installed. The helper never installs dependencies; generated assets use the chosen output basename.
+Add `--with cairosvg` and `--png` only when a raster review copy is useful and the native Cairo library is installed.
 
 ## Review and deliver
 

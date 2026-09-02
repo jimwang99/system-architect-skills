@@ -20,9 +20,9 @@ A set of skills for silicon system architects, from architecture to RTL in softw
 
 ### Visualization
 
-- **[uarch-diagram](uarch-diagram/SKILL.md)** — Create architecture and microarchitecture block diagrams from declarative Python, with semantic blocks, named ports, linted layout, and SVG output.
-- **[waveform](waveform/SKILL.md)** — Create focused digital timing diagrams from WaveJSON for handshakes, protocol transactions, latency, clocks, resets, and pipeline occupancy.
-- **[register-map](register-map/SKILL.md)** — Create validated register and fixed-format bit-field SVGs with matching Markdown field tables.
+- **[draw-uarch-diagram](draw-uarch-diagram/SKILL.md)** — Create architecture and microarchitecture block diagrams from declarative Python, with semantic blocks, named ports, linted layout, and SVG output.
+- **[draw-waveform](draw-waveform/SKILL.md)** — Create focused digital timing diagrams from WaveJSON for handshakes, protocol transactions, latency, clocks, resets, and pipeline occupancy.
+- **[draw-register-map](draw-register-map/SKILL.md)** — Create validated register and fixed-format bit-field SVGs with matching Markdown field tables.
 
 ### Implementation
 
@@ -41,9 +41,9 @@ flowchart LR
     Research[academia-research] --> Spec
     Paper[extract from paper] --> Spec
     Source[extract from source] --> Spec
-    Spec --> Diagram[uarch-diagram]
-    Spec --> Wave[waveform]
-    Spec --> Registers[register-map]
+    Spec --> Diagram[draw-uarch-diagram]
+    Spec --> Wave[draw-waveform]
+    Spec --> Registers[draw-register-map]
     Spec --> RTL[write-hardware-rtl]
     Spec --> TB[write-hardware-test-bench]
     RTL --> Wave
