@@ -1,5 +1,5 @@
 ---
-name: draw-uarch-diagram
+name: draw-microarchitecture-diagram
 description: Create architecture and microarchitecture block diagrams as Python-authored SVG, especially pipelines, staged datapaths, control feedback, and left-to-right system flows. Use when a user asks for a hardware block diagram, pipeline figure, architecture overview, or data/control-flow diagram. For cycle timing use draw-waveform; for register bit layouts use draw-register-map.
 ---
 
