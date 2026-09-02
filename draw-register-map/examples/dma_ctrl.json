@@ -1,0 +1,14 @@
+{
+  "name": "DMA_CTRL",
+  "offset": "0x000",
+  "width": 32,
+  "reset": "0x0000_0000",
+  "desc": "Channel control register.",
+  "fields": [
+    {"name": "EN", "bits": 1, "access": "RW", "reset": "0", "desc": "Enable the channel."},
+    {"name": "START", "bits": 1, "access": "WO", "reset": "0", "desc": "Write 1 to start the channel."},
+    {"bits": 2},
+    {"name": "BURST", "bits": 3, "access": "RW", "reset": "0", "desc": "Configured burst size encoding."},
+    {"bits": 25}
+  ]
+}

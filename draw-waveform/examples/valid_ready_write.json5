@@ -1,0 +1,21 @@
+// Question: when is request data sampled, and when may the response appear?
+{
+  signal: [
+    { name: "clk", wave: "p........", period: 1 },
+    {},
+    ["Request",
+      { name: "valid", wave: "0.1.0...." },
+      { name: "ready", wave: "0..10..1.", node: "...a....." },
+      { name: "addr", wave: "x.=.x....", data: ["0x40"] },
+      { name: "wdata", wave: "x.=.x....", data: ["D0"] },
+    ],
+    {},
+    ["Response",
+      { name: "bvalid", wave: "0.....10.", node: "......c.." },
+      { name: "bresp", wave: "x.....=x.", data: ["OKAY"] },
+    ],
+  ],
+  edge: ["a~>c request to response"],
+  head: { text: "Write-channel handshake", tick: 0 },
+  config: { hscale: 1.5 },
+}
