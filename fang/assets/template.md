@@ -1,5 +1,6 @@
-# Problem Statement: [Working title]
+# Intent Statement: [Working title]
 
+**Author:** [Originator whose confirmation sets Aligned]
 **Status:** [🟡 Draft / 🟢 Aligned]
 
 ## 🎯 Framing
@@ -14,7 +15,11 @@
 
 - **[High / Medium / Low / Unknown]:** [Assumption] — **If false:** [What changes.]
 
-<!-- After confirmation, use one "None identified" bullet when empty. Otherwise use "Not yet established" and add an open question. -->
+### 📏 Constraints
+
+- [Imposed limit any solution must respect: deadline, budget, compatibility, regulation. Cite evidence IDs.]
+
+<!-- After confirmation, use one "None identified" bullet per empty list. Otherwise use "Not yet established" and add an open question. -->
 
 ## 🚫 Non-goals
 

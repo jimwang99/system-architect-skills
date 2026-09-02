@@ -12,7 +12,7 @@ A set of skills for silicon system architects, from architecture to RTL in softw
 
 ### Problem framing
 
-- **[fang](fang/SKILL.md)** — Turn an idea into an agreed problem brief before solution work. Drafts from available evidence, asks one material question at a time, and requires full-document confirmation before alignment.
+- **[fang](fang/SKILL.md)** — Turn an idea into an agreed intent brief before solution work. Drafts from available evidence, asks material questions in batches or fast-captures a small task in one pass, and requires full-document confirmation before alignment.
 
 ### Specification
 

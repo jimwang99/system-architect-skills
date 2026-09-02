@@ -1,19 +1,34 @@
 ---
 name: fang
-description: Create or revise a FANG problem-framing brief through a focused interview. Use when the user explicitly requests a FANG brief or problem framing without solution design.
+description: Create or revise a FANG intent brief by focused interview, or one-pass fast capture for small tasks. Use when the user requests a FANG brief, problem framing, or intent capture before solution design.
 ---
 
 # FANG
 
-FANG means Framing, Assumptions, Non-goals, and Goals. It records confirmed high-level agreement on the problem before solution work starts.
+FANG means Framing, Assumptions, Non-goals, and Goals. It records confirmed high-level agreement on the intent before solution work starts.
 
 ## Boundary
 
-Frame the problem only: affected parties, observed conditions, impact, urgency, evidence, scope, goals, non-goals, risks, and agreement criteria. Leave features, architecture, interfaces, technologies, implementation, and execution plans for a separate task.
+Frame the problem only: affected parties, observed conditions, impact, urgency, evidence, scope, constraints, goals, non-goals, risks, and agreement criteria. Leave features, architecture, interfaces, technologies, implementation, and execution plans for a separate task.
 
 When the source begins with a proposed solution, recover the underlying problem. Retain the proposal only as a one-line, unevaluated solution hypothesis when its provenance matters.
 
 Keep external facts, user reports, assumptions, conflicts, and unknowns distinct. The user is authoritative for their goals, preferences, and experience, but user confirmation does not verify an external factual claim.
+
+## Fast capture
+
+Fast capture compresses steps 3–4 into one pass and shrinks the brief so the user can review it in seconds. The standard interview stays as written. Two triggers:
+
+- The user asks for a quick or fast capture.
+- After establishing evidence, the problem is plainly small: one decision, limited blast radius, cheap to reverse.
+
+Announce the chosen mode in one line; the user can veto it. Then:
+
+- Adopt each working recommendation as an assumption with its **If false** impact instead of asking (step 3). Keep an open question only when no reasonable working answer exists.
+- Cap the brief at half a page: one bullet per section, material items only. Omit empty sections and skip the `None identified` / `Not yet established` placeholders.
+- Deliver `Status: 🟡 Draft (fast capture)` with no confirmation round (step 4) and list the adopted assumptions for veto.
+
+`Aligned` still requires the user's explicit confirmation of the full document; restore omitted sections and confirm their absences when upgrading.
 
 ## 1. Establish Evidence
 
@@ -42,7 +57,7 @@ Optimize for a one-minute first pass:
 
 An `Aligned` brief needs substantive framing, an explicit agreement sought, at least one outcome goal with an observable success signal, and no unresolved material boundary decision. A `Draft` may use `Not yet established` and record the missing decision under `Open Questions`.
 
-Keep every required template section. Omit `Open Questions` when no unresolved or accepted-unknown question remains. Use one `None identified` bullet for assumptions or non-goals only after the user confirms that absence.
+Keep every required template section. Omit `Open Questions` when no unresolved or accepted-unknown question remains. Use one `None identified` bullet for assumptions, constraints, or non-goals only after the user confirms that absence.
 
 ## 3. Resolve Material Decisions
 
