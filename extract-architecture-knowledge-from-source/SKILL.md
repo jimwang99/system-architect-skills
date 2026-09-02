@@ -49,7 +49,9 @@ File and line citations are traceability, not a substitute for enough explanatio
 
 Explain each mechanism before showing any source exhibit. Preserve exact widths, encodings, layouts, event ordering, and boundary behavior when they are contractual. Separate the reference's choices from requirements a new implementation must preserve.
 
-Use Mermaid for a block diagram or flow chart only when it makes structure or sequence clearer, and follow it with plain-language explanations. Use tables for repeated fields, cycle behavior, state transitions, and like-for-like comparisons.
+When a paper or other publication serves as evidence, extract every implementation-bearing figure or image from it as an image file, for example with `pdfimages` or by rendering the page and cropping. Store the files in a `figures/` directory beside the report; they are part of the deliverable. Embed each in the report where its mechanism is explained, with a caption citing the source document, figure number, and page.
+
+Draw a new Mermaid block diagram or flow chart, followed by plain-language explanations, only for structure or sequence that materially clarifies the design and has no usable extracted figure. Use tables for repeated fields, cycle behavior, state transitions, and like-for-like comparisons.
 
 Include target-language examples only when requested or when they materially remove ambiguity. Label exact source contracts separately from proposed target adaptations, and follow the target project's coding guidance.
 
@@ -70,5 +72,6 @@ Finish only when:
 - Every material repository-derived claim cites the recorded source identity and location.
 - Derived and inferred claims state their assumptions; measured claims state their method.
 - Reference-specific choices are distinguishable from requirements the new implementation must preserve.
+- Every embedded figure file exists at its referenced path with a source-citing caption.
 - Diagrams, tables, prose, and examples agree.
 - The output contains no silent invention or dependency on unavailable source material.

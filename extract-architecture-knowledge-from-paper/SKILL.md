@@ -58,7 +58,7 @@ A model checks consistency under its recorded assumptions; it does not prove emp
 
 Explain mechanisms before implementation artifacts. Preserve exact interfaces, dataflow, state, ordering, equations, timing, and corner behavior required by the acceptance test. Separate required behavior from one possible implementation.
 
-Use Mermaid for block diagrams and flow charts that materially clarify structure or sequence, followed by plain-language explanations. Use tables for repeated fields, state transitions, timing, and comparable quantitative results.
+Extract every implementation-bearing figure or image from the paper as an image file, for example with `pdfimages` or by rendering the page and cropping. Store the files in a `figures/` directory beside the report; they are part of the deliverable. Embed each in the report where its mechanism is explained, with a caption citing its paper figure number and page. Use Mermaid for block diagrams and flow charts that explain flow, block relationships, or other structure no extracted paper figure directly shows, followed by plain-language explanations. Use tables for repeated fields, state transitions, timing, and comparable quantitative results.
 
 Cite paper evidence by section, page, figure, table, or equation; artifact evidence by `path:line` at revision; verification evidence by model or test and recorded run. Put assumptions and unresolved omissions beside the affected mechanism.
 
@@ -69,6 +69,7 @@ Finish only when:
 - Every critical ledger row is supported, derived with explicit assumptions, conflicting, or explicitly unknown.
 - Text, figures, equations, artifacts, and external evidence are reconciled or their disagreement is reported.
 - A reader can recover the in-scope interfaces, behavior, timing, state, corner cases, and verification intent.
+- Every embedded figure file exists at its referenced path with a source-citing caption.
 - Each material claim has separate origin, location, status, and validation.
 - Generated models or adaptations are included only when they are part of the requested deliverable.
 - The specification contains no silent invention or false claim of verification.
