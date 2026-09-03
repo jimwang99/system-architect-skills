@@ -1,6 +1,6 @@
 ---
 name: draw-register-map
-description: Document hardware registers and fixed bit layouts as bit-field SVG diagrams plus matching Markdown tables, including CSRs, MMIO registers, instruction encodings, descriptors, and packet headers. Use when a user asks for a register map, bit-field diagram, field positions, CSR documentation, instruction format, or header layout. For timing use draw-waveform; for architecture block diagrams use draw-uarch-diagram.
+description: Document hardware registers and fixed bit layouts as bit-field SVG diagrams plus matching Markdown tables, including CSRs, MMIO registers, instruction encodings, descriptors, and packet headers. Use when a user asks for a register map, bit-field diagram, field positions, CSR documentation, instruction format, or header layout. For timing use draw-waveform; for architecture block diagrams use draw-microarchitecture-diagram.
 ---
 
 # Register maps and bit fields

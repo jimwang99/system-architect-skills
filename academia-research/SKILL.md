@@ -12,7 +12,7 @@ Match the work to the request:
 - For a focused literature question, inspect the decisive sources and answer in the requested format.
 - For a field survey or literature review, produce a coherent Markdown report whose important claims are traceable to inspected sources.
 
-The user's scope, format, and output location take priority. If format and location are unspecified, answer a focused question in chat; for a survey, write one `[topic].md` report in the working directory and create no auxiliary files.
+The user's scope, format, and output location take priority. If format and location are unspecified, answer a focused question in chat; for a survey, write one `[topic].md` report in the working directory, add a `figures/` folder only when the report embeds figures, and create no other auxiliary files.
 
 ## 1. Define Scope
 
@@ -48,7 +48,7 @@ Keep an evidence record for every source that may drive a conclusion or comparis
 - Claim supported and its location in the source, such as a section, page, table, figure, or appendix.
 - Study design, data, evaluation conditions, main result, stated limitations, and independent replication status when relevant.
 
-Inspect the full text and any available relevant supplement before reporting technical or quantitative detail. If only an abstract is accessible, label the source `abstract-only` and report only what the abstract supports. Search snippets are discovery aids, not evidence.
+Inspect the full text and any available relevant supplement before reporting technical or quantitative detail. While inspecting, mark each figure a reader must see, such as a mechanism diagram or a decisive plot, with its label, page, and source file or URL for step 6. If only an abstract is accessible, label the source `abstract-only` and report only what the abstract supports. Search snippets are discovery aids, not evidence.
 
 Cite each material factual claim near the claim. For every number, capture the dataset and version, split, metric and units, evaluation protocol, model or system version, sample size and uncertainty when reported, relevant hardware or compute conditions, and source location. Mark missing conditions as `not reported` or `not applicable`; do not estimate them.
 
@@ -80,7 +80,7 @@ For the default survey report, use this compact structure and omit conditional s
 [Research questions, review type, searches, selection rules, and coverage limits]
 
 ## Findings
-[Subsections organized by research question or theme]
+[Subsections organized by research question or theme; an embedded figure sits beside the claim it supports]
 
 ## Comparison
 [Conditional: only aligned methods or results]
@@ -94,7 +94,17 @@ For the default survey report, use this compact structure and omit conditional s
 
 In a survey report, references must include exact title, authors or organization, year, venue or status, and DOI or stable canonical URL.
 
-## 6. Quality Gate
+## 6. Add Figures
+
+Embed a source figure when the user asks for figures, or when a diagram or plot carries a mechanism or result that prose would distort or lengthen. Each embedded figure is one the report discusses. Transcribe tables into Markdown instead of embedding them as images.
+
+Save each figure under `figures/` next to the report as `<firstauthor><year>-fig<label>.<ext>`. Extract from a PDF with the helper in this skill directory and from a web page by downloading the original image file; read [references/figures.md](references/figures.md) for the commands, the fallbacks, and the Markdown form.
+
+View every saved image and confirm it holds the whole cited figure and nothing else. Under each embedded figure write a caption line with the figure label, the source, and its page or section, and keep any license the source states.
+
+Figures are complete when every embedded image was viewed, its relative path resolves, and its caption credits the source.
+
+## 7. Quality Gate
 
 Apply the relevant checks to a focused answer and every check to a survey report. Finish only when:
 
@@ -102,6 +112,7 @@ Apply the relevant checks to a focused answer and every check to a survey report
 - Every material claim is cited near the claim, and every cited source was inspected to the depth the claim requires.
 - Bibliographic metadata, publication status, source links, and support locations are verified for conclusion-driving evidence.
 - Numerical comparisons use compatible conditions or state why comparison is unsafe.
+- Every embedded figure was viewed, its file resolves, and its caption credits the source and location.
 - Foundational context, current evidence, and material counterevidence are represented where relevant and within the stated boundaries.
 - For a survey, the method, cutoff date, uncertainty, inference, and coverage limits are explicit.
 - The report contains no invented sources, uncited reference entries, or unsupported claims.

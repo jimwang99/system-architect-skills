@@ -6,7 +6,7 @@ A set of skills for silicon system architects, from architecture to RTL in softw
 
 ### Research & knowledge extraction
 
-- **[academia-research](academia-research/SKILL.md)** — Answer a focused academic question or compare a body of work from primary sources. Produces a concise Markdown report with claim-level citations, comparable quantitative evidence, limits, and open questions.
+- **[academia-research](academia-research/SKILL.md)** — Answer a focused academic question or compare a body of work from primary sources. Produces a concise Markdown report with claim-level citations, comparable quantitative evidence, figures extracted from source PDFs or web pages, limits, and open questions.
 - **[extract-architecture-knowledge-from-source](extract-architecture-knowledge-from-source/SKILL.md)** — Turn a reference codebase into standalone documentation for reimplementation without later source access. Records source identity, traceable evidence, behavior, interfaces, algorithms, and verified gaps.
 - **[extract-architecture-knowledge-from-paper](extract-architecture-knowledge-from-paper/SKILL.md)** — Turn a paper and its accessible artifacts into standalone, implementation-ready architecture documentation. Separates stated facts, supported inferences, missing details, and user decisions.
 
@@ -20,7 +20,7 @@ A set of skills for silicon system architects, from architecture to RTL in softw
 
 ### Visualization
 
-- **[draw-uarch-diagram](draw-uarch-diagram/SKILL.md)** — Create architecture and microarchitecture block diagrams from declarative Python, with semantic blocks, named ports, linted layout, and SVG output.
+- **[draw-microarchitecture-diagram](draw-microarchitecture-diagram/SKILL.md)** — Create architecture and microarchitecture block diagrams from declarative Python, with semantic blocks, named ports, linted layout, and SVG output.
 - **[draw-waveform](draw-waveform/SKILL.md)** — Create focused digital timing diagrams from WaveJSON for handshakes, protocol transactions, latency, clocks, resets, and pipeline occupancy.
 - **[draw-register-map](draw-register-map/SKILL.md)** — Create validated register and fixed-format bit-field SVGs with matching Markdown field tables.
 
@@ -41,7 +41,8 @@ flowchart LR
     Research[academia-research] --> Spec
     Paper[extract from paper] --> Spec
     Source[extract from source] --> Spec
-    Spec --> Diagram[draw-uarch-diagram]
+    Source --> Diagram
+    Spec --> Diagram[draw-microarchitecture-diagram]
     Spec --> Wave[draw-waveform]
     Spec --> Registers[draw-register-map]
     Spec --> RTL[write-hardware-rtl]

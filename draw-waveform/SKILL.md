@@ -1,6 +1,6 @@
 ---
 name: draw-waveform
-description: Create digital timing diagrams from WaveJSON, including valid-ready handshakes, protocol transactions, clock relationships, reset sequences, pipeline occupancy, and latency. Use when a user asks for a waveform, timing diagram, cycle view, sampling edge, stall, or handshake illustration. For block diagrams use draw-uarch-diagram; for register bit layouts use draw-register-map.
+description: Create digital timing diagrams from WaveJSON, including valid-ready handshakes, protocol transactions, clock relationships, reset sequences, pipeline occupancy, and latency. Use when a user asks for a waveform, timing diagram, cycle view, sampling edge, stall, or handshake illustration. For block diagrams use draw-microarchitecture-diagram; for register bit layouts use draw-register-map.
 ---
 
 # Hardware timing diagrams

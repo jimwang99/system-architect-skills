@@ -51,7 +51,7 @@ Explain each mechanism before showing any source exhibit. Preserve exact widths,
 
 When a paper or other publication serves as evidence, extract every implementation-bearing figure or image from it as an image file, for example with `pdfimages` or by rendering the page and cropping. Store the files in a `figures/` directory beside the report; they are part of the deliverable. Embed each in the report where its mechanism is explained, with a caption citing the source document, figure number, and page.
 
-Draw a new Mermaid block diagram or flow chart, followed by plain-language explanations, only for structure or sequence that materially clarifies the design and has no usable extracted figure. Use tables for repeated fields, cycle behavior, state transitions, and like-for-like comparisons.
+Draw a new diagram only for structure or sequence that materially clarifies the design and has no usable extracted figure. For a block diagram of pipeline stages, datapaths, control feedback, or a left-to-right system flow, use the `draw-microarchitecture-diagram` skill; every block name, width, and connection in it comes from a coverage-ledger row. Keep its Python source and SVG in `figures/`, embed the SVG where the mechanism is explained, and cite the source locations it was drawn from in the caption. Use Mermaid, followed by plain-language explanations, for flow charts and sequence diagrams. Use tables for repeated fields, cycle behavior, state transitions, and like-for-like comparisons.
 
 Include target-language examples only when requested or when they materially remove ambiguity. Label exact source contracts separately from proposed target adaptations, and follow the target project's coding guidance.
 
