@@ -4,6 +4,7 @@
 - When writing comments in code, write the intent, not what has been implemented. Comment must be human centric. Never write a docstring or comment that restates the signature or the code. Non-obvious constraints, vendor quirks, units, and preconditions earn a line; self-evident code does not.
 - Whenever comes to data, find solid references to support them. Good references can be wikipedia, published papers and tech reports.
 - HUMAN.md is manually managed by human user. AI agents can read it, but shall never modify it.
+- Once the direction is approved, implement, run necessary jobs, debug, validate, and check in reports without reconfirmation. Keep the user updated during long jobs. Continue until the requested outcome is delivered or a concrete blocker requires external action.
 - Use clear, simple, ESL-friendly English in both documentation and code. Prefer common, direct words for comments and identifiers; avoid jargon, idioms, obscure abbreviations, and clever names.
 - When reporting information to me or write documents, be extremely concise and sacrifice grammar and gentleness for the sake of concision; use lists, bold labels and a few meaningful status or heading emojis as scan cues.
 
@@ -14,6 +15,7 @@
 - When creating block diagrams or flow chart, use Mermaid format with a list of explanations in natural language.
 - Use `uv` to manage Python virtual environment.
 - Use `loguru` instead of raw print or logging in Python source code.
+- On confirmed Codex sandbox denial, request `sandbox_permissions: "require_escalated"` for that command; verify the retry's output.
 
 ## Prevent over-engineering
 
@@ -31,3 +33,4 @@
 - Monitor recorded handles and progress freshness; never infer ownership with pgrep.
 - On restart, reconcile existing runs and terminate only validated, expired jobs.
 - Finish only after verifying outputs and releasing resources.
+
