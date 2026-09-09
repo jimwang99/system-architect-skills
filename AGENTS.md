@@ -10,12 +10,15 @@
 
 ## Tech stack
 
-- When creating documentation, use Markdown format.
-- In Markdown files, never hard-wrap prose. One paragraph = one line; let the renderer wrap (Exception: tables, code blocks); use `\$` for dollar sign to stay compatible with renderer that supports latex that use `$` to quote equations.
-- When creating block diagrams or flow chart, use Mermaid format with a list of explanations in natural language.
-- Use `uv` to manage Python virtual environment.
-- Use `loguru` instead of raw print or logging in Python source code.
-- On confirmed Codex sandbox denial, request `sandbox_permissions: "require_escalated"` for that command; verify the retry's output.
+- Use Markdown for documents and reports humans will edit.
+    - In Markdown files, never hard-wrap prose. One paragraph = one line; let the renderer wrap (Exception: tables, code blocks); use `\$` for dollar sign to stay compatible with renderer that supports latex that use `$` to quote equations.
+    - When creating block diagrams or flow chart in Markdown files, use Mermaid format with a list of explanations in natural language.
+- Use HTML for final reports humans will read without editing.
+    - When creating block diagrams or flow chart in HTML files, directly generate PNG or SVG format images.
+- Python
+    - Use `uv` to manage Python virtual environment.
+    - Use `loguru` instead of raw print or logging in Python source code. This is a soft requirement.
+- On macOS, request `sandbox_permissions: "require_escalated"` before shell commands that launch Chrome/Chromium, including headless and Playwright. Verify fresh output and clean up owned browser processes.
 
 ## Prevent over-engineering
 
@@ -33,4 +36,3 @@
 - Monitor recorded handles and progress freshness; never infer ownership with pgrep.
 - On restart, reconcile existing runs and terminate only validated, expired jobs.
 - Finish only after verifying outputs and releasing resources.
-
