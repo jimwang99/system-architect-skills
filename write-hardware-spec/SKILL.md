@@ -1,6 +1,6 @@
 ---
 name: write-hardware-spec
-description: Create, update, review, or freeze architecture and microarchitecture specifications for RTL blocks. Use before RTL or testbench implementation when interfaces, protocols, timing, reset, state, or verification intent need an explicit contract; not for writing implementation code.
+description: Create, update, review, or freeze architecture and microarchitecture specifications for RTL blocks. Use before RTL or testbench implementation when interfaces, protocols, timing, reset, state, or verification intent need an explicit contract; not for writing implementation code; not for evaluating / simulating existing IP blocks.
 ---
 
 # Write Hardware Specification
