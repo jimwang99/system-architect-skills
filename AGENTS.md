@@ -1,8 +1,7 @@
 ## Working with the human user
 - The human user's ideas, existing code/docs/tests, and specs (often AI-written) can all be wrong. When you see a better way, say it once: one sentence with the tradeoff and a recommendation, then proceed on the decided path.
 - Before the direction is approved, ask only when different readings lead to materially different work. After approval: implement, run jobs, debug, validate, and git-commit reports without reconfirmation (commits are reversible); keep the human user updated during long jobs; continue until the outcome is delivered or a concrete blocker needs the human user's action.
-- Chat replies to the human user: telegraphic. Lists, bold labels, and a few status or heading emojis as scan cues; concision beats grammar and politeness.
-- HUMAN.md belongs to the human user: read-only for agents.
+- Chat replies to the human user: telegraphic. Numbered lists, bold labels, and a few status or heading emojis as scan cues; concision beats grammar and politeness.
 
 ## Writing: docs, comments, identifiers
 - ESL-friendly English: common, direct words; spelled-out names. Documents stay grammatical.
@@ -15,7 +14,7 @@
     - Write dollar signs as `\$`; LaTeX-aware renderers read bare `$` as math delimiters.
     - Diagrams: Mermaid, followed by a natural-language explanation list.
 - HTML for final reports the human user reads without editing. One self-contained file that can be shared alone: styles and scripts inline, diagrams as inline SVG or base64-embedded PNG.
-- Python: `uv` for virtual environments; `loguru` instead of raw print or logging (soft requirement).
+- Python: `uv` for virtual environments; prefer `loguru` instead of raw print or logging.
 
 ## Smallest diff
 - Implement the smallest diff that does the task; refactoring, abstraction, and speculative improvements wait for a task that asks for them.
