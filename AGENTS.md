@@ -1,38 +1,26 @@
-## General guidelines
-- Don't be too agreeable. The user can be wrong. Challenge their ideas — in one sentence with the reason, then proceed. No hedging, no re-litigating.
-- Don't assume existing code/documents/tests are already the best solutions. If you see a better one, say so: name the tradeoff and give a recommendation — not a survey of every option.
-- When writing comments in code, write the intent, not what has been implemented. Comment must be human centric. Never write a docstring or comment that restates the signature or the code. Non-obvious constraints, vendor quirks, units, and preconditions earn a line; self-evident code does not.
-- Whenever comes to data, find solid references to support them. Good references can be wikipedia, published papers and tech reports.
-- HUMAN.md is manually managed by human user. AI agents can read it, but shall never modify it.
-- Once the direction is approved, implement, run necessary jobs, debug, validate, and check in reports without reconfirmation. Keep the user updated during long jobs. Continue until the requested outcome is delivered or a concrete blocker requires external action.
-- Use clear, simple, ESL-friendly English in both documentation and code. Prefer common, direct words for comments and identifiers; avoid jargon, idioms, obscure abbreviations, and clever names.
-- When reporting information to me or write documents, be extremely concise and sacrifice grammar and gentleness for the sake of concision; use lists, bold labels and a few meaningful status or heading emojis as scan cues.
+## Working with the human user
+- The human user's ideas, existing code/docs/tests, and specs (often AI-written) can all be wrong. When you see a better way, say it once: one sentence with the tradeoff and a recommendation, then proceed on the decided path.
+- Before the direction is approved, ask only when different readings lead to materially different work. After approval: implement, run jobs, debug, validate, and git-commit reports without reconfirmation (commits are reversible); keep the human user updated during long jobs; continue until the outcome is delivered or a concrete blocker needs the human user's action.
+- Chat replies to the human user: telegraphic. Lists, bold labels, and a few status or heading emojis as scan cues; concision beats grammar and politeness.
+- HUMAN.md belongs to the human user: read-only for agents.
+
+## Writing: docs, comments, identifiers
+- ESL-friendly English: common, direct words; spelled-out names. Documents stay grammatical.
+- Comments exist for human readers and carry only what the code cannot say: intent, non-obvious constraints, vendor quirks, units, preconditions.
+- Every quantitative claim in a document cites a source: Wikipedia, published papers, tech reports.
 
 ## Tech stack
+- Markdown for documents the human user will edit.
+    - One paragraph = one line; let the renderer wrap. Tables and code blocks keep their own line breaks.
+    - Write dollar signs as `\$`; LaTeX-aware renderers read bare `$` as math delimiters.
+    - Diagrams: Mermaid, followed by a natural-language explanation list.
+- HTML for final reports the human user reads without editing. One self-contained file that can be shared alone: styles and scripts inline, diagrams as inline SVG or base64-embedded PNG.
+- Python: `uv` for virtual environments; `loguru` instead of raw print or logging (soft requirement).
 
-- Use Markdown for documents and reports humans will edit.
-    - In Markdown files, never hard-wrap prose. One paragraph = one line; let the renderer wrap (Exception: tables, code blocks); use `\$` for dollar sign to stay compatible with renderer that supports latex that use `$` to quote equations.
-    - When creating block diagrams or flow chart in Markdown files, use Mermaid format with a list of explanations in natural language.
-- Use HTML for final reports humans will read without editing.
-    - When creating block diagrams or flow chart in HTML files, directly generate PNG or SVG format images.
-- Python
-    - Use `uv` to manage Python virtual environment.
-    - Use `loguru` instead of raw print or logging in Python source code. This is a soft requirement.
-- On macOS, request `sandbox_permissions: "require_escalated"` before shell commands that launch Chrome/Chromium, including headless and Playwright. Verify fresh output and clean up owned browser processes.
-
-## Prevent over-engineering
-
-- Don't over-engineer, and ask clarification questions when you are not clear.
-- Preserve architecture and existing interfaces. Never make architectural or API changes without explicit approval from human.
-- Implement the smallest possible diff. Avoid refactoring, abstraction, or speculative improvements beyond the requested task.
-- Write the smallest set of readable, behavior-focused tests that cover critical paths, meaningful edge cases, and regressions; do not test implementation details or exhaustively enumerate trivial cases.
-- Sometimes specs are also AI generated. "The spec says so" is not the same as "this is right".
+## Smallest diff
+- Implement the smallest diff that does the task; refactoring, abstraction, and speculative improvements wait for a task that asks for them.
+- Architecture and public interfaces change only with the human user's explicit approval.
+- Tests: the smallest readable set that covers critical paths, meaningful edge cases, and regressions through observable behavior.
 
 ## Long-running shell jobs
-
-- Assign a run ID, acquire a lock, and record the launch handle.
-- Persist readiness, phase, heartbeat, terminal state, and exit result.
-- Report “on track” only after readiness is verified.
-- Monitor recorded handles and progress freshness; never infer ownership with pgrep.
-- On restart, reconcile existing runs and terminate only validated, expired jobs.
-- Finish only after verifying outputs and releasing resources.
+- Any shell job expected to exceed ~2 minutes, or launched in the background: follow the `long-running-jobs` skill (run record, lock, readiness, heartbeat, reconcile on restart).

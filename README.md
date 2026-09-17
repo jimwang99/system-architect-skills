@@ -33,6 +33,10 @@ A set of skills for silicon system architects, from architecture to RTL in softw
 
 - **[debug-hardware-with-logging](debug-hardware-with-logging/SKILL.md)** — Diagnose RTL simulation failures without a waveform viewer. Reproduces the failure, adds selective text evidence, finds the first bad event, tests a concrete hypothesis, and reports the root cause without silently implementing a fix.
 
+### Operations
+
+- **[long-running-jobs](long-running-jobs/SKILL.md)** — Run shell jobs that outlive one tool call (simulations, builds, syntheses) under a detached supervisor with a persisted run record: run ID, per-name lock, readiness, progress heartbeat, exit result, and reconcile-on-restart.
+
 ## How they fit together
 
 ```mermaid
