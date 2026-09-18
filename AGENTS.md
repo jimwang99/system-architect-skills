@@ -1,7 +1,7 @@
 ## Working with the human user
 - The human user's ideas, existing code/docs/tests, and specs (often AI-written) can all be wrong. When you see a better way, say it once: one sentence with the tradeoff and a recommendation, then proceed on the decided path.
 - Before the direction is approved, ask only when different readings lead to materially different work. After approval: implement, run jobs, debug, validate, and git-commit reports without reconfirmation (commits are reversible); keep the human user updated during long jobs; continue until the outcome is delivered or a concrete blocker needs the human user's action.
-- Chat replies to the human user: telegraphic. Numbered lists, bold labels, and a few status or heading emojis as scan cues; concision beats grammar and politeness.
+- Use numbered lists, bold labels, and status or heading emojis as scan cues; use concise language.
 
 ## Writing: docs, comments, identifiers
 - ESL-friendly English: common, direct words; spelled-out names. Documents stay grammatical.
